@@ -101,14 +101,13 @@ Each degree has a dedicated agent node. For CS 766 (initial POC):
 | Column | Type | Purpose |
 |--------|------|---------|
 | `id` | `BIGINT` (PK, autoincrement) | Unique row identifier |
-| `year` | `INTEGER` | Handbook year (e.g. 2025) |
-| `course` | `VARCHAR(255)` | Degree/major/minor code (e.g. `766`, `MAJ40177`) |
-| `location` | `VARCHAR(255)` | Campus (e.g. `Wollongong`, `Shoalhaven`) |
+| `year` | `INTEGER` | Handbook year (e.g. 2026) |
+| `course` | `VARCHAR(255)` | Degree code (e.g. `766`) |
 | `information` | `TEXT` | Full structured markdown — see `HANDBOOK_TEMPLATE.md` |
 
-**Unique constraint:** `(year, course, location)` — one entry per degree per campus per year.
+**Unique constraint:** `(year, course)` — one entry per degree per year.
 
-**Query pattern:** `SELECT information FROM handbook WHERE course = '766' AND year = 2025 AND location = 'Wollongong'`
+**Query pattern:** `SELECT information FROM handbook WHERE course = '766' AND year = 2026`
 
 ---
 

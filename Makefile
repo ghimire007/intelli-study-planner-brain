@@ -17,3 +17,6 @@ migrate-history:
 
 migrate-current:
 	python3 -m alembic current
+
+seed:
+	python3 -m seeds.seed

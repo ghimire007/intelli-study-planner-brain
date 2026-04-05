@@ -9,9 +9,8 @@ class Handbook(Base):
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
     year: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
     course: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
-    location: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     information: Mapped[str] = mapped_column(Text, nullable=False)
 
     __table_args__ = (
-        UniqueConstraint("year", "course", "location", name="uq_handbook_year_course_location"),
+        UniqueConstraint("year", "course", name="uq_handbook_year_course"),
     )
