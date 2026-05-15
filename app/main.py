@@ -34,4 +34,5 @@ app.include_router(api_router)
 @app.get("/", response_class=HTMLResponse, include_in_schema=False)
 async def ui():
     with open("static/index.html") as f:
-        return f.read()
+        content = f.read()
+    return HTMLResponse(content=content, headers={"Cache-Control": "no-store"})

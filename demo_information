@@ -1,13 +1,4 @@
-"""
-Seed script — inserts initial handbook data into the DB.
-Run via: make seed
-"""
-import asyncio
-from sqlalchemy import select
-from app.core.database import AsyncSessionLocal
-from app.models.handbook import Handbook
-
-HANDBOOK_766_2026_WOLLONGONG = """# 766 — Bachelor of Computer Science (Wollongong Campus, 2026 Handbook)
+# 766 — Bachelor of Computer Science (Wollongong Campus, 2026 Handbook)
 
 ## Global Rules
 - Total **144 credit points (CP)** required to graduate.
@@ -263,39 +254,3 @@ Add elective subjects (using valid sources listed above) until total planned CP 
 8. Total 100-level CP (complete + planned) does not exceed 60 CP
 9. No subject code has been invented
 Correct any errors and repeat until all nine checks pass.
-"""
-
-SEED_DATA = [
-    {
-        "year": 2026,
-        "course": "766",
-        "campus": "Wollongong",
-        "information": HANDBOOK_766_2026_WOLLONGONG,
-    },
-]
-
-
-async def seed() -> None:
-    async with AsyncSessionLocal() as session:
-        for entry in SEED_DATA:
-            result = await session.execute(
-                select(Handbook).where(
-                    Handbook.year == entry["year"],
-                    Handbook.course == entry["course"],
-                    Handbook.campus == entry["campus"],
-                )
-            )
-            if result.scalar_one_or_none():
-                print(f"Skipping {entry['course']} {entry['year']} ({entry['campus']}) — already exists")
-                continue
-            session.add(Handbook(**entry))
-            print(f"Inserted {entry['course']} {entry['year']} ({entry['campus']})")
-        await session.commit()
-    print("Seed complete.")
-
-
-if __name__ == "__main__":
-    import sys
-    if sys.platform == "win32":
-        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-    asyncio.run(seed())

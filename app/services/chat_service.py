@@ -34,7 +34,7 @@ class ChatService:
         5. Call LLM and store assistant response
         """
         meta = await self._parse_sols_meta(raw_sols)
-        handbook = await self._fetch_handbook(meta.degree_code, meta.year)
+        handbook = await self._fetch_handbook(meta.degree_code, meta.year, meta.campus)
         system_content = self._build_system_prompt(handbook.information, raw_sols)
 
         session = ChatSession(degree_code=meta.degree_code)
@@ -100,17 +100,22 @@ class ChatService:
         data = json.loads(raw_json)
         return SOLSMeta(**data)
 
-    async def _fetch_handbook(self, degree_code: str, year: int) -> Handbook:
-        result = await self._db.execute(
-            select(Handbook)
-            .where(Handbook.course == degree_code)
-            .order_by(Handbook.year.desc())
-            .limit(1)
-        )
-        handbook = result.scalar_one_or_none()
-        if not handbook:
-            raise ValueError(f"No handbook found for course {degree_code}")
-        return handbook
+    async def _fetch_handbook(self, degree_code: str, year: int, campus: str) -> Handbook:
+        # Prefer the handbook year closest to (but not exceeding) the student's commencement year.
+        # Fall back to the most recent available year, then to any campus entry if the specific campus is missing.
+        for campus_filter in [campus, None]:
+            query = (
+                select(Handbook)
+                .where(Handbook.course == degree_code)
+                .order_by(Handbook.year.desc())
+            )
+            if campus_filter is not None:
+                query = query.where(Handbook.campus == campus_filter)
+            result = await self._db.execute(query.limit(1))
+            handbook = result.scalar_one_or_none()
+            if handbook:
+                return handbook
+        raise ValueError(f"No handbook found for course {degree_code}")
 
     def _build_system_prompt(self, handbook_md: str, raw_sols: str) -> str:
         return (
