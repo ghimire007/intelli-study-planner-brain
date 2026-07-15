@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 
 from app.core.database import connect, disconnect
+from app.core.checkpointer import connect_checkpointer, disconnect_checkpointer
 from app.api.v1.router import router as api_router
 
 logger = logging.getLogger("uvicorn")
@@ -14,7 +15,9 @@ logger = logging.getLogger("uvicorn")
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await connect()
+    await connect_checkpointer()
     yield
+    await disconnect_checkpointer()
     await disconnect()
 
 
