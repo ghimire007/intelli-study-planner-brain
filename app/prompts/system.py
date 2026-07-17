@@ -70,5 +70,31 @@ After the table, provide a CP summary:
 - Remaining in plan: N CP
 - **Total: 144 CP**
 
+Finally, at the very end of your response, output the entire chronological record (including all historical completed/current enrolments from SOLS and all newly generated future subjects) under a single "plan" key as a raw, valid, nested JSON block wrapped inside a ```json markdown code fence.
+If a subject's session is "Annual", include the subject both in the annual subject's year's sessions (i.e in both Autumn 2026 and Spring 2026). 
+Include elective subjects in the year and session they can be taken in. 
+Do not include any text inside or after this code block. Follow this structure strictly:
+```json
+{
+  "plan": [
+    {
+    "year": 2025,
+    "sessions": [
+        {
+        "session": "Autumn",
+        "subjects": [
+            {
+            "code": "CSIT111",
+            "name": "Programming Fundamentals",
+            "cp": 6,
+            "notes": "Prerequisite for CSIT121"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+
 If information needed to produce a valid plan is missing, ask the student for exactly the detail you need — do not guess. Skip the `<details>` block on turns where you're only asking a clarifying question and haven't produced a plan yet.
 """.strip()
