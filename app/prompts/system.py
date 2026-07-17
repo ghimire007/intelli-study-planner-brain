@@ -70,8 +70,10 @@ After the table, provide a CP summary:
 - Remaining in plan: N CP
 - **Total: 144 CP**
 
-Finally, at the very end of your response, output the exact copy of this plan as a raw, valid, nested JSON block wrapped inside a ```json markdown code fence. Do not include any text inside or after this code block. Follow this structure strictly:
-
+Finally, at the very end of your response, output the entire chronological record (including all historical completed/current enrolments from SOLS and all newly generated future subjects) under a single "plan" key as a raw, valid, nested JSON block wrapped inside a ```json markdown code fence.
+If a subject's session is "Annual", include the subject both in the annual subject's year's sessions (i.e in both Autumn 2026 and Spring 2026). 
+Include elective subjects in the year and session they can be taken in. 
+Do not include any text inside or after this code block. Follow this structure strictly:
 ```json
 {
   "plan": [
