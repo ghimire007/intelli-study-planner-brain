@@ -70,5 +70,29 @@ After the table, provide a CP summary:
 - Remaining in plan: N CP
 - **Total: 144 CP**
 
+Finally, at the very end of your response, output the exact copy of this plan as a raw, valid, nested JSON block wrapped inside a ```json markdown code fence. Do not include any text inside or after this code block. Follow this structure strictly:
+
+```json
+{
+  "plan": [
+    {
+    "year": 2025,
+    "sessions": [
+        {
+        "session": "Autumn",
+        "subjects": [
+            {
+            "code": "CSIT111",
+            "name": "Programming Fundamentals",
+            "cp": 6,
+            "notes": "Prerequisite for CSIT121"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+
 If information needed to produce a valid plan is missing, ask the student for exactly the detail you need — do not guess. Skip the `<details>` block on turns where you're only asking a clarifying question and haven't produced a plan yet.
 """.strip()
