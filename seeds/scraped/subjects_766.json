@@ -1,0 +1,1973 @@
+{
+  "CSCI203": {
+    "code": "CSCI203",
+    "title": "Algorithms and Data Structures",
+    "cp": "6",
+    "description": "Approaches to analysing algorithm complexity and implementation efficiency will be introduced; and used to motivate the development of appropriate abstract data types. Students will be taught to recognise the role of abstract data types and algorithms in solving real-world problems; and given the opportunity to implement solutions to such problems.",
+    "rules": [
+      {
+        "type": "Pre-Requisite",
+        "description": "(CSIT110 or CSIT111) AND (CSIT113 or CSIT123)"
+      }
+    ],
+    "offerings": [
+      {
+        "campus": "Wollongong",
+        "session": "Spring",
+        "mode": "On-Campus",
+        "display": "Wollongong-Spring-On-Campus"
+      },
+      {
+        "campus": "Dubai",
+        "session": "DXB UG Spring",
+        "mode": "On-Campus",
+        "display": "Dubai-DXB UG Spring-On-Campus"
+      },
+      {
+        "campus": "Dubai",
+        "session": "DXB UG Winter",
+        "mode": "On-Campus",
+        "display": "Dubai-DXB UG Winter-On-Campus"
+      },
+      {
+        "campus": "Liverpool",
+        "session": "Spring",
+        "mode": "On-Campus",
+        "display": "Liverpool-Spring-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S1",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S1-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S3",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S3-On-Campus"
+      }
+    ],
+    "url": "https://courses.uow.edu.au/subjects/2026/CSCI203"
+  },
+  "CSCI218": {
+    "code": "CSCI218",
+    "title": "Foundations of Artificial Intelligence",
+    "cp": "6",
+    "description": "This subject presents the foundations of artificial intelligence (AI). It introduces the history of AI, its evolution, and the recent development. Also, it presents the representative topics selected from the important areas in the field of AI. For each of these topics, this subject introduces the fundamental concepts, classic methods, and important applications. This subject concludes with a summary of the present of AI and its future trends. By providing the fundamental knowledge of AI, this subject helps students to gain the basic idea of this important field, paving their way to study more advanced AI techniques.",
+    "rules": [
+      {
+        "type": "Pre-Requisite",
+        "description": "(CSIT110 or CSIT111) and another 18cp at 100 level"
+      }
+    ],
+    "offerings": [
+      {
+        "campus": "Wollongong",
+        "session": "Spring",
+        "mode": "On-Campus",
+        "display": "Wollongong-Spring-On-Campus"
+      },
+      {
+        "campus": "Dubai",
+        "session": "DXB UG Autumn",
+        "mode": "On-Campus",
+        "display": "Dubai-DXB UG Autumn-On-Campus"
+      },
+      {
+        "campus": "Liverpool",
+        "session": "Spring",
+        "mode": "On-Campus",
+        "display": "Liverpool-Spring-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S1",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S1-On-Campus"
+      }
+    ],
+    "url": "https://courses.uow.edu.au/subjects/2026/CSCI218"
+  },
+  "CSCI235": {
+    "code": "CSCI235",
+    "title": "Database Systems",
+    "cp": "6",
+    "description": "The subject presents advanced topics in the modern relational database technology and it introduces the new non-relational (NoSQL) database technologies. The relational database technology component of the subject includes database normalization, introduction to indexing in relational database systems, programming of relational database server with stored procedures, functions, and triggers, concurrency control and database recovery techniques, design and programming of distributed database systems. The non-relational (NoSQL) database technology component of the subject includes a review of non-relational data models such as the key-value data model, document-oriented model, column-family stores, and graph data model. The non-relational component of the subject presents the new approaches to database design, data distribution, consistency preserving, and transaction processing in distributed and clustered database systems. Programming of NoSQL database server includes the new data definition and data manipulation languages, a new query language, indexing, design and implementation of replication and sharding.",
+    "rules": [
+      {
+        "type": "Pre-Requisite",
+        "description": "CSIT115"
+      }
+    ],
+    "offerings": [
+      {
+        "campus": "Wollongong",
+        "session": "Autumn",
+        "mode": "On-Campus",
+        "display": "Wollongong-Autumn-On-Campus"
+      },
+      {
+        "campus": "Dubai",
+        "session": "DXB UG Autumn",
+        "mode": "On-Campus",
+        "display": "Dubai-DXB UG Autumn-On-Campus"
+      },
+      {
+        "campus": "Liverpool",
+        "session": "Autumn",
+        "mode": "Flexible",
+        "display": "Liverpool-Autumn-Flexible"
+      },
+      {
+        "campus": "Liverpool",
+        "session": "Autumn",
+        "mode": "On-Campus",
+        "display": "Liverpool-Autumn-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S2",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S2-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S4",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S4-On-Campus"
+      },
+      {
+        "campus": "UOWCHK",
+        "session": "UOWCHK Sem A",
+        "mode": "On-Campus",
+        "display": "UOW at CCCU HK-UOWCHK Sem A-On-Campus"
+      },
+      {
+        "campus": "UOW Malaysia Penang",
+        "session": "UOWM Tri 3",
+        "mode": "On-Campus",
+        "display": "UOW Malaysia Penang-UOWM Tri 3-On-Campus"
+      },
+      {
+        "campus": "UOW Malaysia Selangor",
+        "session": "UOWM Tri 3",
+        "mode": "On-Campus",
+        "display": "UOW Malaysia Selangor-UOWM Tri 3-On-Campus"
+      }
+    ],
+    "url": "https://courses.uow.edu.au/subjects/2026/CSCI235"
+  },
+  "CSCI251": {
+    "code": "CSCI251",
+    "title": "Advanced Programming",
+    "cp": "6",
+    "description": "This subject develops a thorough understanding of advanced programming features, and how to implement them in modern C++. It consists of three primary components, namely procedural programming, object-based/object-oriented programming, and generic programming. In addition to the core of each of those components, this subject addresses topics including resource management tied to RAII, in particular the management of dynamic memory; the use of the standard template library; profiling and debugging; programming for efficiency including concepts such as moving; exception handling; C++ RTTI; and recent additions to C++.",
+    "rules": [
+      {
+        "type": "Pre-Requisite",
+        "description": "CSIT121 or CSIT213"
+      }
+    ],
+    "offerings": [
+      {
+        "campus": "Wollongong",
+        "session": "Spring",
+        "mode": "On-Campus",
+        "display": "Wollongong-Spring-On-Campus"
+      },
+      {
+        "campus": "Dubai",
+        "session": "DXB UG Autumn",
+        "mode": "On-Campus",
+        "display": "Dubai-DXB UG Autumn-On-Campus"
+      },
+      {
+        "campus": "Dubai",
+        "session": "DXB UG Spring",
+        "mode": "On-Campus",
+        "display": "Dubai-DXB UG Spring-On-Campus"
+      },
+      {
+        "campus": "Liverpool",
+        "session": "Spring",
+        "mode": "On-Campus",
+        "display": "Liverpool-Spring-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S1",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S1-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S3",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S3-On-Campus"
+      },
+      {
+        "campus": "UOWCHK",
+        "session": "UOWCHK Sem B",
+        "mode": "On-Campus",
+        "display": "UOW at CCCU HK-UOWCHK Sem B-On-Campus"
+      },
+      {
+        "campus": "UOW Malaysia Penang",
+        "session": "UOWM Tri 3",
+        "mode": "On-Campus",
+        "display": "UOW Malaysia Penang-UOWM Tri 3-On-Campus"
+      },
+      {
+        "campus": "UOW Malaysia Selangor",
+        "session": "UOWM Tri 3",
+        "mode": "On-Campus",
+        "display": "UOW Malaysia Selangor-UOWM Tri 3-On-Campus"
+      }
+    ],
+    "url": "https://courses.uow.edu.au/subjects/2026/CSCI251"
+  },
+  "CSCI262": {
+    "code": "CSCI262",
+    "title": "System Security",
+    "cp": "6",
+    "description": "The subject covers some fundamental computer security technologies in the following aspects: (1) Operating system security such as physical security, file protections, system abuses, attacks and protections; (2) Database security including data integrity, data recover, data encryption/ decryption, access control, and authentication; (3) Mobile code security including malicious logic, host and mobile code protection, mobile agents' security. (4) Intrusion detection; (5) Security policies; (6) Security management and risk analysis.",
+    "rules": [
+      {
+        "type": "Pre-Requisite",
+        "description": "CSIT121 and CSIT115 and CSIT127"
+      }
+    ],
+    "offerings": [
+      {
+        "campus": "Wollongong",
+        "session": "Spring",
+        "mode": "On-Campus",
+        "display": "Wollongong-Spring-On-Campus"
+      },
+      {
+        "campus": "Dubai",
+        "session": "DXB UG Spring",
+        "mode": "On-Campus",
+        "display": "Dubai-DXB UG Spring-On-Campus"
+      },
+      {
+        "campus": "Liverpool",
+        "session": "Spring",
+        "mode": "Flexible",
+        "display": "Liverpool-Spring-Flexible"
+      },
+      {
+        "campus": "Liverpool",
+        "session": "Spring",
+        "mode": "On-Campus",
+        "display": "Liverpool-Spring-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S2",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S2-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S4",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S4-On-Campus"
+      },
+      {
+        "campus": "UOW Malaysia Penang",
+        "session": "UOWM Tri 3",
+        "mode": "On-Campus",
+        "display": "UOW Malaysia Penang-UOWM Tri 3-On-Campus"
+      },
+      {
+        "campus": "UOW Malaysia Selangor",
+        "session": "UOWM Tri 3",
+        "mode": "On-Campus",
+        "display": "UOW Malaysia Selangor-UOWM Tri 3-On-Campus"
+      }
+    ],
+    "url": "https://courses.uow.edu.au/subjects/2026/CSCI262"
+  },
+  "CSCI316": {
+    "code": "CSCI316",
+    "title": "Big Data Mining Techniques and Implementation",
+    "cp": "6",
+    "description": "The subject considers the problems related to data mining techniques and implementation in Big Data environment. The topics include data pre-processing techniques, pattern, association and correlation discovery, classification and clustering, stream and real-time processing techniques and post-processing techniques like outlier detection, statistical and, proximity, and clustering base approaches. Laboratory classes and hands-on programming exercises related to these topics will provide the students with the abilities to design and implement Big Data algorithms and to use already existing software libraries. The subject also addresses the problems of scalability, selection of appropriate implementation techniques, and performance aspects when mining Big Data.",
+    "rules": [
+      {
+        "type": "Pre-Requisite",
+        "description": "CSCI203"
+      }
+    ],
+    "offerings": [
+      {
+        "campus": "Wollongong",
+        "session": "Autumn",
+        "mode": "On-Campus",
+        "display": "Wollongong-Autumn-On-Campus"
+      },
+      {
+        "campus": "Dubai",
+        "session": "DXB UG Winter",
+        "mode": "On-Campus",
+        "display": "Dubai-DXB UG Winter-On-Campus"
+      },
+      {
+        "campus": "Liverpool",
+        "session": "Autumn",
+        "mode": "Flexible",
+        "display": "Liverpool-Autumn-Flexible"
+      },
+      {
+        "campus": "Liverpool",
+        "session": "Autumn",
+        "mode": "On-Campus",
+        "display": "Liverpool-Autumn-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S1",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S1-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S3",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S3-On-Campus"
+      }
+    ],
+    "url": "https://courses.uow.edu.au/subjects/2026/CSCI316"
+  },
+  "CSCI318": {
+    "code": "CSCI318",
+    "title": "Software Engineering Practices & Principles",
+    "cp": "6",
+    "description": "This subject examines the current state of software engineering both as an academic discipline and as a profession. The subject focuses on issues of requirements engineering, system procurement, and professional practice, and through case studies, the subject considers reasons for the failure and success of various software engineering projects. Topics include: Requirements Elicitation, Functional and Non-Functional Requirements, Design Patterns and Refactoring, Reverse Engineering, Software Quality Assurance, Analysis and Verification of Specification and Design, Examples of Formal Techniques in Software Engineering.",
+    "rules": [
+      {
+        "type": "Pre-Requisite",
+        "description": "(CSIT121 and CSIT214) OR (ECTE250 and CSCI291)"
+      }
+    ],
+    "offerings": [
+      {
+        "campus": "Wollongong",
+        "session": "Spring",
+        "mode": "On-Campus",
+        "display": "Wollongong-Spring-On-Campus"
+      },
+      {
+        "campus": "Liverpool",
+        "session": "Spring",
+        "mode": "On-Campus",
+        "display": "Liverpool-Spring-On-Campus"
+      },
+      {
+        "campus": "UOW Malaysia Penang",
+        "session": "UOWM Tri 2",
+        "mode": "On-Campus",
+        "display": "UOW Malaysia Penang-UOWM Tri 2-On-Campus"
+      }
+    ],
+    "url": "https://courses.uow.edu.au/subjects/2026/CSCI318"
+  },
+  "CSCI322": {
+    "code": "CSCI322",
+    "title": "Systems Administration",
+    "cp": "6",
+    "description": "This subject offers a comprehensive examination of systems administration. Students will develop the practical skills and theoretical knowledge to effectively design, deploy, and manage network infrastructures and servers. The curriculum covers configuring essential network services, implementing data management technologies, and securing systems against various threats. Emphasising professional practices and analytical skills, the subject prepares students for systems administration roles adaptable to any platform.",
+    "rules": [
+      {
+        "type": "Pre-Requisite",
+        "description": "CSIT127 plus 18 credit points at 200 level"
+      }
+    ],
+    "offerings": [
+      {
+        "campus": "Wollongong",
+        "session": "Spring",
+        "mode": "On-Campus",
+        "display": "Wollongong-Spring-On-Campus"
+      },
+      {
+        "campus": "Liverpool",
+        "session": "Spring",
+        "mode": "On-Campus",
+        "display": "Liverpool-Spring-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S4",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S4-On-Campus"
+      }
+    ],
+    "url": "https://courses.uow.edu.au/subjects/2026/CSCI322"
+  },
+  "CSCI323": {
+    "code": "CSCI323",
+    "title": "Modern Artificial Intelligence",
+    "cp": "6",
+    "description": "This subject introduces students to the advanced theories, algorithms and applications in the modern development of AI. For each topic covered, its important concepts and principles will be presented to help students gain an essential understanding. Advanced approaches, methods and algorithms will be introduced to show how artificial intelligence is realised. State-of-the-art applications, tools, and platforms will be demonstrated and analysed to connect theories with practices. This subject will equip students with advanced knowledge of modern AI and enhance their skills to appropriately choose and apply AI techniques to resolve practical problems.",
+    "rules": [
+      {
+        "type": "Pre-Requisite",
+        "description": "(CSIT111 or CSIT110) and 12 credit points of 200-level CSCI/CSIT subjects"
+      }
+    ],
+    "offerings": [
+      {
+        "campus": "Wollongong",
+        "session": "Autumn",
+        "mode": "On-Campus",
+        "display": "Wollongong-Autumn-On-Campus"
+      },
+      {
+        "campus": "Dubai",
+        "session": "DXB UG Spring",
+        "mode": "On-Campus",
+        "display": "Dubai-DXB UG Spring-On-Campus"
+      },
+      {
+        "campus": "Dubai",
+        "session": "DXB UG Winter",
+        "mode": "On-Campus",
+        "display": "Dubai-DXB UG Winter-On-Campus"
+      },
+      {
+        "campus": "Liverpool",
+        "session": "Autumn",
+        "mode": "On-Campus",
+        "display": "Liverpool-Autumn-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S2",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S2-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S4",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S4-On-Campus"
+      }
+    ],
+    "url": "https://courses.uow.edu.au/subjects/2026/CSCI323"
+  },
+  "CSCI334": {
+    "code": "CSCI334",
+    "title": "Software Design",
+    "cp": "6",
+    "description": "Software systems must be carefully designed before they are implemented. This subject provides the knowledge and skills needed for the design of medium to large-scale software systems. Students will be introduced to the set of principles, concepts, and practices that lead to the design and development of a high quality software system. Students will learn different processes and techniques for various aspects of software design including architectural design, detailed design and interface design. The subject also teaches students how design patterns, software refactoring, and application frameworks can be utilized for designing large-scale software systems.",
+    "rules": [
+      {
+        "type": "Pre-Requisite",
+        "description": "CSIT121 and CSIT214"
+      }
+    ],
+    "offerings": [
+      {
+        "campus": "Wollongong",
+        "session": "Autumn",
+        "mode": "On-Campus",
+        "display": "Wollongong-Autumn-On-Campus"
+      },
+      {
+        "campus": "Liverpool",
+        "session": "Autumn",
+        "mode": "On-Campus",
+        "display": "Liverpool-Autumn-On-Campus"
+      },
+      {
+        "campus": "UOWCHK",
+        "session": "UOWCHK Sem B",
+        "mode": "On-Campus",
+        "display": "UOW at CCCU HK-UOWCHK Sem B-On-Campus"
+      }
+    ],
+    "url": "https://courses.uow.edu.au/subjects/2026/CSCI334"
+  },
+  "CSCI336": {
+    "code": "CSCI336",
+    "title": "Interactive Computer Graphics",
+    "cp": "6",
+    "description": "This subject examines concepts and techniques underlying interactive computer graphics. The subject will introduce principles fundamental to understanding components in the graphics pipeline. Students will acquire practical hands-on experience in graphics programming using appropriate application programming interfaces. Among others, topics covered will include graphics programming, shaders, vectors and matrices, transformations, homogeneous coordinate systems, viewing and projection, lighting and shading, clipping, rasterisation, hidden-surface algorithms, discrete techniques, and current trends (e.g. graphics for mobile devices).",
+    "rules": [
+      {
+        "type": "Pre-Requisite",
+        "description": "CSIT121 and 18 credit points at 200 level"
+      }
+    ],
+    "offerings": [
+      {
+        "campus": "Wollongong",
+        "session": "Spring",
+        "mode": "On-Campus",
+        "display": "Wollongong-Spring-On-Campus"
+      },
+      {
+        "campus": "Dubai",
+        "session": "DXB UG Autumn",
+        "mode": "On-Campus",
+        "display": "Dubai-DXB UG Autumn-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S1",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S1-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S3",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S3-On-Campus"
+      }
+    ],
+    "url": "https://courses.uow.edu.au/subjects/2026/CSCI336"
+  },
+  "CSCI356": {
+    "code": "CSCI356",
+    "title": "Game Engine Essentials",
+    "cp": "6",
+    "description": "This subject will introduce fundamental concepts and techniques required in the development of games and game engines. Game engine components that will be examined include rendering, collision and physics, artificial intelligence among others. The design and development of these components will be illustrated using appropriate software and application programming interfaces. Among others, topics covered in this subject will include game loops and time management, handling input, cameras, particles, collision detection, rigid-body dynamics, terrain, path-finding, and state machines.",
+    "rules": [
+      {
+        "type": "Co-Requisite",
+        "description": "CSIT214"
+      },
+      {
+        "type": "Pre-Requisite",
+        "description": "CSIT121"
+      }
+    ],
+    "offerings": [
+      {
+        "campus": "Wollongong",
+        "session": "Spring",
+        "mode": "On-Campus",
+        "display": "Wollongong-Spring-On-Campus"
+      },
+      {
+        "campus": "Dubai",
+        "session": "DXB UG Winter",
+        "mode": "On-Campus",
+        "display": "Dubai-DXB UG Winter-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S4",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S4-On-Campus"
+      }
+    ],
+    "url": "https://courses.uow.edu.au/subjects/2026/CSCI356"
+  },
+  "CSCI361": {
+    "code": "CSCI361",
+    "title": "Cryptography and Secure Applications",
+    "cp": "6",
+    "description": "This subject develops the skills and knowledge necessary to identify and address security problems in a variety of simple communication models. Topics covered include: Classical cryptology, Modern secret key cryptography including block (DES, AES) and stream ciphers (RC4), security properties (authentication, integrity, confidentiality, availability), public key cryptography (knapsacks, RSA, Rabin, Elgamal), digital signatures (RSA, DSS, Elgamal) , hashing (birthday paradox, Merkle-Damgard construction), MACS's, Key management (PKI, certificates, key establishment/exchange/transport, Diffie-Hellman), Identification protocols, Privacy preserving (mix-nets), Secret sharing. Applications studied include some of: email security, SET, E-payment, E-voting, Fair exchange.",
+    "rules": [
+      {
+        "type": "Pre-Requisite",
+        "description": "CSIT121 + 12cp 200 level CSCI"
+      }
+    ],
+    "offerings": [
+      {
+        "campus": "Wollongong",
+        "session": "Autumn",
+        "mode": "On-Campus",
+        "display": "Wollongong-Autumn-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S1",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S1-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S3",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S3-On-Campus"
+      },
+      {
+        "campus": "UOWCHK",
+        "session": "UOWCHK Sem C",
+        "mode": "On-Campus",
+        "display": "UOW at CCCU HK-UOWCHK Sem C-On-Campus"
+      }
+    ],
+    "url": "https://courses.uow.edu.au/subjects/2026/CSCI361"
+  },
+  "CSCI368": {
+    "code": "CSCI368",
+    "title": "Network Security",
+    "cp": "6",
+    "description": "This subject provides a survey of network security technologies, and explores them in practice. This includes but is not limited to, network-based threats, security failure in network protocols, authentication servers, certificates and public-key infrastructures, security provisions in communication protocols and standards, and electronic mail security.",
+    "rules": [
+      {
+        "type": "Pre-Requisite",
+        "description": "CSIT127, CSIT121, and 12cp 200 level CSCI/CSIT"
+      }
+    ],
+    "offerings": [
+      {
+        "campus": "Wollongong",
+        "session": "Spring",
+        "mode": "On-Campus",
+        "display": "Wollongong-Spring-On-Campus"
+      },
+      {
+        "campus": "Dubai",
+        "session": "DXB UG Autumn",
+        "mode": "On-Campus",
+        "display": "Dubai-DXB UG Autumn-On-Campus"
+      },
+      {
+        "campus": "Liverpool",
+        "session": "Spring",
+        "mode": "Flexible",
+        "display": "Liverpool-Spring-Flexible"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S1",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S1-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S3",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S3-On-Campus"
+      }
+    ],
+    "url": "https://courses.uow.edu.au/subjects/2026/CSCI368"
+  },
+  "CSCI369": {
+    "code": "CSCI369",
+    "title": "Ethical Hacking",
+    "cp": "6",
+    "description": "This subject introduces the use of hacking skills for defensive purposes. The subject develops critical thinking and troubleshooting skills. It aims to re-purpose tools and resources to acquire more out of them in order to discover entirely new things, which will be useful for other purposes. It develops the students ability to think outside the box and learn new skills. The subject prepares students for the ethical hacking certification.",
+    "rules": [
+      {
+        "type": "Pre-Requisite",
+        "description": "(CSIT110 or CSIT111) and 18 credit points at 200 level"
+      }
+    ],
+    "offerings": [
+      {
+        "campus": "Wollongong",
+        "session": "Spring",
+        "mode": "On-Campus",
+        "display": "Wollongong-Spring-On-Campus"
+      },
+      {
+        "campus": "Dubai",
+        "session": "DXB UG Spring",
+        "mode": "On-Campus",
+        "display": "Dubai-DXB UG Spring-On-Campus"
+      },
+      {
+        "campus": "Dubai",
+        "session": "DXB UG Winter",
+        "mode": "On-Campus",
+        "display": "Dubai-DXB UG Winter-On-Campus"
+      },
+      {
+        "campus": "Liverpool",
+        "session": "Spring",
+        "mode": "Flexible",
+        "display": "Liverpool-Spring-Flexible"
+      },
+      {
+        "campus": "Liverpool",
+        "session": "Spring",
+        "mode": "On-Campus",
+        "display": "Liverpool-Spring-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S1",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S1-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S3",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S3-On-Campus"
+      }
+    ],
+    "url": "https://courses.uow.edu.au/subjects/2026/CSCI369"
+  },
+  "CSCI388": {
+    "code": "CSCI388",
+    "title": "Virtual and Augmented Reality",
+    "cp": "6",
+    "description": "This subject explores concepts and principles underlying virtual reality and augmented reality applications for various platforms. The subject will introduce students to theories and techniques required to gain an understanding of virtual and augmented reality technologies, which will allow students to devise solutions for these interactive technologies. The subject will also provide students with practical hands-on experience in designing and developing virtual and augmented reality applications using appropriate hardware and software.",
+    "rules": [
+      {
+        "type": "Pre-Requisite",
+        "description": "CSIT121 and 18 credit points at 200 level"
+      }
+    ],
+    "offerings": [
+      {
+        "campus": "Wollongong",
+        "session": "Autumn",
+        "mode": "On-Campus",
+        "display": "Wollongong-Autumn-On-Campus"
+      },
+      {
+        "campus": "Dubai",
+        "session": "DXB UG Autumn",
+        "mode": "On-Campus",
+        "display": "Dubai-DXB UG Autumn-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S2",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S2-On-Campus"
+      }
+    ],
+    "url": "https://courses.uow.edu.au/subjects/2026/CSCI388"
+  },
+  "CSIT110": {
+    "code": "CSIT110",
+    "title": "Fundamental Programming with Python",
+    "cp": "6",
+    "description": "This subject uses Python language to introduce students with fundamental programming concepts such as procedural programming, variable, data type, array, recursive function, conditional expression, selection statement, repeating instruction. This subject also develops student skills in the design and implementation of well structured algorithms to a range of mathematical problems.",
+    "rules": [],
+    "offerings": [
+      {
+        "campus": "Wollongong",
+        "session": "Autumn",
+        "mode": "On-Campus",
+        "display": "Wollongong-Autumn-On-Campus"
+      },
+      {
+        "campus": "Wollongong",
+        "session": "Spring",
+        "mode": "On-Campus",
+        "display": "Wollongong-Spring-On-Campus"
+      },
+      {
+        "campus": "Dubai",
+        "session": "DXB UG Autumn",
+        "mode": "On-Campus",
+        "display": "Dubai-DXB UG Autumn-On-Campus"
+      },
+      {
+        "campus": "Dubai",
+        "session": "DXB UG Winter",
+        "mode": "On-Campus",
+        "display": "Dubai-DXB UG Winter-On-Campus"
+      },
+      {
+        "campus": "Liverpool",
+        "session": "Autumn",
+        "mode": "On-Campus",
+        "display": "Liverpool-Autumn-On-Campus"
+      },
+      {
+        "campus": "Liverpool",
+        "session": "Spring",
+        "mode": "On-Campus",
+        "display": "Liverpool-Spring-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S1",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S1-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S3",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S3-On-Campus"
+      }
+    ],
+    "url": "https://courses.uow.edu.au/subjects/2026/CSIT110"
+  },
+  "CSIT111": {
+    "code": "CSIT111",
+    "title": "Programming Fundamentals",
+    "cp": "6",
+    "description": "The broad aim of this subject is to develop in students an understanding of the fundamental principles of programming. The subject focuses on the object oriented view of problem analysis and solving. It enables students to develop skills in the design and implementation of well structured programs in a range of domains.",
+    "rules": [],
+    "offerings": [],
+    "url": "https://courses.uow.edu.au/subjects/2026/CSIT111"
+  },
+  "CSIT113": {
+    "code": "CSIT113",
+    "title": "Problem Solving",
+    "cp": "6",
+    "description": "This subject introduces the analysis of problems and the strategies used to manage them, primarily in the context of computing. Problem classification is introduced, as are formal and informal approaches to problem solving. The importance of method and method classification for problem solving strategies is motivated, and the need to compare and analyse strategies is justified. Introductory tools for the analysis of strategies are covered. Appropriate representations for problem solving are explored.",
+    "rules": [],
+    "offerings": [],
+    "url": "https://courses.uow.edu.au/subjects/2026/CSIT113"
+  },
+  "CSIT114": {
+    "code": "CSIT114",
+    "title": "System Analysis",
+    "cp": "6",
+    "description": "This subject provides an introduction to different techniques and technologies for understanding and specifying what a computer based information system should accomplish. It examines the complementary roles of systems analysts, clients and users in a system development life cycle. Students will learn different fact-finding techniques to elicit system requirements and how to develop business models, data and process models, and object models representing a system. Students will also make use of a Computer Aided Software Engineering (CASE) tool to build those models that capture the specifications of a system.",
+    "rules": [],
+    "offerings": [
+      {
+        "campus": "Wollongong",
+        "session": "Autumn",
+        "mode": "On-Campus",
+        "display": "Wollongong-Autumn-On-Campus"
+      },
+      {
+        "campus": "Dubai",
+        "session": "DXB UG Autumn",
+        "mode": "On-Campus",
+        "display": "Dubai-DXB UG Autumn-On-Campus"
+      },
+      {
+        "campus": "Dubai",
+        "session": "DXB UG Spring",
+        "mode": "On-Campus",
+        "display": "Dubai-DXB UG Spring-On-Campus"
+      },
+      {
+        "campus": "Liverpool",
+        "session": "Autumn",
+        "mode": "On-Campus",
+        "display": "Liverpool-Autumn-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S1",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S1-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S3",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S3-On-Campus"
+      }
+    ],
+    "url": "https://courses.uow.edu.au/subjects/2026/CSIT114"
+  },
+  "CSIT115": {
+    "code": "CSIT115",
+    "title": "Database Management Systems",
+    "cp": "6",
+    "description": "This subject investigates three major areas of modern data management systems: data modelling, data processing, and data integration. The goal is to learn fundamental concepts in data management, including conceptual modelling, relational data model, processing of relational data with Structured Query Language (SQL), and enforcing data availability. Students will develop skills in the design, implementation, processing of relational databases, as well as in user management. Topics covered include data models, object-oriented and relational conceptual modelling, DDL, DML, advanced SQL querying techniques, database server architecture, and discretionary access control (DAC). By the end of the subject, students will be equipped to design, implement, and manage relational database systems.",
+    "rules": [],
+    "offerings": [
+      {
+        "campus": "Wollongong",
+        "session": "Autumn",
+        "mode": "On-Campus",
+        "display": "Wollongong-Autumn-On-Campus"
+      },
+      {
+        "campus": "Wollongong",
+        "session": "Spring",
+        "mode": "On-Campus",
+        "display": "Wollongong-Spring-On-Campus"
+      },
+      {
+        "campus": "Dubai",
+        "session": "DXB UG Spring",
+        "mode": "On-Campus",
+        "display": "Dubai-DXB UG Spring-On-Campus"
+      },
+      {
+        "campus": "Dubai",
+        "session": "DXB UG Winter",
+        "mode": "On-Campus",
+        "display": "Dubai-DXB UG Winter-On-Campus"
+      },
+      {
+        "campus": "Liverpool",
+        "session": "Autumn",
+        "mode": "On-Campus",
+        "display": "Liverpool-Autumn-On-Campus"
+      },
+      {
+        "campus": "Liverpool",
+        "session": "Spring",
+        "mode": "On-Campus",
+        "display": "Liverpool-Spring-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S2",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S2-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S4",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S4-On-Campus"
+      },
+      {
+        "campus": "UOW India",
+        "session": "UOWI Tri 2",
+        "mode": "On-Campus",
+        "display": "UOW India-UOWI Tri 2-On-Campus"
+      }
+    ],
+    "url": "https://courses.uow.edu.au/subjects/2026/CSIT115"
+  },
+  "CSIT121": {
+    "code": "CSIT121",
+    "title": "Object Oriented Design and Programming",
+    "cp": "6",
+    "description": "The aims of this subject are to consolidate and extend student's knowledge and skills in structured programming and to develop their understanding and practice of object oriented programming. To achieve this aim the subject will provide students with an opportunity to develop further programming skills and good coding style; develop skills in using the object oriented concepts of encapsulation, inheritance, polymorphism, access control, overloading and messaging; develop and display competency in the design and implementation of object oriented programs to solve business problems.",
+    "rules": [
+      {
+        "type": "Pre-Requisite",
+        "description": "CSIT110 OR CSIT111 OR ENGG100"
+      }
+    ],
+    "offerings": [
+      {
+        "campus": "Wollongong",
+        "session": "Autumn",
+        "mode": "On-Campus",
+        "display": "Wollongong-Autumn-On-Campus"
+      },
+      {
+        "campus": "Wollongong",
+        "session": "Spring",
+        "mode": "On-Campus",
+        "display": "Wollongong-Spring-On-Campus"
+      },
+      {
+        "campus": "Dubai",
+        "session": "DXB UG Spring",
+        "mode": "On-Campus",
+        "display": "Dubai-DXB UG Spring-On-Campus"
+      },
+      {
+        "campus": "Dubai",
+        "session": "DXB UG Winter",
+        "mode": "On-Campus",
+        "display": "Dubai-DXB UG Winter-On-Campus"
+      },
+      {
+        "campus": "Liverpool",
+        "session": "Autumn",
+        "mode": "On-Campus",
+        "display": "Liverpool-Autumn-On-Campus"
+      },
+      {
+        "campus": "Liverpool",
+        "session": "Spring",
+        "mode": "On-Campus",
+        "display": "Liverpool-Spring-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S2",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S2-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S4",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S4-On-Campus"
+      }
+    ],
+    "url": "https://courses.uow.edu.au/subjects/2026/CSIT121"
+  },
+  "CSIT123": {
+    "code": "CSIT123",
+    "title": "Computing and Cyber Security Fundamentals",
+    "cp": "6",
+    "description": "This subject aims to equip students with an understanding of fundamental computing knowledge. In addition, the subject aims to introduce students to key cyber security concepts and principles. To achieve these aims, topics covered in this subject include fundamental computing content such as the history of computing and the evolution of technology; concepts in information processing, computer architecture, and operating systems; and cyber security topics including forms of attack, detection, and prevention, cyber security policy and risk assessment.",
+    "rules": [],
+    "offerings": [
+      {
+        "campus": "Wollongong",
+        "session": "Autumn",
+        "mode": "On-Campus",
+        "display": "Wollongong-Autumn-On-Campus"
+      },
+      {
+        "campus": "Dubai",
+        "session": "DXB UG Autumn",
+        "mode": "On-Campus",
+        "display": "Dubai-DXB UG Autumn-On-Campus"
+      },
+      {
+        "campus": "Dubai",
+        "session": "DXB UG Winter",
+        "mode": "On-Campus",
+        "display": "Dubai-DXB UG Winter-On-Campus"
+      },
+      {
+        "campus": "Liverpool",
+        "session": "Autumn",
+        "mode": "On-Campus",
+        "display": "Liverpool-Autumn-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S1",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S1-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S3",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S3-On-Campus"
+      }
+    ],
+    "url": "https://courses.uow.edu.au/subjects/2026/CSIT123"
+  },
+  "CSIT127": {
+    "code": "CSIT127",
+    "title": "Networks and Communications",
+    "cp": "6",
+    "description": "This subject introduces students to the fundamentals of data communications and computer networks. Topics covered include: different types of data and the history of data communications; signals; modulation and multiplexing, switching and routing, network architectures: LANs, WANs and the Internet; Internet services and protocols; and emerging topics. The subject explains computer networking models that interconnect diverse communication systems, including the OSI reference model and the TCP/IP protocol Suite.",
+    "rules": [],
+    "offerings": [
+      {
+        "campus": "Wollongong",
+        "session": "Spring",
+        "mode": "On-Campus",
+        "display": "Wollongong-Spring-On-Campus"
+      },
+      {
+        "campus": "Dubai",
+        "session": "DXB UG Spring",
+        "mode": "On-Campus",
+        "display": "Dubai-DXB UG Spring-On-Campus"
+      },
+      {
+        "campus": "Dubai",
+        "session": "DXB UG Winter",
+        "mode": "On-Campus",
+        "display": "Dubai-DXB UG Winter-On-Campus"
+      },
+      {
+        "campus": "Liverpool",
+        "session": "Spring",
+        "mode": "On-Campus",
+        "display": "Liverpool-Spring-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S2",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S2-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S4",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S4-On-Campus"
+      }
+    ],
+    "url": "https://courses.uow.edu.au/subjects/2026/CSIT127"
+  },
+  "CSIT128": {
+    "code": "CSIT128",
+    "title": "Introduction to Web Technology",
+    "cp": "6",
+    "description": "This subject introduces students to fundamental web technologies that underlie the World Wide Web and its commercial applications. Topics include an overview of internet communications, an introduction to the web-browser/web-server client-server systems, HTML5/CSS/XHTML/XML markup languages, web forms and client side scripting. Students will build working web-sites with dynamic content. The subject explains the differences between client-side and server-side Web development, and demonstrates how to build simple applications using scripting and other tools. The subject also covers current Web standards and future W3C recommendations.",
+    "rules": [],
+    "offerings": [
+      {
+        "campus": "Wollongong",
+        "session": "Autumn",
+        "mode": "On-Campus",
+        "display": "Wollongong-Autumn-On-Campus"
+      },
+      {
+        "campus": "Wollongong",
+        "session": "Spring",
+        "mode": "On-Campus",
+        "display": "Wollongong-Spring-On-Campus"
+      },
+      {
+        "campus": "Dubai",
+        "session": "DXB UG Autumn",
+        "mode": "On-Campus",
+        "display": "Dubai-DXB UG Autumn-On-Campus"
+      },
+      {
+        "campus": "Dubai",
+        "session": "DXB UG Spring",
+        "mode": "On-Campus",
+        "display": "Dubai-DXB UG Spring-On-Campus"
+      },
+      {
+        "campus": "Liverpool",
+        "session": "Autumn",
+        "mode": "On-Campus",
+        "display": "Liverpool-Autumn-On-Campus"
+      },
+      {
+        "campus": "Liverpool",
+        "session": "Spring",
+        "mode": "On-Campus",
+        "display": "Liverpool-Spring-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S1",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S1-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S2",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S2-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S3",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S3-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S4",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S4-On-Campus"
+      },
+      {
+        "campus": "UOWCHK",
+        "session": "UOWCHK Sem A",
+        "mode": "On-Campus",
+        "display": "UOW at CCCU HK-UOWCHK Sem A-On-Campus"
+      }
+    ],
+    "url": "https://courses.uow.edu.au/subjects/2026/CSIT128"
+  },
+  "CSIT205": {
+    "code": "CSIT205",
+    "title": "Generative AI",
+    "cp": "6",
+    "description": "In this subject, students delve into the world of Generative AI. They explore the foundational principles and practical applications of this cutting-edge field. Through a blend of theory and hands-on experience, students gain insights into how Generative AI empowers artificial intelligence to create original content - ranging from text and images to video and code - based on user prompts. The curriculum covers essential topics, including AI\u2019s role in code generation, effective prompt engineering techniques, and the development of advanced generative models like GANs and transformers. Moreover, students critically examine the ethical implications of Generative AI and its impact on business strategy. By the end of the subject, students will have a comprehensive understanding of this promising field and the ability to responsibly apply Generative AI in real-world scenarios.",
+    "rules": [],
+    "offerings": [
+      {
+        "campus": "Wollongong",
+        "session": "Autumn",
+        "mode": "On-Campus",
+        "display": "Wollongong-Autumn-On-Campus"
+      },
+      {
+        "campus": "Dubai",
+        "session": "DXB UG Autumn",
+        "mode": "On-Campus",
+        "display": "Dubai-DXB UG Autumn-On-Campus"
+      },
+      {
+        "campus": "Liverpool",
+        "session": "Autumn",
+        "mode": "On-Campus",
+        "display": "Liverpool-Autumn-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S1",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S1-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S2",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S2-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S3",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S3-On-Campus"
+      }
+    ],
+    "url": "https://courses.uow.edu.au/subjects/2026/CSIT205"
+  },
+  "CSIT213": {
+    "code": "CSIT213",
+    "title": "Java Programming",
+    "cp": "6",
+    "description": "The aims of this subject are to consolidate students' knowledge and skills in object-oriented programming and to develop their understanding and practice of Java programming. To achieve these aims, the subject will provide students with opportunities to develop their Java programming skills using concepts such as class encapsulation, inheritance, polymorphism, interface, exception handling, files, input/output streams, JavaFX GUI, and Lambdas and streams.",
+    "rules": [
+      {
+        "type": "Pre-Requisite",
+        "description": "CSIT110 or CSIT111"
+      }
+    ],
+    "offerings": [
+      {
+        "campus": "Wollongong",
+        "session": "Autumn",
+        "mode": "On-Campus",
+        "display": "Wollongong-Autumn-On-Campus"
+      },
+      {
+        "campus": "Liverpool",
+        "session": "Autumn",
+        "mode": "On-Campus",
+        "display": "Liverpool-Autumn-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S1",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S1-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S3",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S3-On-Campus"
+      }
+    ],
+    "url": "https://courses.uow.edu.au/subjects/2026/CSIT213"
+  },
+  "CSIT214": {
+    "code": "CSIT214",
+    "title": "IT Project Management",
+    "cp": "6",
+    "description": "The primary aim of this subject is to acquaint students with the methodologies and processes associated with the task of managing information technology and software development projects. Topics include: stakeholder and impact analysis, setting project objectives and conflict resolution, project planning and the selection of appropriate project approaches, software project effort estimation, cost-benefit analysis, activity planning and scheduling, risk management, contract management, quality assurance, professional and ethical responsibilities, and case studies.",
+    "rules": [
+      {
+        "type": "Pre-Requisite",
+        "description": "CSIT114"
+      }
+    ],
+    "offerings": [
+      {
+        "campus": "Wollongong",
+        "session": "Autumn",
+        "mode": "On-Campus",
+        "display": "Wollongong-Autumn-On-Campus"
+      },
+      {
+        "campus": "Wollongong",
+        "session": "Spring",
+        "mode": "On-Campus",
+        "display": "Wollongong-Spring-On-Campus"
+      },
+      {
+        "campus": "Dubai",
+        "session": "DXB UG Autumn",
+        "mode": "On-Campus",
+        "display": "Dubai-DXB UG Autumn-On-Campus"
+      },
+      {
+        "campus": "Liverpool",
+        "session": "Autumn",
+        "mode": "On-Campus",
+        "display": "Liverpool-Autumn-On-Campus"
+      },
+      {
+        "campus": "Liverpool",
+        "session": "Spring",
+        "mode": "On-Campus",
+        "display": "Liverpool-Spring-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S2",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S2-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S4",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S4-On-Campus"
+      },
+      {
+        "campus": "UOWCHK",
+        "session": "UOWCHK Sem A",
+        "mode": "On-Campus",
+        "display": "UOW at CCCU HK-UOWCHK Sem A-On-Campus"
+      },
+      {
+        "campus": "UOW Malaysia Penang",
+        "session": "UOWM Tri 3",
+        "mode": "On-Campus",
+        "display": "UOW Malaysia Penang-UOWM Tri 3-On-Campus"
+      },
+      {
+        "campus": "UOW Malaysia Selangor",
+        "session": "UOWM Tri 3",
+        "mode": "On-Campus",
+        "display": "UOW Malaysia Selangor-UOWM Tri 3-On-Campus"
+      }
+    ],
+    "url": "https://courses.uow.edu.au/subjects/2026/CSIT214"
+  },
+  "CSIT226": {
+    "code": "CSIT226",
+    "title": "Human Computer Interaction",
+    "cp": "6",
+    "description": "The subject provides students with an understanding of Human Computer Interaction (HCI) principles and practices, and how to apply them in the context of developing usable interactive computer applications and systems. The subject also emphasises the importance of taking into account contextual, organisational, and social factors in the design of computer systems. Students will be taken through the analysis, design, development, and evaluation of user interfaces. They will acquire hands-on design skills through an interaction design project. The subject will cover topics including user-centred design, the development process, prototyping, usability testing, measuring and evaluating the user experience and accessibility.",
+    "rules": [],
+    "offerings": [
+      {
+        "campus": "Wollongong",
+        "session": "Spring",
+        "mode": "On-Campus",
+        "display": "Wollongong-Spring-On-Campus"
+      },
+      {
+        "campus": "Dubai",
+        "session": "DXB UG Winter",
+        "mode": "On-Campus",
+        "display": "Dubai-DXB UG Winter-On-Campus"
+      },
+      {
+        "campus": "Liverpool",
+        "session": "Spring",
+        "mode": "On-Campus",
+        "display": "Liverpool-Spring-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S2",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S2-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S4",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S4-On-Campus"
+      },
+      {
+        "campus": "UOWCHK",
+        "session": "UOWCHK Sem A",
+        "mode": "On-Campus",
+        "display": "UOW at CCCU HK-UOWCHK Sem A-On-Campus"
+      }
+    ],
+    "url": "https://courses.uow.edu.au/subjects/2026/CSIT226"
+  },
+  "CSIT242": {
+    "code": "CSIT242",
+    "title": "Mobile Application Development",
+    "cp": "6",
+    "description": "The proposed subject provides students with knowledge for mobile application design, development, implementation and deployment. The students will examine different mobile platforms and learn how to use different tools for mobile application development. The subject includes issues such as mobile interface design and data persistence. Students will develop technical skills necessary to develop applications using several languages, frameworks and tools.",
+    "rules": [
+      {
+        "type": "Pre-Requisite",
+        "description": "CSIT121"
+      },
+      {
+        "type": "Co-Requisite",
+        "description": "CSIT213"
+      }
+    ],
+    "offerings": [
+      {
+        "campus": "Wollongong",
+        "session": "Autumn",
+        "mode": "On-Campus",
+        "display": "Wollongong-Autumn-On-Campus"
+      },
+      {
+        "campus": "Dubai",
+        "session": "DXB UG Spring",
+        "mode": "On-Campus",
+        "display": "Dubai-DXB UG Spring-On-Campus"
+      },
+      {
+        "campus": "Dubai",
+        "session": "DXB UG Winter",
+        "mode": "On-Campus",
+        "display": "Dubai-DXB UG Winter-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S3",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S3-On-Campus"
+      }
+    ],
+    "url": "https://courses.uow.edu.au/subjects/2026/CSIT242"
+  },
+  "CSIT302": {
+    "code": "CSIT302",
+    "title": "Cybersecurity",
+    "cp": "6",
+    "description": "Cybersecurity is a global issue that knows no boundaries and affects national security, businesses and individuals alike. Students in this subject will be introduced to the broad area of cybersecurity in conjunction with issues related to cybersecurity. Among others, topics covered in this subject will include cyber threats and attacks, mobile security threats and malware, cloud security, security testing, digital forensics, cybercrime, and trusted computing.",
+    "rules": [
+      {
+        "type": "Pre-Requisite",
+        "description": "CSIT127 and 12cp at 100-level of CSIT"
+      }
+    ],
+    "offerings": [
+      {
+        "campus": "Wollongong",
+        "session": "Autumn",
+        "mode": "On-Campus",
+        "display": "Wollongong-Autumn-On-Campus"
+      },
+      {
+        "campus": "Dubai",
+        "session": "DXB UG Winter",
+        "mode": "On-Campus",
+        "display": "Dubai-DXB UG Winter-On-Campus"
+      },
+      {
+        "campus": "Liverpool",
+        "session": "Autumn",
+        "mode": "Flexible",
+        "display": "Liverpool-Autumn-Flexible"
+      },
+      {
+        "campus": "Liverpool",
+        "session": "Autumn",
+        "mode": "On-Campus",
+        "display": "Liverpool-Autumn-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S2",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S2-On-Campus"
+      },
+      {
+        "campus": "UOWCHK",
+        "session": "UOWCHK Sem C",
+        "mode": "On-Campus",
+        "display": "UOW at CCCU HK-UOWCHK Sem C-On-Campus"
+      },
+      {
+        "campus": "UOW Malaysia Penang",
+        "session": "UOWM Tri 1",
+        "mode": "On-Campus",
+        "display": "UOW Malaysia Penang-UOWM Tri 1-On-Campus"
+      },
+      {
+        "campus": "UOW Malaysia Selangor",
+        "session": "UOWM Tri 1",
+        "mode": "On-Campus",
+        "display": "UOW Malaysia Selangor-UOWM Tri 1-On-Campus"
+      }
+    ],
+    "url": "https://courses.uow.edu.au/subjects/2026/CSIT302"
+  },
+  "CSIT305": {
+    "code": "CSIT305",
+    "title": "Emerging Information Technologies and their Applications",
+    "cp": "6",
+    "description": "This subject introduces students to emerging information technologies and their practical applications. Students will have a deep understanding of innovative technologies such as specialised processors, while also delving into modern software development practices (e.g., Agile and DevOps methodologies). It covers advanced networking technologies (e.g., 5G and IoT architectures) and examines contemporary data management and storage solutions (e.g., data warehousing and data lakes), emphasizing security, privacy, and big data applications. This subject will equip students with advanced knowledge of emerging information technologies and enhance their skills to appropriately choose and apply information techniques to resolve practical problems effectively.",
+    "rules": [],
+    "offerings": [
+      {
+        "campus": "Wollongong",
+        "session": "Spring",
+        "mode": "On-Campus",
+        "display": "Wollongong-Spring-On-Campus"
+      },
+      {
+        "campus": "Dubai",
+        "session": "DXB UG Autumn",
+        "mode": "On-Campus",
+        "display": "Dubai-DXB UG Autumn-On-Campus"
+      },
+      {
+        "campus": "Liverpool",
+        "session": "Spring",
+        "mode": "On-Campus",
+        "display": "Liverpool-Spring-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S3",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S3-On-Campus"
+      }
+    ],
+    "url": "https://courses.uow.edu.au/subjects/2026/CSIT305"
+  },
+  "CSIT314": {
+    "code": "CSIT314",
+    "title": "Software Development Methodologies",
+    "cp": "6",
+    "description": "The subject introduces to students modern methodologies for software development. Topics include software development life cycle activities, the role of software process models, different types of evolutionary models, Unified Process and UML, agile principles of software development, Dynamic Systems Development Method (DSDM), Scrum and extreme programming, test driven software development, the Capability Maturity Model Integration (CMMI), software engineering knowledge management, software architecture, and emerging trends in software development processes.",
+    "rules": [
+      {
+        "type": "Pre-Requisite",
+        "description": "CSIT214 and 12 credit points at 200 level CSCI/ISIT"
+      }
+    ],
+    "offerings": [
+      {
+        "campus": "Wollongong",
+        "session": "Autumn",
+        "mode": "On-Campus",
+        "display": "Wollongong-Autumn-On-Campus"
+      },
+      {
+        "campus": "Dubai",
+        "session": "DXB UG Spring",
+        "mode": "On-Campus",
+        "display": "Dubai-DXB UG Spring-On-Campus"
+      },
+      {
+        "campus": "Dubai",
+        "session": "DXB UG Winter",
+        "mode": "On-Campus",
+        "display": "Dubai-DXB UG Winter-On-Campus"
+      },
+      {
+        "campus": "Liverpool",
+        "session": "Autumn",
+        "mode": "On-Campus",
+        "display": "Liverpool-Autumn-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S2",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S2-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S4",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S4-On-Campus"
+      },
+      {
+        "campus": "UOWCHK",
+        "session": "UOWCHK Sem B",
+        "mode": "On-Campus",
+        "display": "UOW at CCCU HK-UOWCHK Sem B-On-Campus"
+      }
+    ],
+    "url": "https://courses.uow.edu.au/subjects/2026/CSIT314"
+  },
+  "CSIT321": {
+    "code": "CSIT321",
+    "title": "Project",
+    "cp": "12",
+    "description": "This subject is the capstone project for undergraduate students in the School of Computing and Information Technology it aims to provide students with: practical experience in complete systems development. The projects connect groups of students with supervisors and clients that are facing an ICT-based problem for which the students are required to find innovative and creative solutions. Working in groups, students design, implement, and document a system. This involves: project planning and scheduling, seminars and individual presentations, group coordination, research of proposed application domain, use of design methodologies, design documentation, coding, module and system integration, testing, verification, and implementation. Teams will meet weekly with supervisors to discuss progress and problems.",
+    "rules": [
+      {
+        "type": "Co-Requisite",
+        "description": "CSIT226 AND CSIT314"
+      },
+      {
+        "type": "Pre-Requisite",
+        "description": "CSIT214, and an additional 18cp 200 level CSCI/CSIT/ISIT"
+      }
+    ],
+    "offerings": [
+      {
+        "campus": "Wollongong",
+        "session": "Annual",
+        "mode": "On-Campus",
+        "display": "Wollongong-Annual-On-Campus"
+      },
+      {
+        "campus": "Wollongong",
+        "session": "Spring/Autumn",
+        "mode": "On-Campus",
+        "display": "Wollongong-Spring/Autumn-On-Campus"
+      },
+      {
+        "campus": "Dubai",
+        "session": "DXB Autumn/Winter",
+        "mode": "On-Campus",
+        "display": "Dubai-DXB Autumn/Winter-On-Campus"
+      },
+      {
+        "campus": "Dubai",
+        "session": "DXB Spring/Autumn",
+        "mode": "On-Campus",
+        "display": "Dubai-DXB Spring/Autumn-On-Campus"
+      },
+      {
+        "campus": "Liverpool",
+        "session": "Annual",
+        "mode": "On-Campus",
+        "display": "Liverpool-Annual-On-Campus"
+      },
+      {
+        "campus": "Liverpool",
+        "session": "Spring/Autumn",
+        "mode": "On-Campus",
+        "display": "Liverpool-Spring/Autumn-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM EIS Apr-Sep",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM EIS Apr-Sep-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM EIS Jan-Jun",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM EIS Jan-Jun-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM EIS Jul-Dec",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM EIS Jul-Dec-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM EIS Oct-Mar",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM EIS Oct-Mar-On-Campus"
+      },
+      {
+        "campus": "UOWCHK",
+        "session": "UOWCHK Sem B/Sem C",
+        "mode": "On-Campus",
+        "display": "UOW at CCCU HK-UOWCHK Sem B/Sem C-On-Campus"
+      },
+      {
+        "campus": "UOW Malaysia Penang",
+        "session": "UOWM Tri 1/Tri 2",
+        "mode": "On-Campus",
+        "display": "UOW Malaysia Penang-UOWM Tri 1/Tri 2-On-Campus"
+      },
+      {
+        "campus": "UOW Malaysia Penang",
+        "session": "UOWM Tri 2/Tri 3",
+        "mode": "On-Campus",
+        "display": "UOW Malaysia Penang-UOWM Tri 2/Tri 3-On-Campus"
+      },
+      {
+        "campus": "UOW Malaysia Selangor",
+        "session": "UOWM Tri 1/Tri 2",
+        "mode": "On-Campus",
+        "display": "UOW Malaysia Selangor-UOWM Tri 1/Tri 2-On-Campus"
+      },
+      {
+        "campus": "UOW Malaysia Selangor",
+        "session": "UOWM Tri 2/Tri 3",
+        "mode": "On-Campus",
+        "display": "UOW Malaysia Selangor-UOWM Tri 2/Tri 3-On-Campus"
+      }
+    ],
+    "url": "https://courses.uow.edu.au/subjects/2026/CSIT321"
+  },
+  "CSIT328": {
+    "code": "CSIT328",
+    "title": "Web Security",
+    "cp": "6",
+    "description": "The web, also known as World Wide Web (WWW), is now one of the essential Internet services. However, as web services become versatile, the number of web vulnerabilities has increased dramatically. In this subject, students will gain insight into the latest web threats. They will also learn the fundamentals of web security and understand the technical aspects of web defence.",
+    "rules": [
+      {
+        "type": "Co-Requisite",
+        "description": "12 credit points at 200 level"
+      },
+      {
+        "type": "Pre-Requisite",
+        "description": "(CSIT110 or CSIT111) and CSIT128"
+      }
+    ],
+    "offerings": [
+      {
+        "campus": "Wollongong",
+        "session": "Autumn",
+        "mode": "On-Campus",
+        "display": "Wollongong-Autumn-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S2",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S2-On-Campus"
+      }
+    ],
+    "url": "https://courses.uow.edu.au/subjects/2026/CSIT328"
+  },
+  "CSIT375": {
+    "code": "CSIT375",
+    "title": "Artificial Intelligence and Cybersecurity",
+    "cp": "6",
+    "description": "Artificial Intelligence (AI) has emerged as a popular solution for building smarter and safer security systems. AI assists in keeping pace with cyberattacks by predicting and detecting suspicious network activities and automating incident analysis. In this subject, students learn how AI techniques are used to prevent cyberattacks and detect threats and network anomalies, in conjunction with issues related to cybersecurity. Students will gain practical experience in developing strong cybersecurity defences using AI. Topics covered in this subject include fundamental AI techniques for cybersecurity, machine learning-based malware detection, automatic intrusion detection, and securing data with machine learning.",
+    "rules": [
+      {
+        "type": "Pre-Requisite",
+        "description": "CSIT121 and CSIT127 and 18cp 200-level CSCI/CSIT"
+      }
+    ],
+    "offerings": [
+      {
+        "campus": "Wollongong",
+        "session": "Autumn",
+        "mode": "On-Campus",
+        "display": "Wollongong-Autumn-On-Campus"
+      },
+      {
+        "campus": "Dubai",
+        "session": "DXB UG Autumn",
+        "mode": "On-Campus",
+        "display": "Dubai-DXB UG Autumn-On-Campus"
+      },
+      {
+        "campus": "Liverpool",
+        "session": "Autumn",
+        "mode": "Flexible",
+        "display": "Liverpool-Autumn-Flexible"
+      },
+      {
+        "campus": "Liverpool",
+        "session": "Autumn",
+        "mode": "On-Campus",
+        "display": "Liverpool-Autumn-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S1",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S1-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S3",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S3-On-Campus"
+      }
+    ],
+    "url": "https://courses.uow.edu.au/subjects/2026/CSIT375"
+  },
+  "CSIT377": {
+    "code": "CSIT377",
+    "title": "Enterprise Cloud Development",
+    "cp": "6",
+    "description": "Cloud Computing is the on-demand delivery of computational resources like hardware infrastructure, applications, servers, storage, databases, networking, and software over the Internet. This subject aims to provide fundamental knowledge and applicable hands-on skills for enterprise-level Cloud Computing. The subject covers various cloud deployment models (public, private, hybrid) and service models (IaaS, PaaS, SaaS, serverless), enabling a critical understanding of how different cloud solutions are structured and delivered. Students are exposed to ready-to-implement solutions for enterprise IT systems through common cloud computing technologies that enable microservice architecture, Web APIs, mashup software, and similar applications. The subject provides hands-on experience in designing and developing scalable, reliable, and secure cloud solutions using a mainstream cloud computing platform.",
+    "rules": [
+      {
+        "type": "Pre-Requisite",
+        "description": "CSIT128 and 6 credit points at 200 level"
+      },
+      {
+        "type": "Co-Requisite",
+        "description": "12 credit points at 200 level"
+      }
+    ],
+    "offerings": [
+      {
+        "campus": "Wollongong",
+        "session": "Spring",
+        "mode": "On-Campus",
+        "display": "Wollongong-Spring-On-Campus"
+      },
+      {
+        "campus": "Liverpool",
+        "session": "Spring",
+        "mode": "On-Campus",
+        "display": "Liverpool-Spring-On-Campus"
+      }
+    ],
+    "url": "https://courses.uow.edu.au/subjects/2026/CSIT377"
+  },
+  "ISIT219": {
+    "code": "ISIT219",
+    "title": "Knowledge and Information Engineering",
+    "cp": "6",
+    "description": "This subject explores issues in using IT to support knowledge sharing and reuse. Challenges in representing and sharing knowledge in the context of deploying knowledge systems are studied. Additional challenges in heterogeneous IT environments are also examined. The subject presents systematic approaches for knowledge engineering via a contemporary Web and modern information modelling approach. The appropriate application environments, acquisition tools and representation schemes for content management are examined along with their relationship to contemporary issues in Web technology.",
+    "rules": [
+      {
+        "type": "Pre-Requisite",
+        "description": "CSIT128"
+      }
+    ],
+    "offerings": [
+      {
+        "campus": "Wollongong",
+        "session": "Autumn",
+        "mode": "On-Campus",
+        "display": "Wollongong-Autumn-On-Campus"
+      },
+      {
+        "campus": "Liverpool",
+        "session": "Autumn",
+        "mode": "On-Campus",
+        "display": "Liverpool-Autumn-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S2",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S2-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S4",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S4-On-Campus"
+      },
+      {
+        "campus": "UOW Malaysia Penang",
+        "session": "UOWM Tri 1",
+        "mode": "On-Campus",
+        "display": "UOW Malaysia Penang-UOWM Tri 1-On-Campus"
+      },
+      {
+        "campus": "UOW Malaysia Selangor",
+        "session": "UOWM Tri 1",
+        "mode": "On-Campus",
+        "display": "UOW Malaysia Selangor-UOWM Tri 1-On-Campus"
+      }
+    ],
+    "url": "https://courses.uow.edu.au/subjects/2026/ISIT219"
+  },
+  "ISIT307": {
+    "code": "ISIT307",
+    "title": "Web Server Programming",
+    "cp": "6",
+    "description": "The subject aims to integrate the previous knowledge which students have gained through subjects on web technologies, web programming and databases to create real-world web applications like shopping carts or advanced form processing systems etc. It also introduces students to open-source programming languages in web development so that they can inexpensively develop sophisticated web applications. Students will become familiar with the integration of programming, databases, web-applications, and structural and object oriented programming.",
+    "rules": [
+      {
+        "type": "Pre-Requisite",
+        "description": "(CSIT110 or CSIT111) and CSIT115 and CSIT128 and 12 credit points at 200 level"
+      }
+    ],
+    "offerings": [
+      {
+        "campus": "Wollongong",
+        "session": "Autumn",
+        "mode": "On-Campus",
+        "display": "Wollongong-Autumn-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S1",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S1-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S3",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S3-On-Campus"
+      }
+    ],
+    "url": "https://courses.uow.edu.au/subjects/2026/ISIT307"
+  },
+  "ISIT312": {
+    "code": "ISIT312",
+    "title": "Big Data Management",
+    "cp": "6",
+    "description": "The subject addresses the problems of managing and processing of extremely large data sets in a single-server centralised computing systems and in multi-server clustered and distributed computing systems. The topics related to processing of large data sets in centralised environments include the techniques based on the classical data warehouse technologies such multidimensional data model, data warehouse architecture, data warehouse design both at conceptual and logical levels, and data warehouse processing with appropriate specialised query operations. The topics related to processing of large data sets in distributed environments include the techniques that can be implemented on the clusters of inexpensive computing nodes using MapReduce programming model. The subject introduces the students to the real time analytical processing of large data sets with analytical cluster-based distributed data processing systems. Discussion and hands on exercises related to these topics will equip students to meet the challenges in Big Data environments and appreciate the added challenges of dealing with unstructured data. Students will be presented with opportunities to do hands-on work with appropriate commercial tools.",
+    "rules": [
+      {
+        "type": "Pre-Requisite",
+        "description": "CSIT115 and 18 credit points at 200 level"
+      }
+    ],
+    "offerings": [
+      {
+        "campus": "Wollongong",
+        "session": "Spring",
+        "mode": "On-Campus",
+        "display": "Wollongong-Spring-On-Campus"
+      },
+      {
+        "campus": "Dubai",
+        "session": "DXB UG Autumn",
+        "mode": "On-Campus",
+        "display": "Dubai-DXB UG Autumn-On-Campus"
+      },
+      {
+        "campus": "Liverpool",
+        "session": "Spring",
+        "mode": "On-Campus",
+        "display": "Liverpool-Spring-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S2",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S2-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S4",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S4-On-Campus"
+      },
+      {
+        "campus": "UOWCHK",
+        "session": "UOWCHK Sem C",
+        "mode": "On-Campus",
+        "display": "UOW at CCCU HK-UOWCHK Sem C-On-Campus"
+      },
+      {
+        "campus": "UOW Malaysia Penang",
+        "session": "UOWM Tri 1",
+        "mode": "On-Campus",
+        "display": "UOW Malaysia Penang-UOWM Tri 1-On-Campus"
+      },
+      {
+        "campus": "UOW Malaysia Selangor",
+        "session": "UOWM Tri 1",
+        "mode": "On-Campus",
+        "display": "UOW Malaysia Selangor-UOWM Tri 1-On-Campus"
+      }
+    ],
+    "url": "https://courses.uow.edu.au/subjects/2026/ISIT312"
+  },
+  "ISIT332": {
+    "code": "ISIT332",
+    "title": "Business Process Management",
+    "cp": "6",
+    "description": "Business process management (BPM) combines a process-centric and cross-functional approach to improving how organizations achieve their business goals. A BPM solution makes use of IT to model, automate, manage and optimize business processes to increase productivity. Within this subject students learn important process-centric issues in business system design and implementation. Focus will be placed on both business and technical perspectives of BPM. Topics covered include: Basic business process concepts; Business process modelling; Business process outsourcing; Business process re-engineering; Business process improvement; Workflow and business process automation; Business process management and service-oriented architecture.",
+    "rules": [
+      {
+        "type": "Co-Requisite",
+        "description": "12 credit points at 200 level"
+      },
+      {
+        "type": "Pre-Requisite",
+        "description": "CSIT114 and 6 credit points at 200 level"
+      }
+    ],
+    "offerings": [
+      {
+        "campus": "Wollongong",
+        "session": "Spring",
+        "mode": "On-Campus",
+        "display": "Wollongong-Spring-On-Campus"
+      },
+      {
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S1",
+        "mode": "On-Campus",
+        "display": "Singapore Institute of Management-SIM S1-On-Campus"
+      }
+    ],
+    "url": "https://courses.uow.edu.au/subjects/2026/ISIT332"
+  },
+  "MATH221": {
+    "code": "MATH221",
+    "title": "Mathematics for Computer Science",
+    "cp": "6",
+    "description": "MATH221 delivers core skills required for learning in computer science. Such skills include logic, formal proof, formal data structures and relations between these data structures. Realised mathematically as sets, bijections, equivalence classes, and graphs, MATH221 gives students hands-on experience with basic mathematical manipulations of these structures, as well as an exposition on their most fundamental properties.",
+    "rules": [],
+    "offerings": [],
+    "url": "https://courses.uow.edu.au/subjects/2026/MATH221"
+  }
+}

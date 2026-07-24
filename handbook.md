@@ -254,3 +254,4 @@ Add elective subjects (using valid sources listed above) until total planned CP 
 8. Total 100-level CP (complete + planned) does not exceed 60 CP
 9. No subject code has been invented
 Correct any errors and repeat until all nine checks pass.
+

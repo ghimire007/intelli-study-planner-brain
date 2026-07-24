@@ -13,7 +13,12 @@ from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.services.handbook_service import fetch_handbook
+from app.services.kb_service import fetch_major, fetch_subjects
 from app.services.knowledge_service import TOPIC_SLUGS, TOPICS, load_topic
+
+# Newest handbook rows win; lookups are not tied to the student's commencement
+# year (the scraper currently only loads the latest published handbook year).
+_LATEST_HANDBOOK_YEAR = 9999
 
 
 def make_fetch_handbook_tool(db: AsyncSession):
@@ -41,6 +46,39 @@ def confirm_metadata_tool(degree_code: str, year: int, campus: str) -> str:
     fetch_handbook_tool or attempt any audit/planning before this has been called.
     """
     return json.dumps({"degree_code": degree_code, "year": year, "campus": campus})
+
+
+def make_lookup_subjects_tool(db: AsyncSession):
+    """Bind a DB session to a batched subject-lookup LangChain tool."""
+
+    @tool
+    async def lookup_subjects_tool(codes: list[str]) -> str:
+        """Look up official details for one or more UOW subject codes in a single call.
+
+        Returns, per subject: title, credit points, prerequisites, session/campus
+        availability, and the handbook URL. Batch every code you need (e.g. all
+        subjects in a draft plan) into ONE call rather than calling repeatedly.
+        Use this instead of guessing prerequisites or session availability.
+        """
+        return await fetch_subjects(db, codes, _LATEST_HANDBOOK_YEAR)
+
+    return lookup_subjects_tool
+
+
+def make_lookup_major_tool(db: AsyncSession):
+    """Bind a DB session to a major-lookup LangChain tool."""
+
+    @tool
+    async def lookup_major_tool(major_code: str) -> str:
+        """Look up an official UOW major (area of study) by its MAJ code, e.g. MAJ44204.
+
+        Returns the major's title, credit points, required subjects, and handbook URL.
+        Call this when the student has (or is considering) a major and you need its
+        exact subject requirements.
+        """
+        return await fetch_major(db, major_code, _LATEST_HANDBOOK_YEAR)
+
+    return lookup_major_tool
 
 
 _topic_list = "\n".join(f"- {t.slug}: {t.description}" for t in TOPICS)
@@ -75,5 +113,11 @@ def build_skills(db: AsyncSession):
     """
     return {
         "confirm": [confirm_metadata_tool, lookup_uow_policy_tool],
-        "full": [confirm_metadata_tool, lookup_uow_policy_tool, make_fetch_handbook_tool(db)],
+        "full": [
+            confirm_metadata_tool,
+            lookup_uow_policy_tool,
+            make_fetch_handbook_tool(db),
+            make_lookup_subjects_tool(db),
+            make_lookup_major_tool(db),
+        ],
     }

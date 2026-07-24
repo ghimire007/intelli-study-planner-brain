@@ -1,11 +1,27 @@
 """
-Seed script — inserts initial handbook data into the DB.
-Run via: make seed
+Seed script — inserts handbook data plus the subject/major knowledge base.
+Run via: make seed  (or: python -m seeds.seed)
+
+Handbook data is inline below. Subject/major data comes from seeds/scraped/
+(produced by scripts/scrape_courseloop.py) with markdown cards from seeds/kb/
+(produced by scripts/build_knowledge_base.py); those sections are skipped with
+a warning if the scraped files aren't present. Handbook rows are insert-only;
+subject/major rows are upserted so a fresh scrape can be re-seeded safely.
 """
 import asyncio
+import json
+from pathlib import Path
+
 from sqlalchemy import select
+
 from app.core.database import AsyncSessionLocal
 from app.models.handbook import Handbook
+from app.models.major import Major
+from app.models.subject import Subject
+
+SEEDS_DIR = Path(__file__).resolve().parent
+KB_COURSE = "766"
+KB_YEAR = 2026
 
 HANDBOOK_766_2026_WOLLONGONG = """# 766 — Bachelor of Computer Science (Wollongong Campus, 2026 Handbook)
 
@@ -275,6 +291,44 @@ SEED_DATA = [
 ]
 
 
+async def _upsert(session, model, year: int, code: str, values: dict) -> str:
+    result = await session.execute(
+        select(model).where(model.year == year, model.code == code)
+    )
+    row = result.scalar_one_or_none()
+    if row:
+        for key, value in values.items():
+            setattr(row, key, value)
+        return "updated"
+    session.add(model(year=year, code=code, **values))
+    return "inserted"
+
+
+async def seed_knowledge_base(session, course: str = KB_COURSE, year: int = KB_YEAR) -> None:
+    """Upsert subject/major rows from seeds/scraped/ + seeds/kb/ card files."""
+    plans = [
+        (Subject, "subjects", SEEDS_DIR / "scraped" / f"subjects_{course}.json"),
+        (Major, "majors", SEEDS_DIR / "scraped" / f"majors_{course}.json"),
+    ]
+    for model, kind, path in plans:
+        if not path.exists():
+            print(f"Skipping {kind} — {path.name} not found (run scripts/scrape_courseloop.py)")
+            continue
+        for code, data in json.loads(path.read_text()).items():
+            card_path = SEEDS_DIR / "kb" / kind / f"{code}.md"
+            if not card_path.exists():
+                print(f"Skipping {kind[:-1]} {code} — no card (run scripts/build_knowledge_base.py)")
+                continue
+            action = await _upsert(session, model, year, code, {
+                "title": data["title"],
+                "credit_points": int(data["cp"]),
+                "url": data["url"],
+                "card": card_path.read_text(),
+                "data": data,
+            })
+            print(f"{action} {kind[:-1]} {code}")
+
+
 async def seed() -> None:
     async with AsyncSessionLocal() as session:
         for entry in SEED_DATA:
@@ -290,6 +344,7 @@ async def seed() -> None:
                 continue
             session.add(Handbook(**entry))
             print(f"Inserted {entry['course']} {entry['year']} ({entry['campus']})")
+        await seed_knowledge_base(session)
         await session.commit()
     print("Seed complete.")
 
