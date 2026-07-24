@@ -1,8 +1,14 @@
-# IntelliStudyPlanner — Technical Implementation Guide
+# IntelliStudyPlanner (Courseo) — Technical Implementation Guide
 
 ## System Overview
 
-A microservice-based AI platform that generates personalised, validated study plans for UOW students via a conversational chat interface. The LLM is grounded in structured handbook data and degree rules stored in a PostgreSQL knowledge base.
+AI-powered backend that generates personalised, validated study plans for UOW students through a conversational chat interface. A student pastes their SOLS enrolment record; a LangGraph agent — grounded in official handbook, subject, and major data stored in PostgreSQL — audits their progress and produces a semester-by-semester plan.
+
+**Key properties:**
+- No registration/login — sessions are anonymous UUIDs
+- PII (name, student number, contact details) is scrubbed before anything is stored or sent to the LLM; grades are kept (needed to distinguish completed from enrolled subjects)
+- All conversational state lives in a LangGraph Postgres checkpointer, keyed by session ID
+- The agent never guesses academic facts — prerequisites, session availability, majors, and policies come from tool calls against seeded official data
 
 ---
 
@@ -12,158 +18,234 @@ A microservice-based AI platform that generates personalised, validated study pl
 
 | Service | Tech | Responsibility |
 |---------|------|----------------|
-| `brain` (this repo) | FastAPI + Python | LLM agents, knowledge engine, study plan logic |
-| Frontend | React | ChatGPT-style chat UI, structured output rendering |
-| Auth (future) | FastAPI + JWT | Optional user accounts, session persistence |
+| `brain` (this repo) | FastAPI + Python 3.12 | LangGraph agent, knowledge base, chat API |
+| Frontend (separate repo) | React | ChatGPT-style chat UI, renders the plan JSON |
 
-### Agent Architecture (LangChain / LangGraph)
+### High-Level Flow
 
 ```
-User Input (SOLS paste)
+Student pastes SOLS record
         │
         ▼
-Data Sanitisation Engine
+PII Scrubber (services/pii.py) ── redacts name / student no. / email / phone
         │
         ▼
-Degree Router Agent  ──── identifies degree code (e.g. 766)
+LangGraph Advisor Agent (agents/graph.py)
+   parse_input ── LLM extracts degree_code / year / campus
         │
         ▼
-Academic Agent (e.g. CS 766 Agent)
-    ├── Handbook Retrieval Tool  ──── queries handbook table
-    ├── Rule Validator            ──── CP caps, prereqs, session availability
-    ├── Subject Equivalency Tool  ──── maps discontinued → current subjects
-    └── Plan Generator            ──── produces semester × year table
+   agent (Gemini, tool-calling loop)
+    ├── confirm_metadata_tool    ── student confirms degree/year/campus
+    ├── fetch_handbook_tool      ── course rules from `handbook` table
+    ├── lookup_subjects_tool     ── prereqs/sessions/URLs from `subject` table (batched)
+    ├── lookup_major_tool        ── major requirements from `major` table
+    └── lookup_uow_policy_tool   ── policy topics from app/knowledge/*.md
         │
         ▼
-Structured Study Plan Output (JSON → React table)
+Structured reply: audit (collapsible) + plan table (linked subject codes) + plan JSON
 ```
 
 ---
 
-## Implementation Flow
+## The LangGraph Agent (`app/agents/graph.py`)
 
-### 1. Data Ingestion — Handbook Knowledge Base
+### State (`AdvisorState`)
 
-- Handbook pages scraped/parsed and stored in the `handbook` table
-- Each row = one degree or major/minor for a specific year
-- `information` field stores the full structured markdown (see `HANDBOOK_TEMPLATE.md`)
-- Indexed on `year` + `course` for fast retrieval
+Persisted per thread by the Postgres checkpointer (`app/core/checkpointer.py`), so each turn only supplies the *new* message:
 
-### 2. Data Sanitisation Engine
+| Field | Type | Purpose |
+|-------|------|---------|
+| `messages` | `list[BaseMessage]` (add_messages) | Full conversation, including tool calls/results |
+| `raw_sols` | `str` | PII-scrubbed SOLS paste, injected into every system prompt |
+| `meta` | `dict \| None` | Parsed `{degree_code, year, campus}` (plain dict — checkpointer serialization) |
+| `meta_confirmed` | `bool` | Whether the student has confirmed the metadata |
+| `handbook` | `str \| None` | Cached handbook markdown once fetched |
 
-- Input: raw SOLS copy-paste (semi-structured text)
-- Parses: subject codes, credit points, session/year, grades, completion status
-- Output: clean structured dict passed to the Academic Agent
-- Key problem solved: Oracle-formatted SOLS output loses tabular alignment when pasted; this engine reconstructs it
+### Graph Topology
 
-### 3. Academic Agent (LangGraph StatefulGraph)
+```
+parse_input ──► agent ──► END            (no tool calls)
+                  │ ▲
+                  ▼ │
+               tools ──► capture_tool_results
+```
 
-Each degree has a dedicated agent node. For CS 766 (initial POC):
+- **`parse_input`** — runs once per session (skipped when `meta` already set). Calls the parser LLM (`services/sols_parser.py`) to extract degree_code/year/campus. Nullable fields: if extraction isn't confident, the agent asks the student instead of guessing.
+- **`agent`** — the Gemini tool-calling node. Uses a *restricted* toolset (`confirm`) until metadata is confirmed, then the *full* toolset. System prompt rebuilt each turn by `prompts/builder.py`.
+- **`tools`** — LangGraph `ToolNode` executing whatever the agent requested.
+- **`capture_tool_results`** — caches `fetch_handbook_tool` output into `state.handbook` and `confirm_metadata_tool` output into `state.meta/meta_confirmed`, so later turns don't re-fetch/re-derive.
+- **`should_continue`** — loops agent ⇄ tools until the agent responds without tool calls.
 
-**State tracked per conversation:**
-- Completed subjects + credit points
-- Current year/session
-- Degree commencement year (determines which handbook rules apply)
-- Declared major/electives
-- Student interests (for elective recommendations)
+### Metadata Confirmation Gate
 
-**Validation rules enforced:**
-- Total 144 CP required
-- Max 60 CP at 100-level subjects
-- Core subject quotas per year/session
-- Prerequisite chain resolution
-- Session availability (Autumn-only vs Spring-only subjects)
-- Commencement year → applicable handbook rule mapping
+Two LLM bindings from the same skill registry (`build_skills`):
 
-**Subject Equivalency Logic:**
-- Discontinued subjects mapped to current replacements (e.g. `ISIT204` → `CSIT305`)
-- Stored inline in the handbook `information` field under `## Discontinued Subjects`
+| Toolset | Available when | Tools |
+|---------|---------------|-------|
+| `confirm` | Before confirmation | `confirm_metadata_tool`, `lookup_uow_policy_tool` |
+| `full` | After confirmation | + `fetch_handbook_tool`, `lookup_subjects_tool`, `lookup_major_tool` |
 
-### 4. Study Plan Output
+This deterministically prevents the agent from auditing/planning against unconfirmed degree data.
 
-- Format: structured JSON → rendered as semester × year table in React
-- Minimum: one complete plan per request
-- Supports: 3 iterative refinements via multi-turn chat
+---
 
-### 5. LLM Integration
+## Agent Skills (`app/agents/skills.py`)
 
-- Primary model: **Google Gemini 2.0** via LangChain
-- Fallback: open-source model (future S2)
-- Cost control: free-tier API keys (6-key rotation across team), rate limiting per session
-- Prompt strategy: handbook content injected as context, degree rules as system prompt constraints
+Skills follow the **agent skills pattern**: thin LangChain tool adapters with zero business logic — each wraps a service function and binds runtime context (the DB session).
+
+| Skill | Backing service | Returns |
+|-------|-----------------|---------|
+| `confirm_metadata_tool` | — | Echoes confirmed `{degree_code, year, campus}` (captured into state) |
+| `fetch_handbook_tool(degree_code, year, campus)` | `handbook_service.fetch_handbook` | Course-level rules markdown, exact-campus match preferred |
+| `lookup_subjects_tool(codes: list)` | `kb_service.fetch_subjects` | One markdown card per code: title, CP, prerequisites, per-campus sessions, handbook URL. Batched — one call per draft plan. Unknown codes return an explicit "do not invent details" marker |
+| `lookup_major_tool(major_code)` | `kb_service.fetch_major` | Major card: title, CP, required subjects, URL. Unknown code returns the list of valid MAJ codes for self-correction |
+| `lookup_uow_policy_tool(topic)` | `knowledge_service.load_topic` | Official policy text from `app/knowledge/*.md` (course transfer, credit/RPL, withdrawal, …) |
+
+---
+
+## Knowledge Base Pipeline (scrape → cards → DB)
+
+UOW's handbook site is Next.js/CourseLoop — every page embeds its full data as JSON (`__NEXT_DATA__`), so scraping is JSON extraction, not HTML parsing.
+
+| Step | Command | Output |
+|------|---------|--------|
+| 1. Scrape | `python scripts/scrape_courseloop.py 766 2026` | `seeds/scraped/{course,majors,subjects}_766.json` — crawls course page → all majors (`/aos/...`) → all subjects (`/subjects/...`), including subjects only referenced inside majors |
+| 2. Build cards | `python scripts/build_knowledge_base.py 766` | `seeds/kb/subjects/*.md`, `seeds/kb/majors/*.md`, `INDEX.md` — compact human-reviewable markdown, exactly what the lookup tools return |
+| 3. Seed | `python -m seeds.seed` (or `make seed`) | Upserts into `subject`/`major` tables; also inserts inline handbook data. Safe to rerun — KB rows update in place, handbook rows are insert-only |
+
+Current coverage: course 766 (2026) — 8 majors, 42 subjects, real prerequisite expressions (e.g. `(CSIT110 or CSIT111) AND (CSIT113 or CSIT123)`) and per-campus session offerings. Rerun steps 1–3 for new years or new courses.
+
+---
+
+## Privacy — PII Scrubbing (`app/services/pii.py`)
+
+Applied in `AgentChatService.start_session` *before* the SOLS paste reaches the checkpointer or any prompt:
+
+- `**Student:** ...` header line → `[REDACTED]`
+- 7–8 digit student numbers (bare or parenthesised) → `[REDACTED]`
+- Email addresses and AU phone numbers → `[REDACTED]`
+- **Kept:** marks/grades/status — required to classify subjects as Complete vs Enrolled
+
+---
+
+## Prompting (`app/prompts/`)
+
+- `system.py` — the advisor persona + output contract: handbook and SOLS injected as context; mandatory `lookup_subjects_tool` verification of every subject in a draft plan; subject codes in the plan table rendered as `<a href>` links to their handbook pages; electives discussions must link the course handbook page; policy answers only from tool output, never memory; audit wrapped in a collapsible `<details>` block; final machine-readable plan as a fenced JSON block.
+- `builder.py` — per-turn assembly: swaps in handbook content (or a "not yet fetched" placeholder) and, pre-confirmation, an instruction telling the agent exactly which metadata fields to ask the student for.
+
+---
+
+## Service Layer (`app/services/`)
+
+| Module | Responsibility |
+|--------|----------------|
+| `agent_chat_service.py` | Public chat API surface: start/continue/history. Owns PII scrubbing, `ChatSession` row creation, thread_id ↔ session mapping |
+| `sols_parser.py` | LLM extraction of degree_code/year/campus from the SOLS paste (`SOLSMeta`, nullable fields) |
+| `handbook_service.py` | `handbook` table lookup, campus-preferring |
+| `kb_service.py` | `subject`/`major` card lookups (newest year wins) |
+| `knowledge_service.py` | Static policy topics from `app/knowledge/*.md` |
+| `pii.py` | Regex PII scrubber |
+
+`app/agents/history.py` reconstructs user-facing history (with per-message tokens/cost from `usage_metadata` + `llm/pricing.py`) straight from checkpointer snapshots — no `chat_message` table exists anymore.
 
 ---
 
 ## Database Schema
 
-### `handbook` table
+PostgreSQL (Supabase), SQLAlchemy 2.0 async + psycopg3, Alembic migrations (head: `e7a8b9c0d1e2`).
 
-| Column | Type | Purpose |
-|--------|------|---------|
-| `id` | `BIGINT` (PK, autoincrement) | Unique row identifier |
-| `year` | `INTEGER` | Handbook year (e.g. 2026) |
-| `course` | `VARCHAR(255)` | Degree code (e.g. `766`) |
-| `information` | `TEXT` | Full structured markdown — see `HANDBOOK_TEMPLATE.md` |
+### Domain tables (Alembic-managed)
 
-**Unique constraint:** `(year, course)` — one entry per degree per year.
+| Table | Key columns | Purpose |
+|-------|-------------|---------|
+| `handbook` | `(year, course, campus)` unique; `information TEXT` | Course-level rules markdown per campus |
+| `subject` | `(year, code)` unique; `title`, `credit_points`, `url`, `card TEXT`, `data JSON` | Per-subject knowledge: `card` = markdown returned to the agent; `data` = full scraped JSON (rules, offerings) |
+| `major` | `(year, code)` unique; same shape as `subject` | Per-major requirements |
+| `chat_session` | `id UUID`, `degree_code`, `created_at` | Thin indexable session row (API 404s against it; label only, not source of truth) |
 
-**Query pattern:** `SELECT information FROM handbook WHERE course = '766' AND year = 2026`
+### LangGraph tables (checkpointer-managed)
+
+`checkpoints`, `checkpoint_writes`, etc. — created by `AsyncPostgresSaver.setup()`, hold all conversational state keyed by `thread_id = str(chat_session.id)`.
 
 ---
 
-## API Endpoints (Planned)
+## API (`app/api/v1/`)
+
+All under `/api/v1`:
+
+| Method | Path | Behaviour |
+|--------|------|-----------|
+| `POST` | `/chat` | Start session: body `{message: <raw SOLS>}` → `201 {session_id, reply}` |
+| `POST` | `/chat/{session_id}` | Follow-up message → `{session_id, reply}` |
+| `GET` | `/chat/{session_id}` | Full history (assistant messages include model/tokens/cost) |
+| `GET` | `/test-records` / `/test-records/{name}` | Serve the 12 synthetic SOLS fixtures in `app/test_records/` |
+
+---
+
+## LLM Integration
+
+- **Model:** Google Gemini (`GEMINI_MODEL`, default `gemini-2.0-flash-001`) via `langchain-google-genai`
+- **Cost tracking:** per-message input/output/cached tokens and USD cost computed in `llm/pricing.py`, surfaced in every API reply
+- **Cost efficiency:** handbook is fetched once per session and cached in graph state; subject/major details are pulled on demand via batched tool calls instead of living permanently in the prompt
+
+---
+
+## Repo Map
 
 ```
-POST /api/v1/plan/generate      — Submit SOLS input, receive study plan
-POST /api/v1/plan/refine        — Multi-turn refinement
-GET  /api/v1/handbook/{course}  — Retrieve handbook entry
-POST /api/v1/handbook           — Ingest new handbook entry (admin)
+app/
+├── main.py                  # FastAPI entry, lifespan (DB + checkpointer setup)
+├── core/                    # config, async DB engine, LangGraph checkpointer
+├── api/v1/                  # chat + test-records routers
+├── agents/
+│   ├── graph.py             # StateGraph: parse_input → agent ⇄ tools
+│   ├── skills.py            # tool adapters (agent skills pattern)
+│   └── history.py           # history + cost reconstruction from checkpoints
+├── services/                # pii, sols_parser, handbook/kb/knowledge services, chat service
+├── prompts/                 # system prompt + per-turn builder
+├── models/                  # Handbook, Subject, Major, ChatSession
+├── schemas/                 # request/response pydantic models
+├── knowledge/               # static UOW policy topic markdown
+└── test_records/            # 12 synthetic SOLS fixtures
+
+scripts/
+├── scrape_courseloop.py     # crawl UOW handbook site → seeds/scraped/*.json
+└── build_knowledge_base.py  # scraped JSON → seeds/kb/ markdown cards
+
+seeds/
+├── seed.py                  # single seed entry point: handbook + subject/major KB
+├── scraped/                 # raw crawler output (JSON)
+└── kb/                      # reviewable markdown cards + INDEX.md
+
+migrations/                  # Alembic (head: e7a8b9c0d1e2 — subject/major tables)
 ```
 
 ---
 
-## Technology Stack
+## Setup / Operations
 
-| Layer | Technology |
-|-------|-----------|
-| Backend framework | FastAPI (Python) |
-| LLM orchestration | LangChain + LangGraph |
-| LLM model | Google Gemini 2.0 |
-| Database | PostgreSQL (Supabase) |
-| ORM | SQLAlchemy 2.0 async |
-| DB driver | psycopg3 (async) |
-| Frontend | React.js |
-| Containerisation | Docker + Docker Compose |
-| CI/CD | GitHub Actions → AWS |
-| Auth (future) | JWT / OAuth2 via FastAPI |
+```bash
+pip install -r requirements.txt
+cp .env.example .env                          # DATABASE_URL, GEMINI_API_KEY, ...
+make migrate-up                               # apply migrations
+python scripts/scrape_courseloop.py 766 2026  # refresh scraped data (optional — committed)
+python scripts/build_knowledge_base.py 766    # rebuild cards (optional — committed)
+make seed                                     # handbook + subject/major KB
+make run-dev                                  # http://localhost:7777
+```
 
 ---
 
-## Key Technical Challenges
+## Status vs Sponsor Requirements (Week 12 meeting)
 
-| Challenge | Solution |
-|-----------|----------|
-| SOLS input is semi-structured text | Data Sanitisation Engine pre-processes before LLM |
-| Handbook rules change by commencement year | `year` field on handbook rows; agent selects by student start year |
-| Discontinued subjects | Equivalency table embedded in handbook `information` markdown |
-| Session availability (Autumn/Spring-only) | Encoded per subject in handbook template |
-| LLM non-determinism on hard rules | LangGraph enforces rule validation as deterministic tool calls, not LLM reasoning |
-| Credit point cap enforcement (max 60 CP @ 100-level) | Rule Validator node in agent graph, not LLM |
-
----
-
-## Initial Scope (S1 — Weeks 5–13)
-
-- [ ] CS 766 handbook data ingested into DB
-- [ ] Data Sanitisation Engine
-- [ ] CS 766 Academic Agent (LangGraph)
-- [ ] Basic study plan generation endpoint
-- [ ] React chat interface integrated with backend
-
-## Future Scope (S2 — Weeks 14–26)
-
-- [ ] BIT, PCS, BIS degree agents
-- [ ] User accounts + plan persistence
-- [ ] Elective recommendation engine
-- [ ] Exchange student / partner university support
-- [ ] Subject Equivalency Database expansion
+| Requirement | Status |
+|-------------|--------|
+| LangGraph agent + skills pattern (handbook, majors, subjects) | ✅ Implemented |
+| PII filtering of enrolment record (keep grades) | ✅ Implemented |
+| No registration required | ✅ Implemented |
+| Handbook links in the study plan table | ✅ Prompt + per-subject URLs in KB |
+| Elective section link when discussing electives | ✅ Prompt instruction |
+| Cost tracking per message | ✅ Implemented |
+| LLM self-testing before output | ⏳ Deferred (verification node candidate) |
+| Testing report / eval harness over test_records | ⏳ Deferred |
+| User-supplied API keys | ⏳ Deferred (frontend/tech decision pending) |

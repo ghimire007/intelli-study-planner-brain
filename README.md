@@ -38,9 +38,10 @@ migrations/                     # Alembic migration files
 ├── script.py.mako
 └── versions/
 
-seeds/                          # DB seed scripts
-├── seed.py
-└── handbook_766_2026.md
+seeds/                          # DB seed scripts + knowledge base data
+├── seed.py                     # handbook + subject/major KB seeding
+├── scraped/                    # raw CourseLoop crawler output (JSON)
+└── kb/                         # generated subject/major markdown cards
 
 static/
 └── index.html                  # Simple chat UI

@@ -7,6 +7,7 @@ from app.agents.graph import build_advisor_graph
 from app.agents.history import MessageView, build_history, latest_reply
 from app.core.checkpointer import get_checkpointer
 from app.models.session import ChatSession
+from app.services.pii import scrub_pii
 
 
 class AgentChatService:
@@ -26,6 +27,9 @@ class AgentChatService:
 
     async def start_session(self, raw_sols: str) -> tuple[ChatSession, MessageView]:
         session_id = uuid.uuid4()
+        # Redact name/student-number/contact PII before anything is persisted or
+        # sent to the LLM; grades stay (needed to tell completed from enrolled).
+        raw_sols = scrub_pii(raw_sols)
         graph = build_advisor_graph(self._db, get_checkpointer())
         await graph.ainvoke(
             {

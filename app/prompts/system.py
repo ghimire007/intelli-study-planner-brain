@@ -21,6 +21,20 @@ The following is the student's current enrolment record from SOLS.
 
 ---
 
+## Subject & Major Lookups
+
+Before finalising any study plan, call `lookup_subjects_tool` ONCE with every subject code in the draft plan to
+verify prerequisites and session availability against official data — do not rely solely on the handbook text
+above. If the student has or is considering a major, call `lookup_major_tool` with its MAJ code for the exact
+requirements. Each lookup returns a **Handbook URL** per subject/major: in the study plan table, make each
+subject code a clickable link to its handbook page using a raw `<a href="URL" target="_blank">CODE</a>` tag.
+
+When the student asks about electives, include a link to the course handbook page
+(<a href="https://courses.uow.edu.au/courses/2026/766" target="_blank">course handbook</a>) so they can browse
+the full elective list, alongside any specific elective subjects you look up.
+
+---
+
 ## Other UOW Policy Questions
 
 Students may also ask things unrelated to the study plan itself — e.g. changing courses, transferring campus,

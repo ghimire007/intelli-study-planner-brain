@@ -1,0 +1,830 @@
+{
+  "code": "766",
+  "title": "Bachelor of Computer Science",
+  "year": 2026,
+  "cp": "144",
+  "structure": [
+    {
+      "title": "Electives",
+      "cp": "36",
+      "description": "Student will complete 36 credit points of electives from the list below. Please note not all electives may be offered",
+      "items": [
+        {
+          "code": "CSCI323",
+          "name": "Modern Artificial Intelligence",
+          "cp": "6",
+          "type": null,
+          "url": "/subjects/2024/CSCI323"
+        },
+        {
+          "code": "ISIT219",
+          "name": "Knowledge and Information Engineering",
+          "cp": "6",
+          "type": null,
+          "url": "/subjects/2023/ISIT219"
+        },
+        {
+          "code": "CSCI318",
+          "name": "Software Engineering Practices & Principles",
+          "cp": "6",
+          "type": null,
+          "url": "/subjects/2023/CSCI318"
+        },
+        {
+          "code": "CSCI334",
+          "name": "Software Design",
+          "cp": "6",
+          "type": null,
+          "url": "/subjects/2022/CSCI334"
+        },
+        {
+          "code": "CSCI262",
+          "name": "System Security",
+          "cp": "6",
+          "type": null,
+          "url": "/subjects/2023/CSCI262"
+        },
+        {
+          "code": "CSIT302",
+          "name": "Cybersecurity",
+          "cp": "6",
+          "type": null,
+          "url": "/subjects/2023/CSIT302"
+        },
+        {
+          "code": "ISIT312",
+          "name": "Big Data Management",
+          "cp": "6",
+          "type": null,
+          "url": "/subjects/2023/ISIT312"
+        }
+      ],
+      "children": []
+    },
+    {
+      "title": "Bachelor of Computer Science at Liverpool Campus",
+      "cp": "144",
+      "description": "",
+      "items": [],
+      "children": [
+        {
+          "title": "Electives",
+          "cp": "",
+          "description": "Elective subjects, to bring the total to 144 credit points chosen from the School of Computing and Information Technology, that is any CSIT, CSCI or ISIT subjects, or from the General Schedule. A maximum of 60 credit points of subjects can be completed at 100 level which includes the core.",
+          "items": [],
+          "children": []
+        },
+        {
+          "title": "Core ",
+          "cp": "78",
+          "description": "Complete the 13 subjects listed below:",
+          "items": [
+            {
+              "code": "CSIT115",
+              "name": "Database Management Systems",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2025/CSIT115"
+            },
+            {
+              "code": "CSIT121",
+              "name": "Object Oriented Design and Programming",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2018/CSIT121"
+            },
+            {
+              "code": "CSIT205",
+              "name": "Generative AI",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2025/CSIT205"
+            },
+            {
+              "code": "CSIT110",
+              "name": "Fundamental Programming with Python",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2022/CSIT110"
+            },
+            {
+              "code": "CSIT128",
+              "name": "Introduction to Web Technology",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2018/CSIT128"
+            },
+            {
+              "code": "CSIT127",
+              "name": "Networks and Communications",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2018/CSIT127"
+            },
+            {
+              "code": "CSIT114",
+              "name": "System Analysis",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2018/CSIT114"
+            },
+            {
+              "code": "CSIT123",
+              "name": "Computing and Cyber Security Fundamentals",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2023/CSIT123"
+            },
+            {
+              "code": "CSCI235",
+              "name": "Database Systems",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2018/CSCI235"
+            },
+            {
+              "code": "CSIT214",
+              "name": "IT Project Management",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2018/CSIT214"
+            },
+            {
+              "code": "CSIT314",
+              "name": "Software Development Methodologies",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2023/CSIT314"
+            },
+            {
+              "code": "CSCI203",
+              "name": "Algorithms and Data Structures",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2018/CSCI203"
+            },
+            {
+              "code": "CSIT226",
+              "name": "Human Computer Interaction",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2018/CSIT226"
+            }
+          ],
+          "children": []
+        },
+        {
+          "title": "Major Studies at Liverpool Campus",
+          "cp": "24",
+          "description": "Select one or two of the majors below. Note: 300 level subjects required as part of a major, may have 100 and 200 level prerequisite subjects which are not listed as part of the major.",
+          "items": [
+            {
+              "code": "MAJ40277",
+              "name": "Software Engineering for Bachelor of Computer Science",
+              "cp": "24",
+              "type": null,
+              "url": "/aos/2021/MAJ40277"
+            },
+            {
+              "code": "MAJ40516",
+              "name": "Cyber Security",
+              "cp": "24",
+              "type": null,
+              "url": "/aos/2021/MAJ40516"
+            },
+            {
+              "code": "MAJ44204",
+              "name": "Artificial Intelligence and Big Data",
+              "cp": "24",
+              "type": null,
+              "url": "/aos/2023/MAJ44204"
+            }
+          ],
+          "children": []
+        },
+        {
+          "title": "Capstone - Annual Session",
+          "cp": "12",
+          "description": "This core subject is taken in the final year, and is an annual subject.",
+          "items": [
+            {
+              "code": "CSIT321",
+              "name": "Project",
+              "cp": "12",
+              "type": null,
+              "url": "/subjects/2021/CSIT321"
+            }
+          ],
+          "children": []
+        },
+        {
+          "title": "Core Selection ",
+          "cp": "6",
+          "description": "Complete one of the following subjects:",
+          "items": [
+            {
+              "code": "CSCI251",
+              "name": "Advanced Programming",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2023/CSCI251"
+            },
+            {
+              "code": "CSIT213",
+              "name": "Java Programming",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2023/CSIT213"
+            }
+          ],
+          "children": []
+        }
+      ]
+    },
+    {
+      "title": "Bachelor of Computer Science at UOW College Hong Kong",
+      "cp": "72",
+      "description": "All students are required to complete  a total of 10 subjects worth 6 credit points each, and 1 subject worth 12 credit points to be awarded the Bachelor of Computer Science. No major of study is available in this top up program.\n",
+      "items": [
+        {
+          "code": "CSCI235",
+          "name": "Database Systems",
+          "cp": "6",
+          "type": null,
+          "url": "/subjects/2018/CSCI235"
+        },
+        {
+          "code": "CSIT314",
+          "name": "Software Development Methodologies",
+          "cp": "6",
+          "type": null,
+          "url": "/subjects/2018/CSIT314"
+        },
+        {
+          "code": "CSIT226",
+          "name": "Human Computer Interaction",
+          "cp": "6",
+          "type": null,
+          "url": "/subjects/2018/CSIT226"
+        },
+        {
+          "code": "CSCI251",
+          "name": "Advanced Programming",
+          "cp": "6",
+          "type": null,
+          "url": "/subjects/2018/CSCI251"
+        },
+        {
+          "code": "CSIT214",
+          "name": "IT Project Management",
+          "cp": "6",
+          "type": null,
+          "url": "/subjects/2018/CSIT214"
+        },
+        {
+          "code": "CSCI334",
+          "name": "Software Design",
+          "cp": "6",
+          "type": null,
+          "url": "/subjects/2018/CSCI334"
+        },
+        {
+          "code": "CSIT128",
+          "name": "Introduction to Web Technology",
+          "cp": "6",
+          "type": null,
+          "url": "/subjects/2018/CSIT128"
+        }
+      ],
+      "children": [
+        {
+          "title": "Electives",
+          "cp": "18",
+          "description": "Students will complete 3 electives from the below list. Please note not all electives may be offered",
+          "items": [
+            {
+              "code": "CSIT377",
+              "name": "Enterprise Web Development",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2023/CSIT377"
+            },
+            {
+              "code": "ISIT312",
+              "name": "Big Data Management",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2023/ISIT312"
+            },
+            {
+              "code": "CSIT375",
+              "name": "Artificial Intelligence for Cybersecurity",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2023/CSIT375"
+            },
+            {
+              "code": "CSCI361",
+              "name": "Cryptography and Secure Applications",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2023/CSCI361"
+            },
+            {
+              "code": "CSCI318",
+              "name": "Software Engineering Practices & Principles",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2023/CSCI318"
+            },
+            {
+              "code": "CSIT302",
+              "name": "Cybersecurity",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2023/CSIT302"
+            }
+          ],
+          "children": []
+        },
+        {
+          "title": "Capstone",
+          "cp": "12",
+          "description": "This subject is core and completed over two semesters",
+          "items": [
+            {
+              "code": "CSIT321",
+              "name": "Project",
+              "cp": "12",
+              "type": null,
+              "url": "/subjects/2021/CSIT321"
+            }
+          ],
+          "children": []
+        }
+      ]
+    },
+    {
+      "title": "Bachelor of Computer Science at UOW Malaysia KDU Penang and Selangor Campuses",
+      "cp": "72",
+      "description": "Students who have completed an Associate Degree in Information and Communication Technology are admitted to this program and awarded credit of 72 credit points (48 credit points of specified credit and 24 credit points of unspecified credit).\n\nAll students are required to complete 10 subjects worth 6 credit points each, 1 subject worth 12 credit points to be awarded the Bachelor of Computer Science. No major of study is available in this top up program.",
+      "items": [],
+      "children": []
+    },
+    {
+      "title": "Bachelor of Computer Science (Honours) at Wollongong Campus",
+      "cp": "48",
+      "description": "To qualify for entry into Honours, students must have qualified at this University for a Bachelor degree with an average of at least 75% across the major (or majors) in which the Honours degree will be undertaken with the additional requirement of a Distinction in two of the 300 level subjects required by the major. Students considering an Honours degree are encouraged to talk to the Academic Program Director well in advance to seek approval for enrolment, discuss their program, and negotiate a thesis topic and supervisors.",
+      "items": [
+        {
+          "code": "765",
+          "name": "Bachelor of Computer Science (Honours)",
+          "cp": "48",
+          "type": null,
+          "url": "/courses/2021/765"
+        }
+      ],
+      "children": []
+    },
+    {
+      "title": "Bachelor of Computer Science at Singapore Institute of Management, Singapore",
+      "cp": "144",
+      "description": "",
+      "items": [],
+      "children": [
+        {
+          "title": "Core ",
+          "cp": "84",
+          "description": "Complete all 14 subjects from the list below; students at the Singapore campus are required to complete the capstone subject, CSIT321 Project in the major that they have selected.",
+          "items": [
+            {
+              "code": "CSIT115",
+              "name": "Database Management Systems",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2025/CSIT115"
+            },
+            {
+              "code": "CSIT127",
+              "name": "Networks and Communications",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2018/CSIT127"
+            },
+            {
+              "code": "CSIT114",
+              "name": "System Analysis",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2018/CSIT114"
+            },
+            {
+              "code": "CSCI251",
+              "name": "Advanced Programming",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2018/CSCI251"
+            },
+            {
+              "code": "CSIT226",
+              "name": "Human Computer Interaction",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2018/CSIT226"
+            },
+            {
+              "code": "CSIT214",
+              "name": "IT Project Management",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2018/CSIT214"
+            },
+            {
+              "code": "CSCI235",
+              "name": "Database Systems",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2018/CSCI235"
+            },
+            {
+              "code": "MATH221",
+              "name": "Mathematics for Computer Science",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2018/MATH221"
+            },
+            {
+              "code": "CSIT128",
+              "name": "Introduction to Web Technology",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2018/CSIT128"
+            },
+            {
+              "code": "CSIT111",
+              "name": "Programming Fundamentals",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2018/CSIT111"
+            },
+            {
+              "code": "CSIT314",
+              "name": "Software Development Methodologies",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2018/CSIT314"
+            },
+            {
+              "code": "CSCI203",
+              "name": "Algorithms and Data Structures",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2018/CSCI203"
+            },
+            {
+              "code": "CSIT113",
+              "name": "Problem Solving",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2018/CSIT113"
+            },
+            {
+              "code": "CSIT121",
+              "name": "Object Oriented Design and Programming",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2018/CSIT121"
+            }
+          ],
+          "children": []
+        },
+        {
+          "title": "Capstone",
+          "cp": "12",
+          "description": "This core subject is taken in the final year, and takes two standard sessions to complete.",
+          "items": [
+            {
+              "code": "CSIT321",
+              "name": "Project",
+              "cp": "12",
+              "type": null,
+              "url": "/subjects/2021/CSIT321"
+            }
+          ],
+          "children": []
+        },
+        {
+          "title": "Major Studies at Singapore Institute of Management, Singapore",
+          "cp": "24",
+          "description": "Select one of the major below. Note: 300 level subjects required as part of a major, may have 100 and 200 level prerequisite subjects which are not listed as part of the major.",
+          "items": [
+            {
+              "code": "MAJ40164",
+              "name": "Digital Systems Security",
+              "cp": "24",
+              "type": null,
+              "url": "/aos/2021/MAJ40164"
+            },
+            {
+              "code": "MAJ44307",
+              "name": "Artificial Intelligence and Big Data and Cyber Security",
+              "cp": "48",
+              "type": null,
+              "url": "/aos/2025/MAJ44307"
+            },
+            {
+              "code": "MAJ44306",
+              "name": "Digital Systems Security and Cyber Security",
+              "cp": "48",
+              "type": null,
+              "url": "/aos/2025/MAJ44306"
+            },
+            {
+              "code": "MAJ44308",
+              "name": "Digital Systems Security and Artificial Intelligence and Big Data",
+              "cp": "48",
+              "type": null,
+              "url": "/aos/2025/MAJ44308"
+            },
+            {
+              "code": "MAJ40516",
+              "name": "Cyber Security",
+              "cp": "24",
+              "type": null,
+              "url": "/aos/2021/MAJ40516"
+            },
+            {
+              "code": "MAJ44204",
+              "name": "Artificial Intelligence and Big Data",
+              "cp": "24",
+              "type": null,
+              "url": "/aos/2023/MAJ44204"
+            },
+            {
+              "code": "MAJ41477",
+              "name": "Game and Mobile Development",
+              "cp": "24",
+              "type": null,
+              "url": "/aos/2021/MAJ41477"
+            }
+          ],
+          "children": []
+        },
+        {
+          "title": "Elective",
+          "cp": "0",
+          "description": "Elective subjects, to bring the total to 144 credit points chosen from the School of Computing and Information Technology, that is any CSIT, CSCI or ISIT subjects, or from the General Schedule. A maximum of 60 credit points of subjects can be completed at 100 level which includes the core.",
+          "items": [],
+          "children": []
+        }
+      ]
+    },
+    {
+      "title": "Core",
+      "cp": "36",
+      "description": "Students must complete the following 36 credit points of core subjects",
+      "items": [
+        {
+          "code": "CSIT214",
+          "name": "IT Project Management",
+          "cp": "6",
+          "type": null,
+          "url": "/subjects/2023/CSIT214"
+        },
+        {
+          "code": "CSIT314",
+          "name": "Software Development Methodologies",
+          "cp": "6",
+          "type": null,
+          "url": "/subjects/2023/CSIT314"
+        },
+        {
+          "code": "CSCI251",
+          "name": "Advanced Programming",
+          "cp": "6",
+          "type": null,
+          "url": "/subjects/2023/CSCI251"
+        },
+        {
+          "code": "CSCI235",
+          "name": "Database Systems",
+          "cp": "6",
+          "type": null,
+          "url": "/subjects/2023/CSCI235"
+        }
+      ],
+      "children": [
+        {
+          "title": "Capstone",
+          "cp": "",
+          "description": "This subject is completed across two sessions of study",
+          "items": [
+            {
+              "code": "CSIT321",
+              "name": "Project",
+              "cp": "12",
+              "type": null,
+              "url": "/subjects/2023/CSIT321"
+            }
+          ],
+          "children": []
+        }
+      ]
+    },
+    {
+      "title": "Bachelor of Computer Science at Wollongong Campus",
+      "cp": "144",
+      "description": "",
+      "items": [],
+      "children": [
+        {
+          "title": "Elective",
+          "cp": "0",
+          "description": "Elective subjects, to bring the total to 144 credit points chosen from the School of Computing and Information Technology, that is any CSIT, CSCI or ISIT subjects, or from the General Schedule. A maximum of 60 credit points of subjects can be completed at 100 level which includes the core.",
+          "items": [],
+          "children": []
+        },
+        {
+          "title": "Major Studies at Wollongong Campus",
+          "cp": "24",
+          "description": "Select one or two of the majors below. Note: 300 level subjects required as part of a major, may have 100 and 200 level prerequisite subjects which are not listed as part of the major.",
+          "items": [
+            {
+              "code": "MAJ44204",
+              "name": "Artificial Intelligence and Big Data",
+              "cp": "24",
+              "type": null,
+              "url": "/aos/2023/MAJ44204"
+            },
+            {
+              "code": "MAJ40277",
+              "name": "Software Engineering for Bachelor of Computer Science",
+              "cp": "24",
+              "type": null,
+              "url": "/aos/2021/MAJ40277"
+            },
+            {
+              "code": "MAJ40516",
+              "name": "Cyber Security",
+              "cp": "24",
+              "type": null,
+              "url": "/aos/2021/MAJ40516"
+            },
+            {
+              "code": "MAJ41477",
+              "name": "Game and Mobile Development",
+              "cp": "24",
+              "type": null,
+              "url": "/aos/2021/MAJ41477"
+            },
+            {
+              "code": "MAJ40164",
+              "name": "Digital Systems Security",
+              "cp": "24",
+              "type": null,
+              "url": "/aos/2021/MAJ40164"
+            }
+          ],
+          "children": []
+        },
+        {
+          "title": "Capstone - Annual Session",
+          "cp": "12",
+          "description": "This core subject is taken in the final year, and is an annual subject.",
+          "items": [
+            {
+              "code": "CSIT321",
+              "name": "Project",
+              "cp": "12",
+              "type": null,
+              "url": "/subjects/2021/CSIT321"
+            }
+          ],
+          "children": []
+        },
+        {
+          "title": "Core",
+          "cp": "78",
+          "description": "Complete the 13 subjects listed below:",
+          "items": [
+            {
+              "code": "CSIT114",
+              "name": "System Analysis",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2021/CSIT114"
+            },
+            {
+              "code": "CSCI235",
+              "name": "Database Systems",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2021/CSCI235"
+            },
+            {
+              "code": "CSIT226",
+              "name": "Human Computer Interaction",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2021/CSIT226"
+            },
+            {
+              "code": "CSIT127",
+              "name": "Networks and Communications",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2021/CSIT127"
+            },
+            {
+              "code": "CSIT214",
+              "name": "IT Project Management",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2021/CSIT214"
+            },
+            {
+              "code": "CSIT205",
+              "name": "Generative AI",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2025/CSIT205"
+            },
+            {
+              "code": "CSIT110",
+              "name": "Fundamental Programming with Python",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2022/CSIT110"
+            },
+            {
+              "code": "CSIT128",
+              "name": "Introduction to Web Technology",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2021/CSIT128"
+            },
+            {
+              "code": "CSCI203",
+              "name": "Algorithms and Data Structures",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2021/CSCI203"
+            },
+            {
+              "code": "CSIT123",
+              "name": "Computing and Cyber Security Fundamentals",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2023/CSIT123"
+            },
+            {
+              "code": "CSIT121",
+              "name": "Object Oriented Design and Programming",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2021/CSIT121"
+            },
+            {
+              "code": "CSIT314",
+              "name": "Software Development Methodologies",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2023/CSIT314"
+            },
+            {
+              "code": "CSIT115",
+              "name": "Database Management Systems",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2025/CSIT115"
+            }
+          ],
+          "children": []
+        },
+        {
+          "title": "Core Selection",
+          "cp": "6",
+          "description": "Complete one of the following subjects:",
+          "items": [
+            {
+              "code": "CSIT213",
+              "name": "Java Programming",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2023/CSIT213"
+            },
+            {
+              "code": "CSCI251",
+              "name": "Advanced Programming",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2023/CSCI251"
+            }
+          ],
+          "children": []
+        }
+      ]
+    }
+  ],
+  "url": "https://courses.uow.edu.au/courses/2026/766"
+}
