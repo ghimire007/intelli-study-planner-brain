@@ -15,8 +15,10 @@ import json
 import re
 import sys
 import time
+import urllib.error
 import urllib.request
 from pathlib import Path
+from urllib.parse import quote
 
 BASE = "https://courses.uow.edu.au"
 NEXT_DATA_RE = re.compile(
@@ -25,11 +27,21 @@ NEXT_DATA_RE = re.compile(
 
 
 def fetch_page_content(path: str) -> dict | None:
-    """Fetch a CourseLoop page and return its pageContent JSON (None on 404)."""
-    url = BASE + path
+    """Fetch a CourseLoop page and return its pageContent JSON (None on 404).
+
+    Paths may contain spaces (e.g. subject code ``BUS 121``); those are
+    percent-encoded before the request so urllib accepts the URL.
+    """
+    # Keep path separators and already-encoded % sequences; encode spaces etc.
+    url = BASE + quote(path, safe="/:?=&%")
     req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-    with urllib.request.urlopen(req, timeout=30) as resp:
-        html = resp.read().decode()
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            html = resp.read().decode()
+    except urllib.error.HTTPError as exc:
+        if exc.code == 404:
+            return None
+        raise
     match = NEXT_DATA_RE.search(html)
     if not match:
         return None
@@ -98,10 +110,24 @@ def parse_offerings(pc: dict) -> list[dict]:
     return offerings
 
 
-def scrape_subject(code: str, year: int) -> dict | None:
-    path = f"/subjects/{year}/{code}"
-    pc = fetch_page_content(path)
-    if pc is None:
+def scrape_subject(code: str, year: int, url: str | None = None) -> dict | None:
+    """Fetch one subject page, preferring the curriculum link when present."""
+    # Prefer the CourseLoop URL from the curriculum tree (correct path/encoding);
+    # fall back to rebuilding from code. Normalize year like scrape_major.
+    candidates = []
+    if url:
+        candidates.append(re.sub(r"/subjects/\d{4}/", f"/subjects/{year}/", url))
+        candidates.append(url)
+    candidates.append(f"/subjects/{year}/{code}")
+
+    path = None
+    pc = None
+    for candidate in candidates:
+        pc = fetch_page_content(candidate)
+        if pc is not None:
+            path = candidate
+            break
+    if pc is None or path is None:
         return None
     return {
         "code": pc.get("code"),
@@ -110,7 +136,7 @@ def scrape_subject(code: str, year: int) -> dict | None:
         "description": re.sub(r"<[^>]+>", "", pc.get("description") or "").strip(),
         "rules": parse_rules(pc),
         "offerings": parse_offerings(pc),
-        "url": f"{BASE}{path}",
+        "url": f"{BASE}{quote(path, safe='/:?=&%')}",
     }
 
 
@@ -177,9 +203,9 @@ def main() -> None:
 
     subjects = {}
     failed = []
-    for code in sorted(subject_links):
+    for code, url in sorted(subject_links.items()):
         print(f"  subject {code} ...")
-        subject = scrape_subject(code, year)
+        subject = scrape_subject(code, year, url)
         if subject is None:
             failed.append(code)
             print(f"    !! could not fetch {code}")
