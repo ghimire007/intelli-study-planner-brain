@@ -289,8 +289,8 @@ HANDBOOK_1807_2026_WOLLONGONG = """# 1807 — Bachelor of Information Technology
 
 To qualify for the award of Bachelor of Information Technology, complete **144 credit points** and satisfy all course requirements:
 
-- **(a) Core — 96 CP:** Complete all core subjects listed in Section A (including the CSIT321 capstone). Core totals **96 CP**.
-- **(b) Major (optional, Wollongong):** To qualify for a major, complete **24 CP** from that major's list (Section C).
+- **(a) Core — 96 CP:** Complete all core subjects listed in Section A (**including CSIT321** at 12 CP). Core totals **96 CP** (Y1 42 + Y2 36 + CSIT314 6 + CSIT321 12).
+- **(b) Major (optional, Wollongong):** To qualify for a major, complete **24 CP** from that major's list (Section B).
 - **(c) No-major path (Wollongong):** If not undertaking a major, in addition to the 96 CP core, complete:
   - **18 CP** of **300-level** CSCI, CSIT or ISIT subjects, **and**
   - an additional **6 CP** subject at **200/300-level** CSCI, CSIT or ISIT
@@ -331,11 +331,23 @@ To qualify for the award of Bachelor of Information Technology, complete **144 c
 | ISIT219 | Autumn | CSIT128 |
 | ISIT224 | Spring | (CSIT113 OR CSIT123 OR BUS 101) AND another 18 CP at 100-level |
 
-### Year 3 Core (6 CP) — Complete
+### Year 3 Core (18 CP) — Complete ALL
 
-| Subject Code | Session Availability | Prerequisites |
-|-------------|---------------------|--------------|
-| CSIT314 | Autumn | CSIT214 AND 12 CP at 200-level CSCI/ISIT |
+| Subject Code | CP | Session Availability | Prerequisites | Corequisites |
+|-------------|-----|---------------------|--------------|-------------|
+| CSIT314 | 6 | Autumn | CSIT214 AND 12 CP at 200-level CSCI/ISIT | None |
+| CSIT321 | 12 | Two consecutive sessions (start session flexible) | CSIT214 AND an additional 18 CP at 200-level CSCI/CSIT/ISIT | CSIT226 AND CSIT314 |
+
+**CSIT321 is Core** and counts **12 CP** toward the **96 CP** core total (Year 1 42 + Year 2 36 + CSIT314 6 + CSIT321 12 = 96). Do **not** categorise CSIT321 as Elective or as a separate non-core bucket.
+
+**CSIT321 scheduling rules:**
+- Spans exactly **two consecutive sessions** (Part 1 then Part 2). There must be **no gap** between parts.
+- **Start session is flexible:** Part 1 may begin in **Autumn or Spring**, whichever fits the student's plan, provided all prerequisites and corequisites are satisfied.
+  - Example: Part 1 in **Spring**, Part 2 in the following **Autumn**.
+  - Example: Part 1 in **Autumn**, Part 2 in the following **Spring**.
+- If the student was enrolled in Part 1 in the **immediately preceding session**, they MUST be enrolled in Part 2 in the current session — do not insert a gap.
+- Schedule CSIT321 only after all prerequisites are fully satisfied (not merely enrolled).
+- CSIT226 and CSIT314 must be complete or co-enrolled as required by the corequisite rule.
 
 ### Equivalency / Replacement Rules
 
@@ -357,24 +369,7 @@ Official core replacement (Wol/Liv):
 
 ---
 
-## (B) Capstone — CSIT321 (12 CP)
-
-| Subject Code | CP | Session | Prerequisites | Corequisites |
-|-------------|-----|---------|--------------|-------------|
-| CSIT321 | 12 | Two consecutive sessions (start session is flexible) | CSIT214 AND an additional 18 CP at 200-level CSCI/CSIT/ISIT | CSIT226 AND CSIT314 |
-
-**Scheduling rules:**
-- CSIT321 spans exactly **two consecutive sessions** (Part 1 then Part 2). There must be **no gap** between parts.
-- **Start session is flexible:** Part 1 may begin in **Autumn or Spring**, whichever fits the student's plan, provided all prerequisites and corequisites are satisfied.
-  - Example: Part 1 in **Spring**, Part 2 in the following **Autumn**.
-  - Example: Part 1 in **Autumn**, Part 2 in the following **Spring**.
-- If the student was enrolled in Part 1 in the **immediately preceding session**, they MUST be enrolled in Part 2 in the current session — do not insert a gap.
-- Schedule CSIT321 only after all prerequisites are fully satisfied (not merely enrolled).
-- CSIT226 and CSIT314 must be complete or co-enrolled as required by the corequisite rule.
-
----
-
-## (C) Major Core Subjects — Complete ALL subjects in the declared major
+## (B) Major Core Subjects — Complete ALL subjects in the declared major
 
 Wollongong majors (**24 CP** each). Select **one or two** majors (see Global Rules (b) and (d)).
 Note: 300-level subjects in a major may require 100/200-level prerequisites that are **not** listed inside the major — look those up via `lookup_subjects_tool` / `lookup_major_tool`.
@@ -466,12 +461,14 @@ List every subject that is Complete (per the definition above). Then categorise 
 
 | Category | Rule |
 |----------|------|
-| Core | Appears in Section A core lists (Years 1–3) |
-| Major Core | Appears in the declared major's list in Section C |
+| Core | Appears in Section A (Years 1–3), **including CSIT321** (12 CP toward the 96 CP core) |
+| Major Core | Appears in the declared major's list in Section B |
 | Elective | Everything else (including "losing" replacements and discontinued subjects) |
 
+Never put CSIT321 in Elective — it is always Core when present (complete or enrolled toward the degree).
+
 **Step 1.4 — Count CP per category:**
-Sum CP for Core, Major Core, Electives. Remember: CSIT321 = 12 CP, all others = 6 CP.
+Sum CP for Core, Major Core, Electives. Remember: **CSIT321 = 12 CP** and those 12 CP belong in **Core** (part of the 96 CP core), all other listed subjects = 6 CP unless stated otherwise.
 
 **Step 1.5 — Total Complete CP:**
 Total Complete CP = Core CP + Major Core CP + Elective CP + Unspecified CP
@@ -479,8 +476,8 @@ Total Complete CP = Core CP + Major Core CP + Elective CP + Unspecified CP
 ⚠️ **DOUBLE CHECK Stage 1 before continuing:**
 1. Is the commencement year correct?
 2. Does each subject appear in exactly ONE category?
-3. Is CSIT321 counted as 12 CP?
-4. Does the arithmetic add up?
+3. Is CSIT321 categorised as **Core** (not Elective) and counted as **12 CP** toward the 96 CP core?
+4. Does Core CP + Major Core CP + Elective CP + Unspecified = Total Complete CP, and does Core approach 96 when fully done?
 5. Are declared majors correctly identified (or no-major path selected)?
 Correct any errors and repeat until all checks pass.
 
@@ -492,12 +489,11 @@ Start only after Stage 1 is fully verified.
 
 **Step 2.1 — List Outstanding Mandatory Subjects:**
 Identify subjects not completed in Stage 1 that are still required:
-- All remaining Core subjects (Section A)
-- All remaining Major Core subjects for each declared major (or No-Major Path requirements)
-- CSIT321 if not already complete
+- All remaining Core subjects in Section A (**including CSIT321** if not complete — it is part of the 96 CP core)
+- All remaining Major Core subjects for each declared major (Section B) or No-Major Path requirements
 
 **Step 2.2 — Assign Sessions:**
-Schedule each subject into the correct session based on Section A–C availability:
+Schedule each subject into the correct session based on Section A–B availability:
 - Autumn-only subjects → only Autumn
 - Spring-only subjects → only Spring
 - Autumn-or-Spring subjects → choose whichever fits the plan
