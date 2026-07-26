@@ -38,12 +38,18 @@ def make_fetch_handbook_tool(db: AsyncSession):
 
 @tool
 def confirm_metadata_tool(degree_code: str, year: int, campus: str) -> str:
-    """Record the student's degree_code, commencement year, and campus as confirmed.
+    """Record or switch the student's degree_code, commencement year, and campus.
 
-    Only call this AFTER the student has explicitly confirmed or corrected these
-    three values in conversation — never on the first turn, and never guess on
-    their behalf. Pass the final (possibly corrected) values. Do not call
-    fetch_handbook_tool or attempt any audit/planning before this has been called.
+    Call AFTER the student has explicitly confirmed, corrected, or asked to
+    switch these values — never on the first turn, and never guess on their
+    behalf. Pass the final (possibly corrected) values.
+
+    On first confirmation: do not call fetch_handbook_tool or attempt any
+    audit/planning before this has been called.
+
+    On a mid-chat degree/year/campus switch: call this again with the new
+    values; the cached handbook is cleared so you must re-fetch it for the
+    new program before advising.
     """
     return json.dumps({"degree_code": degree_code, "year": year, "campus": campus})
 
