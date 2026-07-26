@@ -1,4 +1,4 @@
-# CSIT110 â€” Fundamental Programming with Python
+# CSIT110 — Fundamental Programming with Python
 
 - **Credit Points:** 6
 - **Availability:**

@@ -1,4 +1,4 @@
-# CSIT128 â€” Introduction to Web Technology
+# CSIT128 — Introduction to Web Technology
 
 - **Credit Points:** 6
 - **Availability:**

@@ -1,4 +1,4 @@
-# ISIT312 â€” Big Data Management
+# ISIT312 — Big Data Management
 
 - **Credit Points:** 6
 - **Pre-Requisite:** CSIT115 and 18 credit points at 200 level

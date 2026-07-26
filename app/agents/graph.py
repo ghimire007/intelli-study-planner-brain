@@ -23,7 +23,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.agents.skills import build_skills
 from app.core.config import settings
 from app.prompts.builder import build_system_prompt
-from app.services.sols_parser import meta_is_complete, parse_sols
+from app.services.sols_parser import parse_sols
 
 
 class AdvisorState(TypedDict):
@@ -35,6 +35,40 @@ class AdvisorState(TypedDict):
     meta: dict | None
     meta_confirmed: bool
     handbook: str | None
+
+
+def apply_confirm_metadata(prior_meta: dict | None, new_meta: dict) -> dict:
+    """Apply confirmed meta; clear handbook when degree/year/campus change.
+
+    Mid-chat degree (or year/campus) switches must invalidate the cached
+    handbook so the next turn re-fetches rules for the new program.
+    Major may be stored on meta but does not by itself clear the handbook.
+    """
+    updates: dict = {"meta": new_meta, "meta_confirmed": True}
+    old = prior_meta or {}
+    if (
+        old.get("degree_code") != new_meta.get("degree_code")
+        or old.get("year") != new_meta.get("year")
+        or old.get("campus") != new_meta.get("campus")
+    ):
+        updates["handbook"] = None
+    return updates
+
+
+def fold_tool_results(state: AdvisorState, batch: list[ToolMessage]) -> dict:
+    """Fold a chronological tool-result batch into AdvisorState updates.
+
+    Confirm/switch runs before fetch in the same turn so a cleared handbook
+    can be replaced by a freshly fetched one without being wiped again.
+    """
+    updates: dict = {}
+    for message in batch:
+        if message.name == "confirm_metadata_tool":
+            prior = updates.get("meta", state.get("meta"))
+            updates.update(apply_confirm_metadata(prior, json.loads(message.content)))
+        elif message.name == "fetch_handbook_tool":
+            updates["handbook"] = message.content
+    return updates
 
 
 def _make_llm() -> ChatGoogleGenerativeAI:
@@ -60,7 +94,9 @@ def build_advisor_graph(db: AsyncSession, checkpointer: BaseCheckpointSaver):
             return {}
         meta = await parse_sols(parser_llm, state["raw_sols"])
         data = meta.model_dump()
-        return {"meta": data, "meta_confirmed": meta_is_complete(data)}
+        # Never auto-confirm: the agent must ask the student (one question) and
+        # call confirm_metadata_tool, even if the parser extracted candidate values.
+        return {"meta": data, "meta_confirmed": False}
 
     async def agent(state: AdvisorState) -> dict:
         confirmed = state.get("meta_confirmed", False)
@@ -84,19 +120,19 @@ def build_advisor_graph(db: AsyncSession, checkpointer: BaseCheckpointSaver):
         return END
 
     def capture_tool_results(state: AdvisorState) -> dict:
-        """Cache fetch_handbook_tool's result into state.handbook, and
-        confirm_metadata_tool's result into state.meta/meta_confirmed, so
-        later turns reuse them instead of re-deriving them every time."""
-        updates: dict = {}
+        """Update AdvisorState with the latest tool results.
+
+        Processes tools in chronological order so a confirm/switch that
+        clears ``handbook`` can be followed by a fresh ``fetch_handbook_tool``
+        in the same turn without the clear wiping the new cache.
+        """
+        batch: list[ToolMessage] = []
         for message in reversed(state["messages"]):
             if not isinstance(message, ToolMessage):
                 break  # only the most recent batch of tool results
-            if message.name == "fetch_handbook_tool" and "handbook" not in updates:
-                updates["handbook"] = message.content
-            if message.name == "confirm_metadata_tool" and "meta_confirmed" not in updates:
-                updates["meta"] = json.loads(message.content)
-                updates["meta_confirmed"] = True
-        return updates
+            batch.append(message)
+        batch.reverse()
+        return fold_tool_results(state, batch)
 
     graph = StateGraph(AdvisorState)
     graph.add_node("parse_input", parse_input)

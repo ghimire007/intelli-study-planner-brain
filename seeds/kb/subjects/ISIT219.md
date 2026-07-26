@@ -1,4 +1,4 @@
-# ISIT219 â€” Knowledge and Information Engineering
+# ISIT219 — Knowledge and Information Engineering
 
 - **Credit Points:** 6
 - **Pre-Requisite:** CSIT128

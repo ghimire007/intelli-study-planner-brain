@@ -1,4 +1,4 @@
-# CSIT226 â€” Human Computer Interaction
+# CSIT226 — Human Computer Interaction
 
 - **Credit Points:** 6
 - **Availability:**

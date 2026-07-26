@@ -1,4 +1,4 @@
-# CSCI203 â€” Algorithms and Data Structures
+# CSCI203 — Algorithms and Data Structures
 
 - **Credit Points:** 6
 - **Pre-Requisite:** (CSIT110 or CSIT111) AND (CSIT113 or CSIT123)

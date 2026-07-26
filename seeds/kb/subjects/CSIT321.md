@@ -1,4 +1,4 @@
-# CSIT321 â€” Project
+# CSIT321 — Project
 
 - **Credit Points:** 12
 - **Co-Requisite:** CSIT226 AND CSIT314

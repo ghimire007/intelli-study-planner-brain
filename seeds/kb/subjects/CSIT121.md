@@ -1,4 +1,4 @@
-# CSIT121 â€” Object Oriented Design and Programming
+# CSIT121 — Object Oriented Design and Programming
 
 - **Credit Points:** 6
 - **Pre-Requisite:** CSIT110 OR CSIT111 OR ENGG100

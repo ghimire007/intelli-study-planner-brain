@@ -1,4 +1,4 @@
-# CSCI368 â€” Network Security
+# CSCI368 — Network Security
 
 - **Credit Points:** 6
 - **Pre-Requisite:** CSIT127, CSIT121, and 12cp 200 level CSCI/CSIT

@@ -1,4 +1,4 @@
-# CSIT305 â€” Emerging Information Technologies and their Applications
+# CSIT305 — Emerging Information Technologies and their Applications
 
 - **Credit Points:** 6
 - **Availability:**

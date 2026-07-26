@@ -1,4 +1,4 @@
-# CSCI356 â€” Game Engine Essentials
+# CSCI356 — Game Engine Essentials
 
 - **Credit Points:** 6
 - **Co-Requisite:** CSIT214

@@ -1,0 +1,92 @@
+{
+  "MAJ40163": {
+    "code": "MAJ40163",
+    "title": "Network Design and Management",
+    "cp": "24",
+    "description": "Every major company in the world now relies on networks to survive. Network designers enable governments and businesses to share data and applications to achieve greater strategic advantage through, for example, the use of social media and cloud computing. Whether it\u2019s a multinational company with offices throughout the world or a small start-up business, IT networks provide the means by which people can stay connected with each other and the latest information. Network managers ensure networks operate reliably, so that their performance is appropriate to the organisation\u2019s needs, as well as being made secure from external threats. By studying network design and management you will develop the skills necessary to build or manage networks to support businesses and governments in a competitive global market.",
+    "structure": [
+      {
+        "title": "Core",
+        "cp": "24",
+        "description": "Select 4 subjects from the list below, 300 level subjects required as part of a major, may have 100 and 200 level prerequisite subjects which are not listed as part of the major.",
+        "items": [
+          {
+            "code": "ISIT212",
+            "name": "Corporate Network  Planning and Design",
+            "cp": "6",
+            "type": null,
+            "url": "/subjects/2021/ISIT212"
+          },
+          {
+            "code": "CSCI322",
+            "name": "Systems Administration",
+            "cp": "6",
+            "type": null,
+            "url": "/subjects/2021/CSCI322"
+          },
+          {
+            "code": "ISIT302",
+            "name": "Corporate Network Management",
+            "cp": "6",
+            "type": null,
+            "url": "/subjects/2021/ISIT302"
+          },
+          {
+            "code": "CSIT302",
+            "name": "Cybersecurity",
+            "cp": "6",
+            "type": null,
+            "url": "/subjects/2022/CSIT302"
+          }
+        ],
+        "children": []
+      }
+    ],
+    "url": "https://courses.uow.edu.au/aos/2026/MAJ40163"
+  },
+  "MAJ40246": {
+    "code": "MAJ40246",
+    "title": "Web Design and Development",
+    "cp": "24",
+    "description": "With more communication and commerce being conducted online than ever before, the web provides incredible opportunities for businesses and individuals working in web development. Web design has become an integral part of our personal and business lives. Animated graphics, key words, user interface design, usability testing and easy to use information flows give customised websites a competitive edge in today&#39;s digital media economy.\n\nWeb designers and developers create visual architecture for the web using code that is clean, maintainable, user-friendly and responsive to changing business needs and customer requirements. This course provides you with the technical knowledge to design and develop effective websites and web applications for online shopping, online auctions, employee kiosks, online catalogues or social networks. You&#39;ll learn about issues related to usability and accessibility, navigation, site structure and information architecture.",
+    "structure": [
+      {
+        "title": "Core",
+        "cp": "24",
+        "description": "Select 4 subjects from the list below. 300 level subjects required as part of a major, may have 100 and 200 level prerequisite subjects which are not listed as part of the major.",
+        "items": [
+          {
+            "code": "ISIT207",
+            "name": "Frontend Web Programming",
+            "cp": "6",
+            "type": null,
+            "url": "/subjects/2021/ISIT207"
+          },
+          {
+            "code": "CSIT377",
+            "name": "Enterprise Web Development",
+            "cp": "6",
+            "type": null,
+            "url": "/subjects/2022/CSIT377"
+          },
+          {
+            "code": "ISIT307",
+            "name": "Web Server Programming",
+            "cp": "6",
+            "type": null,
+            "url": "/subjects/2021/ISIT307"
+          },
+          {
+            "code": "CSIT328",
+            "name": "Web Security",
+            "cp": "6",
+            "type": null,
+            "url": "/subjects/2023/CSIT328"
+          }
+        ],
+        "children": []
+      }
+    ],
+    "url": "https://courses.uow.edu.au/aos/2026/MAJ40246"
+  }
+}

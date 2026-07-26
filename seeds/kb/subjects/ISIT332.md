@@ -1,4 +1,4 @@
-# ISIT332 â€” Business Process Management
+# ISIT332 — Business Process Management
 
 - **Credit Points:** 6
 - **Co-Requisite:** 12 credit points at 200 level

@@ -1,4 +1,4 @@
-# CSIT242 â€” Mobile Application Development
+# CSIT242 — Mobile Application Development
 
 - **Credit Points:** 6
 - **Pre-Requisite:** CSIT121

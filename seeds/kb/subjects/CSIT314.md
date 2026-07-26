@@ -1,4 +1,4 @@
-# CSIT314 â€” Software Development Methodologies
+# CSIT314 — Software Development Methodologies
 
 - **Credit Points:** 6
 - **Pre-Requisite:** CSIT214 and 12 credit points at 200 level CSCI/ISIT

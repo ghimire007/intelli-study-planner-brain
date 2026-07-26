@@ -21,7 +21,7 @@ Extract the following three fields from the UOW SOLS enrolment record and return
 }
 
 Rules:
-- degree_code is the course number, e.g. "766". Return null if you cannot find one you're confident in — do not guess.
+- degree_code is the course number (e.g. "766" or "1807"). Return null if you cannot find one you're confident in — do not guess and do not default to 766.
 - year is the earliest year found in the subject list (the student's commencement year). Return null if it cannot be determined.
 - campus is the canonical campus name — map as follows:
     "Wol", "Wollongong", "UOW Wollongong" → "Wollongong"

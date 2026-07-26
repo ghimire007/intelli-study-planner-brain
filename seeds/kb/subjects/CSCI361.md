@@ -1,4 +1,4 @@
-# CSCI361 â€” Cryptography and Secure Applications
+# CSCI361 — Cryptography and Secure Applications
 
 - **Credit Points:** 6
 - **Pre-Requisite:** CSIT121 + 12cp 200 level CSCI

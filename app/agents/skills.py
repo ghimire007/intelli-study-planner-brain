@@ -37,15 +37,37 @@ def make_fetch_handbook_tool(db: AsyncSession):
 
 
 @tool
-def confirm_metadata_tool(degree_code: str, year: int, campus: str) -> str:
-    """Record the student's degree_code, commencement year, and campus as confirmed.
+def confirm_metadata_tool(
+    degree_code: str,
+    year: int,
+    campus: str,
+    major: str | None = None,
+) -> str:
+    """Record or switch the student's degree_code, commencement year, campus, and major.
 
-    Only call this AFTER the student has explicitly confirmed or corrected these
-    three values in conversation — never on the first turn, and never guess on
-    their behalf. Pass the final (possibly corrected) values. Do not call
-    fetch_handbook_tool or attempt any audit/planning before this has been called.
+    Call AFTER the student has answered the intake question (or corrected/switched
+    these values) — never guess on their behalf, and never call this before they
+    have replied with the details.
+
+    Pass the final values. For major, use the major name and/or MAJ code when
+    known (e.g. "Web Design and Development (MAJ40246)"), or "none" / null if
+    they have no major.
+
+    On first confirmation: do not call fetch_handbook_tool or attempt any
+    audit/planning before this has been called.
+
+    On a mid-chat degree/year/campus switch: call this again with the new
+    values; the cached handbook is cleared so you must re-fetch it for the
+    new program before advising.
     """
-    return json.dumps({"degree_code": degree_code, "year": year, "campus": campus})
+    return json.dumps(
+        {
+            "degree_code": degree_code,
+            "year": year,
+            "campus": campus,
+            "major": major,
+        }
+    )
 
 
 def make_lookup_subjects_tool(db: AsyncSession):

@@ -1,4 +1,4 @@
-# CSIT214 â€” IT Project Management
+# CSIT214 — IT Project Management
 
 - **Credit Points:** 6
 - **Pre-Requisite:** CSIT114

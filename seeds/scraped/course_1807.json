@@ -1,0 +1,820 @@
+{
+  "code": "1807",
+  "title": "Bachelor of Information Technology",
+  "year": 2026,
+  "cp": "144",
+  "structure": [
+    {
+      "title": "Bachelor of Information Technology at Liverpool Campus",
+      "cp": "144",
+      "description": "",
+      "items": [],
+      "children": [
+        {
+          "title": "Year 2",
+          "cp": "48",
+          "description": "",
+          "items": [],
+          "children": [
+            {
+              "title": "Major Study or Elective",
+              "cp": "12",
+              "description": "Select 2 subjects from the majors below OR Select 2 CSIT, CSCI or ISIT coded subjects (not in the core or chosen major) or from the General Schedule.",
+              "items": [],
+              "children": []
+            },
+            {
+              "title": "Core",
+              "cp": "36",
+              "description": "Complete the following 6 subjects:",
+              "items": [
+                {
+                  "code": "CSIT205",
+                  "name": "Generative AI",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2025/CSIT205"
+                },
+                {
+                  "code": "CSIT305",
+                  "name": "Emerging Information Technologies and their Applications",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2025/CSIT305"
+                },
+                {
+                  "code": "CSIT214",
+                  "name": "IT Project Management",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2021/CSIT214"
+                },
+                {
+                  "code": "ISIT224",
+                  "name": "Management Information Systems",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2021/ISIT224"
+                },
+                {
+                  "code": "ISIT219",
+                  "name": "Knowledge and Information Engineering",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2021/ISIT219"
+                },
+                {
+                  "code": "CSIT226",
+                  "name": "Human Computer Interaction",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2021/CSIT226"
+                }
+              ],
+              "children": []
+            }
+          ]
+        },
+        {
+          "title": "Year 3",
+          "cp": "42",
+          "description": "",
+          "items": [],
+          "children": [
+            {
+              "title": "Major Study or Elective ",
+              "cp": "30",
+              "description": "Select remaining subjects required to complete the major below OR select 3 subjects CSIT, CSCI or ISIT coded subjects at 300 level  (not in the core or chosen major) and 2 subjects from CSIT, CSCI or ISIT or the General Schedule.",
+              "items": [],
+              "children": []
+            },
+            {
+              "title": "Capstone",
+              "cp": "12",
+              "description": "This core subject is taken in the final year, and takes two standard sessions to complete.",
+              "items": [
+                {
+                  "code": "CSIT321",
+                  "name": "Project",
+                  "cp": "12",
+                  "type": null,
+                  "url": "/subjects/2021/CSIT321"
+                }
+              ],
+              "children": []
+            },
+            {
+              "title": "Core",
+              "cp": "6",
+              "description": "",
+              "items": [
+                {
+                  "code": "CSIT314",
+                  "name": "Software Development Methodologies",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2023/CSIT314"
+                }
+              ],
+              "children": []
+            }
+          ]
+        },
+        {
+          "title": "Year 1",
+          "cp": "48",
+          "description": "",
+          "items": [],
+          "children": [
+            {
+              "title": "Core",
+              "cp": "42",
+              "description": "Complete the following 7 subjects:",
+              "items": [
+                {
+                  "code": "CSIT110",
+                  "name": "Fundamental Programming with Python",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2022/CSIT110"
+                },
+                {
+                  "code": "CSIT114",
+                  "name": "System Analysis",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2021/CSIT114"
+                },
+                {
+                  "code": "CSIT127",
+                  "name": "Networks and Communications",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2021/CSIT127"
+                },
+                {
+                  "code": "CSIT123",
+                  "name": "Computing and Cyber Security Fundamentals",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2023/CSIT123"
+                },
+                {
+                  "code": "CSIT128",
+                  "name": "Introduction to Web Technology",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2021/CSIT128"
+                },
+                {
+                  "code": "CSIT115",
+                  "name": "Database Management Systems",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2025/CSIT115"
+                },
+                {
+                  "code": "CSIT121",
+                  "name": "Object Oriented Design and Programming",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2021/CSIT121"
+                }
+              ],
+              "children": []
+            },
+            {
+              "title": "Elective",
+              "cp": "6",
+              "description": "Select 1 CSIT, CSCI or ISIT coded subject (not in the core or chosen major) or 1 subject from the General Schedule.",
+              "items": [],
+              "children": []
+            }
+          ]
+        },
+        {
+          "title": "Major Study at Liverpool",
+          "cp": "24",
+          "description": "Select a major from the list below,  Note: 300 level subjects required as part of a major, may have 100 and 200 level prerequisite subjects which are not listed as part of the major.",
+          "items": [
+            {
+              "code": "MAJ40163",
+              "name": "Network Design and Management",
+              "cp": "24",
+              "type": null,
+              "url": "/aos/2021/MAJ40163"
+            }
+          ],
+          "children": []
+        }
+      ]
+    },
+    {
+      "title": "Bachelor of Information Technology at Wollongong campus",
+      "cp": "144",
+      "description": "",
+      "items": [],
+      "children": [
+        {
+          "title": "Major Studies at Wollongong Campus",
+          "cp": "24",
+          "description": "Select one or two of the majors below. Note: 300 level subjects required as part of a major, may have 100 and 200 level prerequisite subjects which are not listed as part of the major.",
+          "items": [
+            {
+              "code": "MAJ40246",
+              "name": "Web Design and Development",
+              "cp": "24",
+              "type": null,
+              "url": "/aos/2021/MAJ40246"
+            },
+            {
+              "code": "MAJ40163",
+              "name": "Network Design and Management",
+              "cp": "24",
+              "type": null,
+              "url": "/aos/2021/MAJ40163"
+            }
+          ],
+          "children": []
+        },
+        {
+          "title": "Year 3",
+          "cp": "48",
+          "description": "",
+          "items": [],
+          "children": [
+            {
+              "title": "Capstone",
+              "cp": "12",
+              "description": "This core subject is taken in the final year, and takes two standard sessions to complete.",
+              "items": [
+                {
+                  "code": "CSIT321",
+                  "name": "Project",
+                  "cp": "12",
+                  "type": null,
+                  "url": "/subjects/2021/CSIT321"
+                }
+              ],
+              "children": []
+            },
+            {
+              "title": "Core",
+              "cp": "6",
+              "description": "",
+              "items": [
+                {
+                  "code": "CSIT314",
+                  "name": "Software Development Methodologies",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2023/CSIT314"
+                }
+              ],
+              "children": []
+            },
+            {
+              "title": "Major Study or Elective",
+              "cp": "30",
+              "description": "Select remaining subjects as one of the following options;  \na) one major (24 credit points) and one elective; \nb) two majors (48 credit points); \nc) select three CSIT, CSCI or ISIT subjects at 300 level, one CSIT, CSCI or ISIT at 200/300 level and one elective subject from CSIT, CSCI, or ISIT or the General Schedule. \nNote that elective subjects are not in the core or chosen major. ",
+              "items": [],
+              "children": []
+            }
+          ]
+        },
+        {
+          "title": "Year 1",
+          "cp": "48",
+          "description": "",
+          "items": [],
+          "children": [
+            {
+              "title": "Core",
+              "cp": "42",
+              "description": "Complete the following 7 subjects:",
+              "items": [
+                {
+                  "code": "CSIT127",
+                  "name": "Networks and Communications",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2021/CSIT127"
+                },
+                {
+                  "code": "CSIT123",
+                  "name": "Computing and Cyber Security Fundamentals",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2023/CSIT123"
+                },
+                {
+                  "code": "CSIT110",
+                  "name": "Fundamental Programming with Python",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2022/CSIT110"
+                },
+                {
+                  "code": "CSIT114",
+                  "name": "System Analysis",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2021/CSIT114"
+                },
+                {
+                  "code": "CSIT121",
+                  "name": "Object Oriented Design and Programming",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2021/CSIT121"
+                },
+                {
+                  "code": "CSIT128",
+                  "name": "Introduction to Web Technology",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2021/CSIT128"
+                },
+                {
+                  "code": "CSIT115",
+                  "name": "Database Management Systems",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2025/CSIT115"
+                }
+              ],
+              "children": []
+            },
+            {
+              "title": "Elective",
+              "cp": "6",
+              "description": "Select 1 CSIT, CSCI or ISIT coded subject (not in the core) or 1 subject from the General Schedule. Note: If you are planning to obtain two majors, you should pay attention to the requirements for all the degree and double majors.",
+              "items": [],
+              "children": []
+            }
+          ]
+        },
+        {
+          "title": "Year 2",
+          "cp": "48",
+          "description": "",
+          "items": [],
+          "children": [
+            {
+              "title": "Core",
+              "cp": "36",
+              "description": "Complete the following 6 subjects:",
+              "items": [
+                {
+                  "code": "ISIT219",
+                  "name": "Knowledge and Information Engineering",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2025/ISIT219"
+                },
+                {
+                  "code": "CSIT214",
+                  "name": "IT Project Management",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2021/CSIT214"
+                },
+                {
+                  "code": "CSIT226",
+                  "name": "Human Computer Interaction",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2021/CSIT226"
+                },
+                {
+                  "code": "CSIT305",
+                  "name": "Emerging Information Technologies and their Applications",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2025/CSIT305"
+                },
+                {
+                  "code": "CSIT205",
+                  "name": "Generative AI",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2025/CSIT205"
+                },
+                {
+                  "code": "ISIT224",
+                  "name": "Management Information Systems",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2021/ISIT224"
+                }
+              ],
+              "children": []
+            },
+            {
+              "title": "Major Study or Elective",
+              "cp": "12",
+              "description": "Select 2 subjects from the majors below OR Select 2 CSIT, CSCI or ISIT coded subjects (not in the core or chosen major) or from the General Schedule.",
+              "items": [],
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Bachelor of Information Technology at Singapore Institute of Management, Singapore",
+      "cp": "144",
+      "description": "",
+      "items": [],
+      "children": [
+        {
+          "title": "Year 1",
+          "cp": "48",
+          "description": "",
+          "items": [],
+          "children": [
+            {
+              "title": "Elective",
+              "cp": "6",
+              "description": "Select 1 subject from the Information Technology/Business elective from the list below.",
+              "items": [],
+              "children": []
+            },
+            {
+              "title": "Core",
+              "cp": "42",
+              "description": "Complete the following 7 subjects:",
+              "items": [
+                {
+                  "code": "CSIT111",
+                  "name": "Programming Fundamentals",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2021/CSIT111"
+                },
+                {
+                  "code": "CSIT113",
+                  "name": "Problem Solving",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2021/CSIT113"
+                },
+                {
+                  "code": "CSIT121",
+                  "name": "Object Oriented Design and Programming",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2021/CSIT121"
+                },
+                {
+                  "code": "CSIT114",
+                  "name": "System Analysis",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2021/CSIT114"
+                },
+                {
+                  "code": "CSIT115",
+                  "name": "Database Management Systems",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2025/CSIT115"
+                },
+                {
+                  "code": "CSIT127",
+                  "name": "Networks and Communications",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2021/CSIT127"
+                },
+                {
+                  "code": "CSIT128",
+                  "name": "Introduction to Web Technology",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2023/CSIT128"
+                }
+              ],
+              "children": []
+            }
+          ]
+        },
+        {
+          "title": "Year 3",
+          "cp": "48",
+          "description": "",
+          "items": [],
+          "children": [
+            {
+              "title": "Capstone",
+              "cp": "12",
+              "description": "This subject is core and takes two standard sessions to complete:",
+              "items": [
+                {
+                  "code": "CSIT321",
+                  "name": "Project",
+                  "cp": "12",
+                  "type": null,
+                  "url": "/subjects/2021/CSIT321"
+                }
+              ],
+              "children": []
+            },
+            {
+              "title": "Elective",
+              "cp": "6",
+              "description": "Select 1 subject from the Information Technology/Business elective from the list below.",
+              "items": [],
+              "children": []
+            },
+            {
+              "title": "Core",
+              "cp": "30",
+              "description": "Complete 5 subject listed below:",
+              "items": [
+                {
+                  "code": "ISIT312",
+                  "name": "Big Data Management",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2021/ISIT312"
+                },
+                {
+                  "code": "CSIT314",
+                  "name": "Software Development Methodologies",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2021/CSIT314"
+                },
+                {
+                  "code": "ISIT332",
+                  "name": "Business Process Management",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2021/ISIT332"
+                },
+                {
+                  "code": "CSCI322",
+                  "name": "Systems Administration",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2021/CSCI322"
+                },
+                {
+                  "code": "ISIT307",
+                  "name": "Web Server Programming",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2021/ISIT307"
+                }
+              ],
+              "children": []
+            }
+          ]
+        },
+        {
+          "title": " Information Technology/Business elective list",
+          "cp": "",
+          "description": "Electives are subject to change and availability. Not all subjects will be offered every session",
+          "items": [
+            {
+              "code": "CSIT110",
+              "name": "Fundamental Programming with Python",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2021/CSIT110"
+            },
+            {
+              "code": "ACCY112",
+              "name": "Accounting In Organisations",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2022/ACCY112"
+            },
+            {
+              "code": "MARK101",
+              "name": "Marketing Principles",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2021/MARK101"
+            },
+            {
+              "code": "CSCI251",
+              "name": "Advanced Programming",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2021/CSCI251"
+            },
+            {
+              "code": "ECON251",
+              "name": "Industry and Trade in Asia",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2021/ECON251"
+            },
+            {
+              "code": "ACCY111",
+              "name": "Accounting Fundamentals In Society",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2022/ACCY111"
+            },
+            {
+              "code": "CSCI368",
+              "name": "Network Security",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2021/CSCI368"
+            },
+            {
+              "code": "BUS 121",
+              "name": "Statistics for Business",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2025/BUS 121"
+            },
+            {
+              "code": "CSCI336",
+              "name": "Interactive Computer Graphics",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2021/CSCI336"
+            },
+            {
+              "code": "INFO411",
+              "name": "Data Mining and Knowledge Discovery",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2021/INFO411"
+            },
+            {
+              "code": "CSCI361",
+              "name": "Cryptography and Secure Applications",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2021/CSCI361"
+            },
+            {
+              "code": "CSCI236",
+              "name": "3D Modelling and Animation",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2020/CSCI236"
+            },
+            {
+              "code": "MGNT102",
+              "name": "Professional Communication: Concepts and Practices",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2023/MGNT102"
+            },
+            {
+              "code": "CSCI235",
+              "name": "Database Systems",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2021/CSCI235"
+            },
+            {
+              "code": "CSCI366",
+              "name": "Mobile Multimedia",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2021/CSCI366"
+            },
+            {
+              "code": "ISIT306",
+              "name": "Strategic eBusiness Solutions",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2020/ISIT306"
+            },
+            {
+              "code": "ISIT207",
+              "name": "Frontend Web Programming",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2021/ISIT207"
+            },
+            {
+              "code": "CSCI356",
+              "name": "Game Engine Essentials",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2021/CSCI356"
+            },
+            {
+              "code": "ECON100",
+              "name": "Economic Essentials for Business",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2021/ECON100"
+            },
+            {
+              "code": "CSCI317",
+              "name": "Database Performance Tuning",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2021/CSCI317"
+            },
+            {
+              "code": "CSCI203",
+              "name": "Algorithms and Data Structures",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2021/CSCI203"
+            },
+            {
+              "code": "CSCI376",
+              "name": "Multicore and GPU Programming",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2021/CSCI376"
+            },
+            {
+              "code": "CSCI262",
+              "name": "System Security",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2021/CSCI262"
+            },
+            {
+              "code": "CSIT242",
+              "name": "Mobile Application Development",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2021/CSIT242"
+            }
+          ],
+          "children": []
+        },
+        {
+          "title": "Year 2",
+          "cp": "48",
+          "description": "",
+          "items": [],
+          "children": [
+            {
+              "title": "Core",
+              "cp": "36",
+              "description": "Complete the following 6 subjects:",
+              "items": [
+                {
+                  "code": "ISIT204",
+                  "name": "Principles of eBusiness",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2021/ISIT204"
+                },
+                {
+                  "code": "ISIT224",
+                  "name": "Management Information Systems",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2021/ISIT224"
+                },
+                {
+                  "code": "CSIT214",
+                  "name": "IT Project Management",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2021/CSIT214"
+                },
+                {
+                  "code": "ISIT219",
+                  "name": "Knowledge and Information Engineering",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2025/ISIT219"
+                },
+                {
+                  "code": "CSIT226",
+                  "name": "Human Computer Interaction",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2021/CSIT226"
+                },
+                {
+                  "code": "MATH223",
+                  "name": "Mathematics for Information Technology",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2021/MATH223"
+                }
+              ],
+              "children": []
+            },
+            {
+              "title": "Elective",
+              "cp": "12",
+              "description": "Select 2 subjects from the Information Technology/Business elective from the list below.",
+              "items": [],
+              "children": []
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "url": "https://courses.uow.edu.au/courses/2026/1807"
+}
