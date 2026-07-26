@@ -10,7 +10,9 @@ def build_system_prompt(*, meta: dict, meta_confirmed: bool, handbook: str | Non
     if meta_confirmed:
         metadata_note = (
             f"\n\nStudent metadata: degree_code={meta['degree_code']}, year={meta['year']}, "
-            f"campus={meta['campus']}."
+            f"campus={meta['campus']}. If the student asks to switch degree, year, or campus, "
+            "call confirm_metadata_tool with the new values (this clears the cached handbook), "
+            "then call fetch_handbook_tool before advising under the new program."
         )
         handbook_placeholder = "(not yet fetched — call fetch_handbook_tool)"
     else:
