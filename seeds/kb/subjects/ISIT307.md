@@ -1,4 +1,4 @@
-# ISIT307 â€” Web Server Programming
+# ISIT307 — Web Server Programming
 
 - **Credit Points:** 6
 - **Pre-Requisite:** (CSIT110 or CSIT111) and CSIT115 and CSIT128 and 12 credit points at 200 level

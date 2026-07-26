@@ -1,0 +1,6 @@
+# MATH223 — Mathematics for Information Technology
+
+- **Credit Points:** 6
+- **Handbook URL:** https://courses.uow.edu.au/subjects/2026/MATH223
+
+MATH223 is a core subject for information technology students, providing key mathematical and statistical knowledge. The subject is split into two strands: the Calculus Strand and the Data Analysis Strand. Calculus Strand: This strand begins by reviewing mathematical principles and tools that support analysis in the IT workplace, including algebraic concepts, summation, polynomials, integrals, derivatives, and special functions (exp, log). The material is applied to understand essential concepts in mathematical finance. The strand concludes with project evaluation techniques, such as return-on-investment. Data Analysis Strand: This strand applies the core mathematical concepts to discrete and continuous probability. The strand begins with basic data analysis, including univariate and bivariate data, association, correlation and simple linear regression. Study continues with discrete probability models (binomial and Poisson) and continuous distributions, including normal and uniform. The subject ends with confidence intervals and introductory hypothesis testing, such as the Chi-squared test for association and one-sample t-test.

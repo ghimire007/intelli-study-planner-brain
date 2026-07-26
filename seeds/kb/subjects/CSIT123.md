@@ -1,4 +1,4 @@
-# CSIT123 â€” Computing and Cyber Security Fundamentals
+# CSIT123 — Computing and Cyber Security Fundamentals
 
 - **Credit Points:** 6
 - **Availability:**

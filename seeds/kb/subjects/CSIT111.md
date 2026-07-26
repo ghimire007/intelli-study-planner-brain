@@ -1,4 +1,4 @@
-# CSIT111 â€” Programming Fundamentals
+# CSIT111 — Programming Fundamentals
 
 - **Credit Points:** 6
 - **Handbook URL:** https://courses.uow.edu.au/subjects/2026/CSIT111

@@ -1,4 +1,4 @@
-# CSCI322 â€” Systems Administration
+# CSCI322 — Systems Administration
 
 - **Credit Points:** 6
 - **Pre-Requisite:** CSIT127 plus 18 credit points at 200 level

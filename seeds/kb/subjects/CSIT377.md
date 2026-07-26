@@ -1,4 +1,4 @@
-# CSIT377 â€” Enterprise Cloud Development
+# CSIT377 — Enterprise Cloud Development
 
 - **Credit Points:** 6
 - **Pre-Requisite:** CSIT128 and 6 credit points at 200 level

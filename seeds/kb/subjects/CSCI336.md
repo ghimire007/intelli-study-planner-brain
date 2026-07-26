@@ -1,4 +1,4 @@
-# CSCI336 â€” Interactive Computer Graphics
+# CSCI336 — Interactive Computer Graphics
 
 - **Credit Points:** 6
 - **Pre-Requisite:** CSIT121 and 18 credit points at 200 level

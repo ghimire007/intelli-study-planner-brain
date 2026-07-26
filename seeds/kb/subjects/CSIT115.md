@@ -1,4 +1,4 @@
-# CSIT115 â€” Database Management Systems
+# CSIT115 — Database Management Systems
 
 - **Credit Points:** 6
 - **Availability:**

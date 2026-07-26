@@ -23,7 +23,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.agents.skills import build_skills
 from app.core.config import settings
 from app.prompts.builder import build_system_prompt
-from app.services.sols_parser import meta_is_complete, parse_sols
+from app.services.sols_parser import parse_sols
 
 
 class AdvisorState(TypedDict):
@@ -42,6 +42,7 @@ def apply_confirm_metadata(prior_meta: dict | None, new_meta: dict) -> dict:
 
     Mid-chat degree (or year/campus) switches must invalidate the cached
     handbook so the next turn re-fetches rules for the new program.
+    Major may be stored on meta but does not by itself clear the handbook.
     """
     updates: dict = {"meta": new_meta, "meta_confirmed": True}
     old = prior_meta or {}
@@ -93,7 +94,9 @@ def build_advisor_graph(db: AsyncSession, checkpointer: BaseCheckpointSaver):
             return {}
         meta = await parse_sols(parser_llm, state["raw_sols"])
         data = meta.model_dump()
-        return {"meta": data, "meta_confirmed": meta_is_complete(data)}
+        # Never auto-confirm: the agent must ask the student (one question) and
+        # call confirm_metadata_tool, even if the parser extracted candidate values.
+        return {"meta": data, "meta_confirmed": False}
 
     async def agent(state: AdvisorState) -> dict:
         confirmed = state.get("meta_confirmed", False)
@@ -117,7 +120,7 @@ def build_advisor_graph(db: AsyncSession, checkpointer: BaseCheckpointSaver):
         return END
 
     def capture_tool_results(state: AdvisorState) -> dict:
-        """Fold the latest tool batch into AdvisorState.
+        """Update AdvisorState with the latest tool results.
 
         Processes tools in chronological order so a confirm/switch that
         clears ``handbook`` can be followed by a fresh ``fetch_handbook_tool``

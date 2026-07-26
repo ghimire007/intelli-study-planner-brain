@@ -20,7 +20,7 @@ from app.models.major import Major
 from app.models.subject import Subject
 
 SEEDS_DIR = Path(__file__).resolve().parent
-KB_COURSE = "766"
+KB_COURSES = ("766", "1807")
 KB_YEAR = 2026
 
 HANDBOOK_766_2026_WOLLONGONG = """# 766 — Bachelor of Computer Science (Wollongong Campus, 2026 Handbook)
@@ -568,7 +568,7 @@ async def _upsert(session, model, year: int, code: str, values: dict) -> str:
     return "inserted"
 
 
-async def seed_knowledge_base(session, course: str = KB_COURSE, year: int = KB_YEAR) -> None:
+async def seed_knowledge_base(session, course: str, year: int = KB_YEAR) -> None:
     """Upsert subject/major rows from seeds/scraped/ + seeds/kb/ card files."""
     plans = [
         (Subject, "subjects", SEEDS_DIR / "scraped" / f"subjects_{course}.json"),
@@ -578,6 +578,7 @@ async def seed_knowledge_base(session, course: str = KB_COURSE, year: int = KB_Y
         if not path.exists():
             print(f"Skipping {kind} — {path.name} not found (run scripts/scrape_courseloop.py)")
             continue
+        print(f"Seeding {kind} from {path.name} ...")
         for code, data in json.loads(path.read_text()).items():
             card_path = SEEDS_DIR / "kb" / kind / f"{code}.md"
             if not card_path.exists():
@@ -608,7 +609,8 @@ async def seed() -> None:
                 continue
             session.add(Handbook(**entry))
             print(f"Inserted {entry['course']} {entry['year']} ({entry['campus']})")
-        await seed_knowledge_base(session)
+        for course in KB_COURSES:
+            await seed_knowledge_base(session, course)
         await session.commit()
     print("Seed complete.")
 

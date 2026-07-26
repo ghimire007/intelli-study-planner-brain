@@ -1,4 +1,4 @@
-# CSCI251 â€” Advanced Programming
+# CSCI251 — Advanced Programming
 
 - **Credit Points:** 6
 - **Pre-Requisite:** CSIT121 or CSIT213
