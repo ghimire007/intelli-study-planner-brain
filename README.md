@@ -106,6 +106,24 @@ All endpoints are prefixed with `/api/v1`.
 | `POST` | `/api/v1/chat/{session_id}` | Continue an existing session with a follow-up message |
 | `GET` | `/api/v1/chat/{session_id}` | Retrieve full message history for a session |
 
+### Authentication — `/api/v1/auth`
+
+Authentication uses an opaque server-generated token in an HTTP-only cookie.
+The database stores only a SHA-256 hash of that token, and passwords are hashed
+with Argon2. Cross-origin clients must include credentials (for example,
+`credentials: "include"` with `fetch`).
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/api/v1/auth/register` | Create an account and start a session |
+| `POST` | `/api/v1/auth/login` | Verify credentials and start a session |
+| `POST` | `/api/v1/auth/logout` | Revoke the current session |
+| `GET` | `/api/v1/auth/me` | Return the authenticated user |
+
+Register accepts `email`, `password`, and optional `display_name`. Login accepts
+`email` and `password`. The legacy `X-Courseo-Login-Session` header is not used
+for authentication.
+
 #### Start session — `POST /api/v1/chat`
 
 ```json
@@ -164,7 +182,10 @@ Create a `.env` file in the project root:
 DATABASE_URL=postgresql+psycopg_async://user:pass@host/db
 APP_PORT=7777
 GEMINI_API_KEY=your-google-gemini-api-key
-GEMINI_MODEL=gemini-2.0-flash-001
+GEMINI_MODEL=gemini-3.5-flash
+AUTH_COOKIE_NAME=courseo_session
+AUTH_SESSION_DAYS=30
+AUTH_COOKIE_SECURE=false
 ```
 
 | Variable | Required | Default | Description |
@@ -172,7 +193,10 @@ GEMINI_MODEL=gemini-2.0-flash-001
 | `DATABASE_URL` | Yes | — | Async psycopg3 connection string |
 | `APP_PORT` | No | `7777` | Port the server listens on |
 | `GEMINI_API_KEY` | Yes | — | Google Gemini API key |
-| `GEMINI_MODEL` | No | `gemini-2.0-flash-001` | Gemini model ID to use |
+| `GEMINI_MODEL` | No | `gemini-3.5-flash` | Gemini model ID to use |
+| `AUTH_COOKIE_NAME` | No | `courseo_session` | Authentication cookie name |
+| `AUTH_SESSION_DAYS` | No | `30` | Login session lifetime in days |
+| `AUTH_COOKIE_SECURE` | No | `false` | Require HTTPS for auth cookies; set `true` in production |
 
 ---
 

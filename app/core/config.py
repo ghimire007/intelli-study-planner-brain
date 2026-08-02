@@ -8,7 +8,10 @@ class Settings(BaseSettings):
     APP_PORT: int = 7777
     DATABASE_URL: str = ""
     GEMINI_API_KEY: str = ""
-    GEMINI_MODEL: str = "gemini-2.0-flash-001"
+    GEMINI_MODEL: str = "gemini-3.5-flash"
+    AUTH_COOKIE_NAME: str = "courseo_session"
+    AUTH_SESSION_DAYS: int = 30
+    AUTH_COOKIE_SECURE: bool = False
 
 
 @lru_cache
