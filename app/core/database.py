@@ -12,7 +12,10 @@ class Base(AsyncAttrs, DeclarativeBase):
 
 logger = logging.getLogger("uvicorn")
 
-engine = create_async_engine(settings.DATABASE_URL)
+engine = create_async_engine(
+    settings.DATABASE_URL, 
+    connect_args={"prepare_threshold": None},
+    )
 
 AsyncSessionLocal = async_sessionmaker(
     bind=engine,
