@@ -1,0 +1,762 @@
+{
+  "code": "1838",
+  "title": "Bachelor of Business Information Systems",
+  "year": 2026,
+  "cp": "144",
+  "structure": [
+    {
+      "title": "Bachelor of Business Information Systems at Liverpool Campus",
+      "cp": "144",
+      "description": "",
+      "items": [],
+      "children": [
+        {
+          "title": "Year 3",
+          "cp": "42",
+          "description": "Complete the following subjects:",
+          "items": [],
+          "children": [
+            {
+              "title": "Core",
+              "cp": "6",
+              "description": "",
+              "items": [
+                {
+                  "code": "CSIT314",
+                  "name": "Software Development Methodologies",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2023/CSIT314"
+                }
+              ],
+              "children": []
+            },
+            {
+              "title": "Capstone - Annual",
+              "cp": "12",
+              "description": "This core subject is taken in the final year, and is an annual subject.",
+              "items": [
+                {
+                  "code": "CSIT321",
+                  "name": "Project",
+                  "cp": "12",
+                  "type": null,
+                  "url": "/subjects/2021/CSIT321"
+                }
+              ],
+              "children": []
+            },
+            {
+              "title": "Electives",
+              "cp": "30",
+              "description": "Complete a combination of the following electives:",
+              "items": [],
+              "children": [
+                {
+                  "title": "Computer Science and Information Technology Electives",
+                  "cp": "24",
+                  "description": "Select one 200/300-level CSCI/CSIT/ISIT subject and three 300-level CSCI/CSIT/ISIT subjects.",
+                  "items": [],
+                  "children": []
+                },
+                {
+                  "title": "Business Electives ",
+                  "cp": "6",
+                  "description": "Select one subject from the Business Electives List below:",
+                  "items": [],
+                  "children": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Year 2",
+          "cp": "48",
+          "description": "Complete the following subjects:",
+          "items": [],
+          "children": [
+            {
+              "title": "Spring",
+              "cp": "18",
+              "description": "Complete the following 3 core subjects offered for Spring session.",
+              "items": [
+                {
+                  "code": "CSIT226",
+                  "name": "Human Computer Interaction",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2021/CSIT226"
+                },
+                {
+                  "code": "ISIT224",
+                  "name": "Management Information Systems",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2021/ISIT224"
+                },
+                {
+                  "code": "CSIT305",
+                  "name": "Emerging Information Technologies and their Applications",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2025/CSIT305"
+                }
+              ],
+              "children": []
+            },
+            {
+              "title": "Electives",
+              "cp": "18",
+              "description": "Select 3 Business subjects as listed in the Business Electives List below.",
+              "items": [],
+              "children": []
+            },
+            {
+              "title": "Autumn and Spring",
+              "cp": "12",
+              "description": "Complete the following core subjects which are on offer both Autumn and Spring sessions.",
+              "items": [
+                {
+                  "code": "CSIT214",
+                  "name": "IT Project Management",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2021/CSIT214"
+                },
+                {
+                  "code": "CSIT205",
+                  "name": "Generative AI",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2025/CSIT205"
+                }
+              ],
+              "children": []
+            }
+          ]
+        },
+        {
+          "title": "Year 1",
+          "cp": "48",
+          "description": "Complete the following core subjects:",
+          "items": [],
+          "children": [
+            {
+              "title": "Summer and Autumn",
+              "cp": "6",
+              "description": "Complete the following core subject in either Summer or Autumn session.",
+              "items": [
+                {
+                  "code": "MGNT110",
+                  "name": "Introduction to Management",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2025/MGNT110"
+                }
+              ],
+              "children": []
+            },
+            {
+              "title": "Autumn and Spring ",
+              "cp": "24",
+              "description": "Complete the following 4 core subjects which are on offer both Autumn and Spring sessions.",
+              "items": [
+                {
+                  "code": "CSIT115",
+                  "name": "Database Management Systems",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2025/CSIT115"
+                },
+                {
+                  "code": "CSIT110",
+                  "name": "Fundamental Programming with Python",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2022/CSIT110"
+                },
+                {
+                  "code": "CSIT121",
+                  "name": "Object Oriented Design and Programming",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2021/CSIT121"
+                },
+                {
+                  "code": "CSIT128",
+                  "name": "Introduction to Web Technology",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2022/CSIT128"
+                }
+              ],
+              "children": []
+            },
+            {
+              "title": "Autumn",
+              "cp": "12",
+              "description": "Complete the following 2 core subjects offered for Autumn session.",
+              "items": [
+                {
+                  "code": "CSIT123",
+                  "name": "Computing and Cyber Security Fundamentals",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2023/CSIT123"
+                },
+                {
+                  "code": "CSIT114",
+                  "name": "System Analysis",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2021/CSIT114"
+                }
+              ],
+              "children": []
+            },
+            {
+              "title": "Spring",
+              "cp": "6",
+              "description": "Complete the following core subject offered for Spring session.",
+              "items": [
+                {
+                  "code": "CSIT127",
+                  "name": "Networks and Communications",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2021/CSIT127"
+                }
+              ],
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Business Electives at Wollongong and Liverpool Campuses",
+      "cp": "0",
+      "description": "",
+      "items": [
+        {
+          "code": "ECON100",
+          "name": "Economic Essentials for Business",
+          "cp": "6",
+          "type": null,
+          "url": "/subjects/2023/ECON100"
+        },
+        {
+          "code": "ACCY121",
+          "name": "Accounting for Decision Making",
+          "cp": "6",
+          "type": null,
+          "url": "/subjects/2024/ACCY121"
+        },
+        {
+          "code": "MARK101",
+          "name": "Marketing Principles",
+          "cp": "6",
+          "type": null,
+          "url": "/subjects/2024/MARK101"
+        },
+        {
+          "code": "ACCY122",
+          "name": "Accounting Principles",
+          "cp": "6",
+          "type": null,
+          "url": "/subjects/2024/ACCY122"
+        },
+        {
+          "code": "MARK213",
+          "name": "Marketing Principles",
+          "cp": "6",
+          "type": null,
+          "url": "/subjects/2023/MARK213"
+        },
+        {
+          "code": "BUS 101",
+          "name": "Principles of Responsible Business",
+          "cp": "6",
+          "type": null,
+          "url": "/subjects/2026/BUS 101"
+        },
+        {
+          "code": "BUS 121",
+          "name": "Statistics for Business",
+          "cp": "6",
+          "type": null,
+          "url": "/subjects/2025/BUS 121"
+        },
+        {
+          "code": "MGNT102",
+          "name": "Professional Communication: Concepts and Practices",
+          "cp": "6",
+          "type": null,
+          "url": "/subjects/2024/MGNT102"
+        },
+        {
+          "code": "MGNT201",
+          "name": "Organisational Behaviour",
+          "cp": "6",
+          "type": null,
+          "url": "/subjects/2024/MGNT201"
+        },
+        {
+          "code": "MGNT206",
+          "name": "Strategic Human Resource Management",
+          "cp": "6",
+          "type": null,
+          "url": "/subjects/2024/MGNT206"
+        },
+        {
+          "code": "MGNT220",
+          "name": "Understanding Organisations",
+          "cp": "6",
+          "type": null,
+          "url": "/subjects/2024/MGNT220"
+        },
+        {
+          "code": "MGNT311",
+          "name": "Management of Change",
+          "cp": "6",
+          "type": null,
+          "url": "/subjects/2024/MGNT311"
+        }
+      ],
+      "children": []
+    },
+    {
+      "title": "Bachelor of Business Information Systems at Singapore Institute of Management, Singapore ",
+      "cp": "144",
+      "description": "",
+      "items": [],
+      "children": [
+        {
+          "title": "Year 3",
+          "cp": "48",
+          "description": "Complete the following subjects:",
+          "items": [],
+          "children": [
+            {
+              "title": "Capstone - Annual",
+              "cp": "12",
+              "description": "This core subject is taken in the final year, and is an annual subject.",
+              "items": [
+                {
+                  "code": "CSIT321",
+                  "name": "Project",
+                  "cp": "12",
+                  "type": null,
+                  "url": "/subjects/2021/CSIT321"
+                }
+              ],
+              "children": []
+            },
+            {
+              "title": "Core",
+              "cp": "36",
+              "description": "Complete the following 6 core subjects:",
+              "items": [
+                {
+                  "code": "ISIT307",
+                  "name": "Web Server Programming",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2021/ISIT307"
+                },
+                {
+                  "code": "ISIT332",
+                  "name": "Business Process Management",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2021/ISIT332"
+                },
+                {
+                  "code": "ISIT312",
+                  "name": "Big Data Management",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2021/ISIT312"
+                },
+                {
+                  "code": "CSCI322",
+                  "name": "Systems Administration",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2021/CSCI322"
+                },
+                {
+                  "code": "CSIT314",
+                  "name": "Software Development Methodologies",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2021/CSIT314"
+                },
+                {
+                  "code": "ISIT224",
+                  "name": "Management Information Systems",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2024/ISIT224"
+                }
+              ],
+              "children": []
+            }
+          ]
+        },
+        {
+          "title": "Year 2",
+          "cp": "48",
+          "description": "Complete the following 8 core subjects:",
+          "items": [
+            {
+              "code": "CSIT214",
+              "name": "IT Project Management",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2021/CSIT214"
+            },
+            {
+              "code": "MARK213",
+              "name": "Marketing Principles",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2021/MARK213"
+            },
+            {
+              "code": "ACCY111",
+              "name": "Accounting Fundamentals In Society",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2023/ACCY111"
+            },
+            {
+              "code": "CSIT226",
+              "name": "Human Computer Interaction",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2021/CSIT226"
+            },
+            {
+              "code": "ISIT204",
+              "name": "Principles of eBusiness",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2025/ISIT204"
+            },
+            {
+              "code": "ECON251",
+              "name": "Industry and Trade in Asia",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2024/ECON251"
+            },
+            {
+              "code": "MGNT102",
+              "name": "Professional Communication: Concepts and Practices",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2023/MGNT102"
+            },
+            {
+              "code": "MATH223",
+              "name": "Mathematics for Information Technology",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2021/MATH223"
+            }
+          ],
+          "children": []
+        },
+        {
+          "title": "Year 1",
+          "cp": "48",
+          "description": "Complete the following 8 core subjects:",
+          "items": [
+            {
+              "code": "CSIT114",
+              "name": "System Analysis",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2021/CSIT114"
+            },
+            {
+              "code": "CSIT113",
+              "name": "Problem Solving",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2021/CSIT113"
+            },
+            {
+              "code": "CSIT111",
+              "name": "Programming Fundamentals",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2021/CSIT111"
+            },
+            {
+              "code": "CSIT115",
+              "name": "Data Management and Security",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2021/CSIT115"
+            },
+            {
+              "code": "CSIT121",
+              "name": "Object Oriented Design and Programming",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2021/CSIT121"
+            },
+            {
+              "code": "CSIT127",
+              "name": "Networks and Communications",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2021/CSIT127"
+            },
+            {
+              "code": "CSIT128",
+              "name": "Introduction to Web Technology",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2021/CSIT128"
+            },
+            {
+              "code": "MGNT110",
+              "name": "Introduction to Management",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2021/MGNT110"
+            }
+          ],
+          "children": []
+        }
+      ]
+    },
+    {
+      "title": "Bachelor of Business Information Systems at Wollongong Campus",
+      "cp": "144",
+      "description": "",
+      "items": [],
+      "children": [
+        {
+          "title": "Year 2",
+          "cp": "48",
+          "description": "Complete the following subjects:",
+          "items": [],
+          "children": [
+            {
+              "title": "Spring",
+              "cp": "18",
+              "description": "Complete the following 3 core subjects offered for Spring session. ",
+              "items": [
+                {
+                  "code": "CSIT305",
+                  "name": "Emerging Information Technologies and their Applications",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2025/CSIT305"
+                },
+                {
+                  "code": "ISIT224",
+                  "name": "Management Information Systems",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2021/ISIT224"
+                },
+                {
+                  "code": "CSIT226",
+                  "name": "Human Computer Interaction",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2021/CSIT226"
+                }
+              ],
+              "children": []
+            },
+            {
+              "title": "Autumn and Spring",
+              "cp": "12",
+              "description": "Complete the following  core subject which is on offer both Autumn and Spring sessions.",
+              "items": [
+                {
+                  "code": "CSIT214",
+                  "name": "IT Project Management",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2021/CSIT214"
+                },
+                {
+                  "code": "CSIT205",
+                  "name": "Generative AI",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2025/CSIT205"
+                }
+              ],
+              "children": []
+            },
+            {
+              "title": "Electives",
+              "cp": "18",
+              "description": "Select 3 Business subjects as listed in the Business Electives List below",
+              "items": [],
+              "children": []
+            }
+          ]
+        },
+        {
+          "title": "Year 3",
+          "cp": "48",
+          "description": "Complete the following subjects:",
+          "items": [],
+          "children": [
+            {
+              "title": "Core",
+              "cp": "6",
+              "description": "",
+              "items": [
+                {
+                  "code": "CSIT314",
+                  "name": "Software Development Methodologies",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2023/CSIT314"
+                }
+              ],
+              "children": []
+            },
+            {
+              "title": "Capstone - Annual",
+              "cp": "12",
+              "description": "This core subject is taken in the final year, and is an annual subject.",
+              "items": [
+                {
+                  "code": "CSIT321",
+                  "name": "Project",
+                  "cp": "12",
+                  "type": null,
+                  "url": "/subjects/2021/CSIT321"
+                }
+              ],
+              "children": []
+            },
+            {
+              "title": "Electives",
+              "cp": "30",
+              "description": "Complete a combination of the following electives:",
+              "items": [],
+              "children": [
+                {
+                  "title": "Business Electives",
+                  "cp": "6",
+                  "description": "Select one subject from the Business Electives List below:",
+                  "items": [],
+                  "children": []
+                },
+                {
+                  "title": "Computer Science and Information Technology Electives",
+                  "cp": "24",
+                  "description": "Select one 200/300-level CSCI/CSIT/ISIT subject and three 300-level CSCI/CSIT/ISIT subjects.",
+                  "items": [],
+                  "children": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Year 1",
+          "cp": "48",
+          "description": "Complete the following core subjects:",
+          "items": [],
+          "children": [
+            {
+              "title": "Autumn and Spring ",
+              "cp": "24",
+              "description": "Complete the following 4 core subjects which are on offer both Autumn and Spring sessions. ",
+              "items": [
+                {
+                  "code": "CSIT115",
+                  "name": "Data Management and Security",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2021/CSIT115"
+                },
+                {
+                  "code": "CSIT121",
+                  "name": "Object Oriented Design and Programming",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2021/CSIT121"
+                },
+                {
+                  "code": "CSIT110",
+                  "name": "Fundamental Programming with Python",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2022/CSIT110"
+                },
+                {
+                  "code": "CSIT128",
+                  "name": "Introduction to Web Technology",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2022/CSIT128"
+                }
+              ],
+              "children": []
+            },
+            {
+              "title": "Spring",
+              "cp": "12",
+              "description": "Complete the following 2 core subjects offered for Spring session. ",
+              "items": [
+                {
+                  "code": "CSIT127",
+                  "name": "Networks and Communications",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2021/CSIT127"
+                },
+                {
+                  "code": "MGNT110",
+                  "name": "Introduction to Management",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2022/MGNT110"
+                }
+              ],
+              "children": []
+            },
+            {
+              "title": "Autumn",
+              "cp": "12",
+              "description": "Complete the following 2 core subjects offered for Autumn session. ",
+              "items": [
+                {
+                  "code": "CSIT123",
+                  "name": "Computing and Cyber Security Fundamentals",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2023/CSIT123"
+                },
+                {
+                  "code": "CSIT114",
+                  "name": "System Analysis",
+                  "cp": "6",
+                  "type": null,
+                  "url": "/subjects/2021/CSIT114"
+                }
+              ],
+              "children": []
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "url": "https://courses.uow.edu.au/courses/2026/1838"
+}
