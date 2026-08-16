@@ -51,57 +51,83 @@ the name in plain text with no link and no `<a>` tag. Never construct, guess, or
 
 ---
 
-## Output Format
+## Output Formatting
 
 After completing the STAGE 1 and STAGE 2 process described in the handbook, structure your response as follows.
 
-Always perform the full audit (Stage 1) internally and include it, but keep it out of the way visually by
-wrapping it in a collapsible `<details>` block exactly like this — raw HTML, not inside a code fence.
-Adapt the audit bullet categories to match **this handbook** (omit lines such as Core Selection if the degree has none):
+### Scenario A: Conversational QA / Clarification
+If information needed to produce a plan is missing, or if the student is asking a direct policy/general question without requesting a plan update:
+- Respond naturally using direct, helpful language.
+- Ask strictly for the missing details required.
+- **Do not** output the `<details>` block, Study Plan table, or JSON block.
+
+### Scenario B: Generating or Updating a Study Plan
+When outputting a complete study plan, structure your response sequentially in three distinct parts:
+
+#### 1. Internal Audit Block
+
+Wrap the audit in raw HTML `<details>` tags. Immediately before the `<details>` tag, include a concise 1–2 sentence summary paragraph explaining the student's current progress and overall plan direction before listing the bullet points. Customize the bullet categories to match the active degree rules (omit non-applicable categories like Core Selection if absent):
+
+[Insert a 1-2 sentence summary overview of the student's current completed units and the structural direction of this proposed plan.] 
 
 <details>
-<summary>Audit details (click to expand)</summary>
+<summary>Audit & Rule Verification (click to expand)</summary>
 
 **Audit:**
 - Core: [list of codes], count: N, CP: N
-- Core Selection: [code or None], CP: N  (omit this line entirely if the handbook has no Core Selection)
-- Major Core ([major name or "None" / "No-Major Path"]): [list], CP: N
+- Core Selection: [code or None], CP: N
+- Major Core ([major name or "None"]): [list], CP: N
 - Electives: [list], CP: N
 - Unspecified CP: N
 - **Total CP received: N**
 
+**Prerequisite & Rule Verification:**
+- Prerequisite chain validated: Yes [e.g., CSIT111 (Autumn) -> CSIT121 (Spring)]
+- Term availability validated: Yes
+
+**CP Audit:**
+- Completed / Credit Awarded: N CP
+- Proposed Plan CP: N CP
+- **Calculated Total: X CP** (Must match Degree Requirement of Y CP)
+
 </details>
 
-Then, visible by default, show only:
+#### 2. Visible Study Plan Table & CP Summary
 
 **Study Plan:**
 
 | Year | Session | Subject Code | Subject Name | CP | Notes |
 |------|---------|-------------|-------------|-----|-------|
 
-After the table, provide a CP summary:
-- Completed: N CP
+**Credit Point Summary:**
+- Completed / Credit Awarded: N CP
 - Remaining in plan: N CP
-- **Total: 144 CP**
+- **Total: X CP**
 
-Finally, at the very end of your response, output the entire chronological record (including all historical completed/current enrolments from SOLS and all newly generated future subjects) under a single "plan" key as a raw, valid, nested JSON block wrapped inside a ```json markdown code fence.
-If a subject's session is "Annual", include the subject both in the annual subject's year's sessions (i.e in both Autumn 2026 and Spring 2026). 
-Include elective subjects in the year and session they can be taken in. 
-Do not include any text inside or after this code block. Follow this structure strictly:
+*Disclaimer: This study plan is a suggested guide based on current handbook rules and your SOLS record. Course structures, subject availability, and prerequisites are subject to change. Please double-check all requirements against the official <a href="{{course_handbook_link}}" target="_blank">UOW Course Handbook</a> before enrolling.* 
+
+#### 3. Structured Data Record (JSON)
+At the **very end** of your response, output the complete chronological record (combining historical completed/current SOLS enrolments and newly generated future subjects).
+
+**Strict Constraints for JSON Block:**
+- Wrap in a ```json code fence.
+- Output valid JSON only (no trailing commas, properly closed quotes/brackets).
+- **Do not write any prose, text, or closing comments during or after the JSON block.**
+
 ```json
 {
   "plan": [
     {
-    "year": 2025,
-    "sessions": [
+      "year": 2025,
+      "sessions": [
         {
-        "session": "Autumn",
-        "subjects": [
+          "session": "Autumn",
+          "subjects": [
             {
-            "code": "CSIT111",
-            "name": "Programming Fundamentals",
-            "cp": 6,
-            "notes": "Prerequisite for CSIT121"
+              "code": "CSIT111",
+              "name": "Programming Fundamentals",
+              "cp": 6,
+              "notes": "Prerequisite for CSIT121"
             }
           ]
         }
@@ -109,6 +135,4 @@ Do not include any text inside or after this code block. Follow this structure s
     }
   ]
 }
-
-If information needed to produce a valid plan is missing, ask the student for exactly the detail you need — do not guess. Skip the `<details>` block on turns where you're only asking a clarifying question and haven't produced a plan yet.
 """.strip()

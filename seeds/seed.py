@@ -306,6 +306,15 @@ To qualify for the award of Bachelor of Information Technology, complete **144 c
 
 ---
 
+## Pre-Execution Verification Protocol (Mandatory Reasoning Steps)
+
+Before writing any response or constructing tables:
+1. **Context Window Pre-Calculation:** Execute all mathematical additions and prerequisite dependency mappings in the audit block prior to generating the table.
+2. **Explicit Verification:** Never generate the `Study Plan` table without verifying that every prerequisite appears in a strictly earlier session than the subject depending on it.
+3. **CP Arithmetic Strictness:** Sum each column explicitly. Ensure `Total Completed CP` + `Total Planned CP` = **144 CP** exactly.
+
+---
+
 ## (A) Core Subjects — Complete ALL
 
 ### Year 1 Core (42 CP) — Complete ALL 7
@@ -473,11 +482,12 @@ Sum CP for Core, Major Core, Electives. Remember: **CSIT321 = 12 CP** and those 
 **Step 1.5 — Total Complete CP:**
 Total Complete CP = Core CP + Major Core CP + Elective CP + Unspecified CP
 
-⚠️ **DOUBLE CHECK Stage 1 before continuing:**
-1. Is the commencement year correct?
-2. Does each subject appear in exactly ONE category?
+⚠️ **STRICT PRE-EXECUTION CHECK — Stage 1:**
+Before moving to Stage 2, explicitly confirm:
+1. Is commencement year verified?
+2. Is each completed subject in exactly ONE category?
 3. Is CSIT321 categorised as **Core** (not Elective) and counted as **12 CP** toward the 96 CP core?
-4. Does Core CP + Major Core CP + Elective CP + Unspecified = Total Complete CP, and does Core approach 96 when fully done?
+4. Does Core CP + Major Core CP + Elective CP + Unspecified = Total Complete CP?
 5. Are declared majors correctly identified (or no-major path selected)?
 Correct any errors and repeat until all checks pass.
 
@@ -522,18 +532,20 @@ Required CP = 144 − Total Complete CP (from Stage 1.5)
 **Step 2.7 — Add Electives:**
 Add elective subjects (using valid sources listed above) until total planned CP equals Required CP from Step 2.6. Do not invent subject codes; use a placeholder "Elective (level)" if needed.
 
-⚠️ **DOUBLE CHECK Stage 2 before outputting:**
-1. Total Complete CP (Stage 1) + Total Planned CP = exactly 144
-2. No subject appears more than once across the entire plan
-3. Every subject's prerequisites are satisfied in a strictly earlier session
-4. Every corequisite is satisfied in the same or earlier session
-5. All Autumn-only subjects are in Autumn sessions; all Spring-only subjects are in Spring sessions
-6. No session has more than 4 subjects
-7. CSIT321 spans exactly two consecutive sessions (Autumn→Spring **or** Spring→Autumn); no gap between parts
-8. Total 100-level CP (complete + planned) does not exceed 60 CP
+**Step 2.8 — Stage 2 Pre-Execution Validation Checklist (Run BEFORE rendering output):**
+Before generating the visible Markdown table and JSON block, verify each item sequentially:
+1. **Total CP Check:** Does `Total Complete CP` + `Total Planned CP` = exactly **144 CP**?
+2. **Prerequisite Check:** Is EVERY subject's prerequisite completed in a strictly earlier session? (List each pair mentally: `Prereq (Session N-1)` -> `Subject (Session N)`).
+3. **Corequisite Check:** Are all corequisites planned in the same or an earlier session?
+4. **Session Match:** Are Autumn-only subjects in Autumn? Spring-only subjects in Spring?
+5. **Session Capacity:** Does any session exceed 4 subjects (24 CP)?
+6. **Capstone Gap Rule:** Does CSIT321 span two consecutive sessions with zero gap?
+7. **100-Level Cap:** Is total 100-level CP (Completed + Planned) ≤ **60 CP**?
+8. No subject appears more than once across the entire plan, unless the status is failed
 9. No subject code has been invented
-Correct any errors and repeat until all nine checks pass.
+If any item fails, adjust the plan and re-run Step 2.8.
 """
+
 
 # Handbook data for 1838 Bachelor of Business Information Systems (Wollongong Campus, 2026)
 # DRAFT from seeds/scraped/course_1838.json + subjects_1838.json — verify global rules
