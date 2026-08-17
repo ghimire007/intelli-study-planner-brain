@@ -21,7 +21,7 @@ from langgraph.prebuilt import ToolNode
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.agents.skills import build_skills
-from app.core.config import settings
+from app.core.config import get_settings
 from app.prompts.builder import build_system_prompt
 from app.services.sols_parser import parse_sols
 
@@ -72,6 +72,11 @@ def fold_tool_results(state: AdvisorState, batch: list[ToolMessage]) -> dict:
 
 
 def _make_llm() -> ChatGoogleGenerativeAI:
+    # API keys can be supplied by the local Courseo frontend at runtime. Read
+    # .env for each newly-created graph so a user can generate immediately
+    # without restarting the backend process.
+    get_settings.cache_clear()
+    settings = get_settings()
     return ChatGoogleGenerativeAI(
         model=settings.GEMINI_MODEL,
         google_api_key=settings.GEMINI_API_KEY,
