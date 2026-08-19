@@ -294,8 +294,8 @@ To qualify for the award of Bachelor of Information Technology, complete **144 c
 - **(c) No-major path:** If not undertaking a major, in addition to the 96 CP core, complete:
   - **18 CP** of **300-level** CSCI, CSIT or ISIT subjects, **and**
   - an additional **6 CP** subject at **200/300-level** CSCI, CSIT or ISIT
-- **(d) Double major (Wollongong only):** Subjects selected must satisfy BOTH majors.
-- **(e) Electives:** Elective subjects to bring the total to **144 CP**, chosen from the School of Computing and Information Technology (any CSIT, CSCI or ISIT subject **not** in the core or chosen major) **or** from the General Schedule. A maximum of **24 CP** of electives can be counted towards the **144 credit points** to complete the degree. 
+- **(d) Double major (Wollongong only):** Subjects selected must satisfy BOTH majors. The total number of subjects to be completed is 15 core subjects + 8 major subjects. No electives should be scheduled. 
+- **(e) Electives:** Elective subjects to bring the total to **144 CP**. An elective is any CSIT, CSCI or ISIT subject **not** in the core or chosen major OR from the General Schedule (assume any non CSIT, CSCI or ISIT subject is a valid elective). A maximum of **24 CP** of electives can be counted towards the **144 credit points** to complete the degree. 
 - **(f) 100-level cap:** No more than **60 CP** at 100-level (complete + planned).
 
 **Agent counting rules:**
@@ -487,15 +487,17 @@ Correct any errors and repeat until all checks pass.
 ## STAGE 2: PLANNING (Drafting the Study Plan)
 
 Start only after Stage 1 is fully verified. Complete ALL steps in this stage in full.
+Schedule the study plan in FULL, scheduling all the years necessary to successfully graduate. DO NOT return an incomplete plan or only the student’s enrolment record. 
 
 **Step 2.1 — List Outstanding Mandatory Subjects:**
-Identify subjects not completed in Stage 1 that are still required:
+A required remaining subject is any subject not completed in Stage 1 including:
 - All remaining Core subjects in Section A (**including CSIT321** if not complete — it is part of the 96 CP core)
 - All remaining Major Core subjects for each declared major (Section B) or No-Major Path requirements
-- Map all these subjects to their available sessions and refer to this before scheduling a subject in the plan. 
+Before drafting any semester in Stage 2, you must create a table listing every required remaining subject and its valid sessions as retrieved by `lookup_subjects_tool`. If the tool output is missing a session, you must assume the subject is NOT available in that session. You are forbidden from drafting the study plan until this table exists in memory.
+If a subject is listed as `Autumn`, it is FORBIDDEN for it to be placed in a `Spring` session. If a subject is listed as `Spring`, it is FORBIDDEN for it to be placed in a `Autumn` session.  
 
 **Step 2.2 — Schedule subjects enforcing Prerequisites and Corequisites:**
-Create an "Availability Matrix" for all Outstanding Mandatory Subjects in the remaining degree. Explicitly flag subjects as "Autumn-Only," "Spring-Only," or "Both" and cross-reference these against the planned subjects before finalizing a subject’s placement.
+If balancing your load requires placing a subject in an invalid session, you must instead extend the degree duration. Session availability is a hard constraint; workload balancing is a soft constraint. Never violate a hard constraint to satisfy a soft one.
 
 For every subject being planned:
 - All prerequisites must be **Complete** (Stage 1) or planned in a **strictly earlier** session.
@@ -509,43 +511,45 @@ For every subject being planned:
 - All corequisites must be **Complete** or planned in the **same or earlier** session.
 - "CP at level X" prerequisites: count only Complete CP or CP planned in a **strictly earlier** session.
 - Never assume a corequisite satisfies a prerequisite.
-- Use `lookup_subjects_tool` to verify prerequisites/sessions before finalising.
+- Use `lookup_subjects_tool` to verify prerequisites before finalising.
+- Verify with the table created in Step 2.1 that the subject can be placed in this session before finalising. 
 
 To finalise a subject:
 To finalise a subject in the plan it is MANDATORY that these rules are true:
 * All prerequisites are met in a **strictly earlier** session
 * All corequisites are met in the **same or earlier** session
-* The subject is in a valid session matching the mapping made in Step 2.1
+* The subject is in a session valid for that subject verified by the table made in Step 2.1
 * The session does not already have 4 subjects
 - If any of these mandatory rules are not met, the subject must be placed in a different session or year. Repeat these until all the above rules are true to finalise a subject. 
 
 Specifically for CSIT321:
-- Place Part 1 in the final year in **either Autumn or Spring**, whichever fits once prerequisites and corequisites are satisfied.
-- Place Part 2 in the **immediately following** session (Spring then Autumn the next year or Autumn then Spring the same year).
+- Place Part 2 in the **immediately following** session from the placement of Part 1 (Spring then Autumn the next year or Autumn then Spring the same year).
 - If the student was already enrolled in Part 1 last session, Part 2 must appear in next current session.
 - Ensure CSIT226 and CSIT314 corequisites are satisfied.
-
-Before finalising core plan:
-- Perform a mandatory reverse-lookup. For every row in the draft table ask: *"Does the official handbook for [Code] explicitly state it is available in [Session]?"* If the answer is not a confirmed "Yes," move the subject to the correct session and re-check the plan. 
 
 **Step 2.3 — Calculate Required Remaining CP:**
 Required CP = 144 - (Total Complete CP + Total Planned CP). If this result is 0, the study plan must explicitly state "Degree Requirements Met" and cease adding future semesters or subjects.
 
 **Step 2.4 — Add Electives:**
-Add elective subjects until total planned CP equals Required CP from Step 2.6. Do not invent subject codes; use a placeholder "Elective (level)". If more than 4 electives are needed to equal the Required CP from step 2.3 re-check the plan for missed core or major subjects or incorrect maths. 
+If doing a **Double Major** NO electives should be added. 
+For all other major options (or no-major path):
+- Add elective subjects until total planned CP equals Required CP from Step 2.6. Do not invent subject codes; use a placeholder "Elective (level)". If more than 4 electives are needed to equal the Required CP from step 2.3 re-check the plan for missed core or major subjects or incorrect maths. 
+- Prioritise placing electives in sessions with 1 to 3 subjects over adding an extra session of just electives. 
 
 **Step 2.5 — Mandatory Stage 2 Pre-Execution Validation Checklist (Run BEFORE rendering output):**
-Before generating the visible Markdown table and JSON block for the whole plan (completed and planned subjects), verify each item sequentially:
-1. **Total CP Check:** Does `Total Complete CP` + `Total Planned CP` = exactly **144 CP**?
-2. **Prerequisite Check:** Is EVERY subject's prerequisite completed in a strictly earlier session? List each pair mentally: `Prereq (Session N-1 or earlier)` -> `Subject (Session N)`, `Subject1 S CP (Session N-1 or earlier) + … + Subject2 S CP (Session N-1 or earlier) = J CP` -> `Prereq J CP total (Session N)`.
-3. **Corequisite Check:** Are all corequisites planned in the same or an earlier session?
-4. **Session Match:** Are Autumn-only subjects in Autumn? Spring-only subjects in Spring?
+Before generating the visible Markdown table and JSON block for the whole plan (completed and planned subjects), it is MANDATORY to verify each item sequentially:
+1. Read the table row-by-row and explicitly quote the tool output for each subject's session to ensure you can quote the tool for that subject/session combination. 
+2. **Total CP Check:** Does `Total Complete CP` + `Total Planned CP` = exactly **144 CP**?
+3. **Prerequisite Check:** Is EVERY subject's prerequisite completed in a strictly earlier session? List each pair mentally: `Prereq (Session N-1 or earlier)` -> `Subject (Session N)`, `Subject1 S CP (Session N-1 or earlier) + … + Subject2 S CP (Session N-1 or earlier) = J CP` -> `Prereq J CP total (Session N)`.
+4. **Corequisite Check:** Are all corequisites planned in the same or an earlier session?
 5. **Session Capacity:** Does any session exceed 4 subjects (24 CP)?
 6. **Capstone Gap Rule:** Does CSIT321 span two consecutive sessions with zero gap?
 7. **100-Level Cap:** Is total 100-level CP (Completed + Planned) ≤ **60 CP**?
-8. No subject appears more than once across the entire plan, unless the status is failed
-9. No subject code has been invented
+8. No subject appears more than once across the entire plan, unless the status is failed.
+9. No subject code or name has been invented.
 If any item fails, adjust the plan and re-run Step 2.5.
+
+Once ALL the above stages and steps have been completed and ALL requirements of Step 1.6 and Step 2.5 have PASSED, generate the markdown table and JSON block for the whole plan (completed and planned subjects). 
 """
 
 # Handbook data for 1807 Bachelor of Information Technology (Liverpool Campus, 2026)
@@ -561,7 +565,7 @@ To qualify for the award of Bachelor of Information Technology, complete **144 c
 - **(c) No-major path:** If not undertaking a major, in addition to the 96 CP core, complete:
   - **18 CP** of **300-level** CSCI, CSIT or ISIT subjects, **and**
   - an additional **6 CP** subject at **200/300-level** CSCI, CSIT or ISIT
-- **(d) Electives:** Elective subjects to bring the total to **144 CP**, chosen from the School of Computing and Information Technology (any CSIT, CSCI or ISIT subject **not** in the core or chosen major) **or** from the General Schedule. A maximum of **24 CP** of electives can be counted towards the **144 credit points** to complete the degree. 
+- **(d) Electives:** Elective subjects to bring the total to **144 CP**. An elective is any CSIT, CSCI or ISIT subject **not** in the core or chosen major OR from the General Schedule (assume any non CSIT, CSCI or ISIT subject is a valid elective). A maximum of **24 CP** of electives can be counted towards the **144 credit points** to complete the degree. 
 - **(e) 100-level cap:** No more than **60 CP** at 100-level (complete + planned).
 
 **Agent counting rules:**
@@ -744,15 +748,18 @@ Correct any errors and repeat until all checks pass.
 ## STAGE 2: PLANNING (Drafting the Study Plan)
 
 Start only after Stage 1 is fully verified. Complete ALL steps in this stage in full.
+Schedule the study plan in FULL, scheduling all the years necessary to successfully graduate. DO NOT return an incomplete plan or only the student’s enrolment record. 
+
 
 **Step 2.1 — List Outstanding Mandatory Subjects:**
-Identify subjects not completed in Stage 1 that are still required:
+A required remaining subject is any subject not completed in Stage 1 including:
 - All remaining Core subjects in Section A (**including CSIT321** if not complete — it is part of the 96 CP core)
 - All remaining Major Core subjects for each declared major (Section B) or No-Major Path requirements
-- Map all these subjects to their available sessions and refer to this before scheduling a subject in the plan. 
+Before drafting any semester in Stage 2, you must create a table listing every required remaining subject and its valid sessions as retrieved by `lookup_subjects_tool`. If the tool output is missing a session, you must assume the subject is NOT available in that session. You are forbidden from drafting the study plan until this table exists in memory.
+If a subject is listed as `Autumn`, it is FORBIDDEN for it to be placed in a `Spring` session. If a subject is listed as `Spring`, it is FORBIDDEN for it to be placed in a `Autumn` session.  
 
 **Step 2.2 — Schedule subjects enforcing Prerequisites and Corequisites:**
-Create an "Availability Matrix" for all Outstanding Mandatory Subjects in the remaining degree. Explicitly flag subjects as "Autumn-Only," "Spring-Only," or "Both" and cross-reference these against the planned subjects before finalizing a subject’s placement.
+If balancing your load requires placing a subject in an invalid session, you must instead extend the degree duration. Session availability is a hard constraint; workload balancing is a soft constraint. Never violate a hard constraint to satisfy a soft one.
 
 For every subject being planned:
 - All prerequisites must be **Complete** (Stage 1) or planned in a **strictly earlier** session.
@@ -767,42 +774,42 @@ For every subject being planned:
 - "CP at level X" prerequisites: count only Complete CP or CP planned in a **strictly earlier** session.
 - Never assume a corequisite satisfies a prerequisite.
 - Use `lookup_subjects_tool` to verify prerequisites/sessions before finalising.
+- Verify with the table created in Step 2.1 that the subject can be placed in this session before finalising. 
 
 To finalise a subject:
 To finalise a subject in the plan it is MANDATORY that these rules are true:
 * All prerequisites are met in a **strictly earlier** session
 * All corequisites are met in the **same or earlier** session
-* The subject is in a valid session matching the mapping made in Step 2.1
+* The subject is in a session valid for that subject verified by the table made in Step 2.1
 * The session does not already have 4 subjects
 - If any of these mandatory rules are not met, the subject must be placed in a different session or year. Repeat these until all the above rules are true to finalise a subject. 
 
 Specifically for CSIT321:
-- Place Part 1 in the final year in **either Autumn or Spring**, whichever fits once prerequisites and corequisites are satisfied.
-- Place Part 2 in the **immediately following** session (Spring then Autumn the next year or Autumn then Spring the same year).
+- Place Part 2 in the **immediately following** session from the placement of Part 1 (Spring then Autumn the next year or Autumn then Spring the same year).
 - If the student was already enrolled in Part 1 last session, Part 2 must appear in next current session.
 - Ensure CSIT226 and CSIT314 corequisites are satisfied.
-
-Before finalising core plan:
-- Perform a mandatory reverse-lookup. For every row in the draft table ask: *"Does the official handbook for [Code] explicitly state it is available in [Session]?"* If the answer is not a confirmed "Yes," move the subject to the correct session and re-check the plan. 
 
 **Step 2.3 — Calculate Required Remaining CP:**
 Required CP = 144 - (Total Complete CP + Total Planned CP). If this result is 0, the study plan must explicitly state "Degree Requirements Met" and cease adding future semesters or subjects.
 
 **Step 2.4 — Add Electives:**
 Add elective subjects until total planned CP equals Required CP from Step 2.6. Do not invent subject codes; use a placeholder "Elective (level)". If more than 4 electives are needed to equal the Required CP from step 2.3 re-check the plan for missed core or major subjects or incorrect maths. 
+Prioritise placing electives in sessions with 1 to 3 subjects over adding an extra session of just electives. 
 
 **Step 2.5 — Mandatory Stage 2 Pre-Execution Validation Checklist (Run BEFORE rendering output):**
 Before generating the visible Markdown table and JSON block for the whole plan (completed and planned subjects), verify each item sequentially:
-1. **Total CP Check:** Does `Total Complete CP` + `Total Planned CP` = exactly **144 CP**?
-2. **Prerequisite Check:** Is EVERY subject's prerequisite completed in a strictly earlier session? List each pair mentally: `Prereq (Session N-1 or earlier)` -> `Subject (Session N)`, `Subject1 S CP (Session N-1 or earlier) + … + Subject2 S CP (Session N-1 or earlier) = J CP` -> `Prereq J CP total (Session N)`.
-3. **Corequisite Check:** Are all corequisites planned in the same or an earlier session?
-4. **Session Match:** Are Autumn-only subjects in Autumn? Spring-only subjects in Spring?
+1. Read the table row-by-row and explicitly quote the tool output for each subject's session to ensure you can quote the tool for that subject/session combination. 
+2. **Total CP Check:** Does `Total Complete CP` + `Total Planned CP` = exactly **144 CP**?
+3. **Prerequisite Check:** Is EVERY subject's prerequisite completed in a strictly earlier session? List each pair mentally: `Prereq (Session N-1 or earlier)` -> `Subject (Session N)`, `Subject1 S CP (Session N-1 or earlier) + … + Subject2 S CP (Session N-1 or earlier) = J CP` -> `Prereq J CP total (Session N)`.
+4. **Corequisite Check:** Are all corequisites planned in the same or an earlier session?
 5. **Session Capacity:** Does any session exceed 4 subjects (24 CP)?
 6. **Capstone Gap Rule:** Does CSIT321 span two consecutive sessions with zero gap?
 7. **100-Level Cap:** Is total 100-level CP (Completed + Planned) ≤ **60 CP**?
 8. No subject appears more than once across the entire plan, unless the status is failed
 9. No subject code has been invented
 If any item fails, adjust the plan and re-run Step 2.5.
+
+Once ALL the above stages and steps have been completed and ALL requirements of Step 1.6 and Step 2.5 have PASSED, generate the markdown table and JSON block for the whole plan (completed and planned subjects). 
 """
 
 # Handbook data for 1838 Bachelor of Business Information Systems (Wollongong Campus, 2026)
