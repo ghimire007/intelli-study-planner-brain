@@ -1,5 +1,6 @@
-from sqlalchemy import Text, String, Integer, BigInteger, UniqueConstraint
+from sqlalchemy import BigInteger, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
+
 from app.core.database import Base
 
 

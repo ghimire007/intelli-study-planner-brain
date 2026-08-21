@@ -1,0 +1,128 @@
+name: Pull Request
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: pr-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    name: Smoke tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt -r requirements-dev.txt
+
+      - name: Run smoke tests (no DB / no live LLM)
+        env:
+          DATABASE_URL: postgresql+psycopg_async://ci:ci@127.0.0.1:5432/ci
+          GEMINI_API_KEY: ci-not-used
+        run: >
+          python -m pytest
+          tests/test_health.py
+          tests/eval/test_parser.py
+          -m "smoke and not needs_db"
+          --llm=fake -q
+
+  lint:
+    name: Lint (ruff)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+
+      - name: Install ruff
+        run: |
+          python -m pip install --upgrade pip
+          pip install "ruff>=0.9"
+
+      - name: Ruff check
+        run: ruff check app tests
+
+  import-check:
+    name: Import check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Compile and import app
+        env:
+          DATABASE_URL: postgresql+psycopg_async://ci:ci@127.0.0.1:5432/ci
+          GEMINI_API_KEY: ci-not-used
+        run: |
+          python -m compileall -q app
+          python -c "from app.main import app; assert any(getattr(r, 'path', None) == '/health' for r in app.routes)"
+
+  db:
+    name: Migrations (Postgres)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ci -d ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Apply Alembic migrations
+        env:
+          DATABASE_URL: postgresql+psycopg_async://ci:ci@127.0.0.1:5432/ci
+          GEMINI_API_KEY: ci-not-used
+        run: python -m alembic upgrade head

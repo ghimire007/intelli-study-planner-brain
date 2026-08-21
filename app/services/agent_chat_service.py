@@ -1,13 +1,12 @@
 import uuid
 
-from langchain_core.messages import HumanMessage
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.agents.graph import build_advisor_graph
 from app.agents.history import MessageView, build_history, latest_reply
 from app.core.checkpointer import get_checkpointer
 from app.models.session import ChatSession
 from app.services.pii import scrub_pii
+from langchain_core.messages import HumanMessage
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class AgentChatService:

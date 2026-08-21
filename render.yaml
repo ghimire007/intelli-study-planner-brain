@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: courseo-backend
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-3.5-flash
+      - key: AUTH_COOKIE_NAME
+        value: courseo_session
+      - key: AUTH_SESSION_DAYS
+        value: "30"
+      - key: AUTH_COOKIE_SECURE
+        value: "true"
+      - key: PORT
+        value: "7777"

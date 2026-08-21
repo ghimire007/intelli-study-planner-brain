@@ -1,10 +1,9 @@
 import logging
 
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine, AsyncAttrs
-from sqlalchemy.orm import DeclarativeBase
-from sqlalchemy import text
-
 from app.core.config import settings
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncAttrs, AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.orm import DeclarativeBase
 
 
 class Base(AsyncAttrs, DeclarativeBase):
@@ -13,7 +12,7 @@ class Base(AsyncAttrs, DeclarativeBase):
 logger = logging.getLogger("uvicorn")
 
 engine = create_async_engine(
-    settings.DATABASE_URL, 
+    settings.DATABASE_URL,
     connect_args={"prepare_threshold": None},
     )
 

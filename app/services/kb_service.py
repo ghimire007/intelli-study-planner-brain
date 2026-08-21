@@ -4,11 +4,10 @@ lookup_subjects/lookup_major agent skills (see agents/skills.py).
 Each lookup returns the pre-built markdown `card` for the row, preferring the
 newest year at or below the requested handbook year.
 """
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.models.major import Major
 from app.models.subject import Subject
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 async def fetch_subjects(db: AsyncSession, codes: list[str], year: int) -> str:

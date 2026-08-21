@@ -1,15 +1,17 @@
-from contextlib import asynccontextmanager
 import logging
+from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 
-from app.core.database import connect, disconnect
-from app.core.checkpointer import connect_checkpointer, disconnect_checkpointer
 from app.api.v1.router import router as api_router
+from app.core.checkpointer import connect_checkpointer, disconnect_checkpointer
+from app.core.database import connect, disconnect
 
 logger = logging.getLogger("uvicorn")
+STATIC_INDEX = Path(__file__).resolve().parent.parent / "static" / "index.html"
 
 
 @asynccontextmanager
@@ -42,8 +44,24 @@ app.add_middleware(
 app.include_router(api_router)
 
 
-@app.get("/", response_class=HTMLResponse, include_in_schema=False)
+@app.api_route("/health", methods=["GET", "HEAD"], tags=["health"])
+async def health():
+    """Liveness probe for deploy platforms (Render, etc.)."""
+    return {"status": "ok"}
+
+
+@app.api_route("/", methods=["GET", "HEAD"], include_in_schema=False)
 async def ui():
-    with open("static/index.html") as f:
-        content = f.read()
-    return HTMLResponse(content=content, headers={"Cache-Control": "no-store"})
+    if STATIC_INDEX.is_file():
+        return HTMLResponse(
+            STATIC_INDEX.read_text(encoding="utf-8"),
+            headers={"Cache-Control": "no-store"},
+        )
+    return JSONResponse(
+        {
+            "service": "intelli-study-planner-brain",
+            "status": "ok",
+            "docs": "/docs",
+            "health": "/health",
+        }
+    )
