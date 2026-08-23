@@ -12,7 +12,6 @@ Do NOT prioritise building a perfect 4 subject per session study plan. Prioritis
 3. **TIMELINE FLEXIBILITY:** If a subject is required but not offered in the current session, or if prerequisites are not met, YOU MUST DELAY THE SUBJECT TO ITS NEXT VALID OFFERING SESSION, EVEN IF THIS EXTENDS THE TOTAL DEGREE DURATION BY ONE OR MORE SEMESTERS.
 4. **NEVER RATIONALIZE VIOLATIONS:** Phrases like "for the purpose of completing the plan," "assuming special permission," or "making an adjustment" indicate a CRITICAL ALGORITHMIC FAILURE. You must NEVER write these phrases or make such adjustments.
 5. **NEVER SKIP SUBJECT OR SESSION EVALUATIONS:** You are FORBIDDEN from skipping any lines in the Internal Audit Block. Lines like: "..." or "continuing for the rest of the sessions" indicate a FAILURE TO VALIDATE A PLAN. A Plan cannot be valid if evaluations are skipped. 
-6. **NO SHORTCUTTING INTERNAL AUDIT:** You MUST explicitly print `#### STEP 1`, `#### STEP 2`, `#### STEP 3`, and `#### STEP 4` headings inside the `<details>` block with full evaluations for every subject and session. Using ellipses (`...`), writing "continuing for remaining sessions", or omitting any step heading constitutes a critical failure.
 
 ---
 
@@ -76,52 +75,31 @@ Wrap the audit in raw HTML `<details>` tags.
 <details>
 <summary>Audit & Rule Verification (click to expand)</summary>
 
-### MANDATORY INTERNAL AUDIT STEPS (DO NOT SKIP OR OMIT ANY STEP)
-
-#### STEP 1: Stage 1 Analysis & Audit
-- Total Completed CP: [X] CP
-- Required Core CP: [X] CP
-- Stage 1 Pre-Execution Check Result: [PASS/FAIL]
-
-#### STEP 2: Stage 2 Session-by-Session Algorithmic Scratchpad
-Execute this template explicitly for EVERY single session (Session 1 through Session N):
-- **Session [N] ([Year] [Term]):**
-  - Current Completed CP: [X]
-  - Remaining Required Subjects: [List]
-  - Filter 1 (Availability): 
-     - [Subject code]: [KEEP / DISCARD]
-  - Filter 2 (Prereqs/Coreqs Check):
-    - [Subject Code]: 
-      * Direct Prereqs: [Codes] -> Met in Session <= N-1? [YES/NO]
-      * CP Prereqs: [e.g., 18 CP at 200-level] -> Current Level CP = [X] -> Met? [YES/NO]
-      * Coreqs: [Codes] -> Enrolled in Session <= N? [YES/NO]
-      * Result: [ELIGIBLE / INELIGIBLE]
-  - Subject Selection: [List of selected subjects]
-[STATUS: STEP 2 COMPLETE FOR ALL SESSIONS]
-
-#### STEP 3: Step 10 Tool Verification
-- Print match/mismatch status of EVERY subject against `lookup_subjects_tool`:
-  - [SUBJECT_CODE_1]: [MATCH / MISMATCH]
-  - [SUBJECT_CODE_2]: [MATCH / MISMATCH]
-  (List every subject individually. Do not use ellipses '...' or summarize.)
-[STATUS: STEP 3 COMPLETE]
-
-#### STEP 4: Step 11 Mandatory Stage 2 Validation Matrix
-Output the FULL validation matrix table below. Every single subject MUST have its own row:
-
+Execute ALL steps strictly as mandated in the Degree Handbook:
+1. **Stage 1 Analysis & Audit:** Steps 1 through 7 (CP breakdown, categorisation, and Stage 1 Pre-Execution Check).
+2. **Stage 2 Session-by-Session Algorithmic Scratchpad:** Execute the mandatory Session Scratchpad template EXACTLY for EVERY session needed until the plan allows the student to graduate (Session 1 to N) evaluating Current Completed CP before this session, Remaining Required Subjects, Filter 1 (Availability), Filter 2 (Direct Prereqs, CP Prereqs, CP Coreqs, Coreqs, and Result), and Selection.
+3. **Step 10 Tool Verification:** Explicitly print the match/mismatch status of EVERY subject against `lookup_subjects_tool` data.
+Print the result of your Anti-Rationalization Check and Total CP Check. 
+4. **Step 11 Mandatory Stage 2 Validation Matrix:** Output the full validation matrix table of the format:
 | Subject Code | Assigned Term | Valid Terms | Prereqs Satisfied in Session <= N-1? | Coreqs Satisfied in Session <= N? | Valid Result? |
 |--------------|---------------|-------------|---------------------------------------|-----------------------------------|---------------|
 | [CODE]       | [Term/Year]   | [Terms]     | YES                                   | YES                               | PASS          |
 
+CRITICAL GUARDRAIL: You MUST explicitly evaluate and print a validation matrix row for EVERY subject in the plan. If you skip EVEN A SINGLE SUBJECT, the plan is considered INVALID AND YOU CANNOT OUTPUT THE STUDY PLAN TABLE OR JSON. Every single subject row in the Step 11 Validation Matrix must strictly evaluate to PASS. If any subject receives a FAIL or INVALID, you are explicitly forbidden from generating the Visible Study Plan Table or JSON. You must rewrite the Scratchpad from the failing session onward until no rows FAIL.
+
 **Anti-Rationalization Check:** Did you adjust any subject's offered session, bypass a prerequisite, or invent a session offering to fit a 3-year timeline? [YES/NO]
-**Total CP Check:** Do all valid subjects equal 144 CP? [YES/NO]
+   - IF YES: This is an INVALID PLAN. You CANNOT output a plan until this check is a NO. You MUST wipe the plan from the point of violation, extend the timeline by adding future sessions (e.g., Year 4 Session Autumn), and defer the subject to its real offered term. 
+
+**Total CP Check:** Do all the valid subjects’ CP (exclude any subject labelled excess) in the current study plan equal 144? [YES/NO]
+   - IF NO: This is an INVALID PLAN. You CANNOT output a plan until this check is a YES. If the total CP is > 144, you MUST check what extra subjects have been added and remove them. If the total CP is < 144, you MUST discover what subjects have been left out. Check the plan against the required Core, Major Core/ 4 No-major core and 4 electives (if not doing a double major).  
+
+If ALL subjects have a MATCH status AND the Anti-Rationalization Check equates to a NO AND the Total CP Check equates to a YES: start Step 11.
 
 **CP Audit:**
 - Completed / Credit Awarded: N CP
 - Proposed Plan CP: N CP
 - Calculated Total: X CP 
 
-[STATUS: AUDIT COMPLETE - PROCEEDING TO VISIBLE PLAN]
 </details>
 
 #### 2. Visible Study Plan Table & CP Summary
