@@ -302,13 +302,13 @@ To qualify for the award of Bachelor of Information Technology, complete **144 c
   - **18 CP** of **300-level** CSCI, CSIT or ISIT subjects, **and**
   - an additional **6 CP** subject at **200/300-level** CSCI, CSIT or ISIT
 - **(d) Double major (Wollongong only):** Subjects selected must satisfy BOTH majors. The total number of subjects to be completed is 15 core subjects + 8 major subjects. No electives should be scheduled. 
-- **(e) Electives:** Elective subjects to bring the total to **144 CP**. An elective is any CSIT, CSCI or ISIT subject **not** in the core or chosen major. Assume ANY NON CSIT, CSCI or ISIT subject is a valid elective. A maximum of **24 CP** of electives can be counted towards the **144 credit points** to complete the degree. 
+- **(e) Electives:** Elective subjects to bring the total to **144 CP**. An elective is any subject **not** in the core or chosen major. For any unknown subject codes given in a student’s enrolment, assume they are a valid elective. A maximum of **24 CP** of electives can be counted towards the **144 credit points** to complete the degree. 
 - **(f) 100-level cap:** No more than **60 CP** at 100-level (complete + planned).
-- **(g) Subject placement:** A subject cannot be placed in a session not listed under Session Availability for that subject’s Subject Code in (A) Core Subjects or (B) Major Core Subjects. 
+- **(g) Subject placement:** A Core or Major subject cannot be placed in a session not listed under Session Availability for that subject’s Subject Code in (A) Core Subjects or (B) Major Core Subjects. 
 
 **Agent counting rules:**
 - **CSIT321 (Capstone) = 12 CP**; every other subject = 6 CP unless stated otherwise. Never count CSIT321 as 6 CP.
-- Do NOT invent subject codes or names. Only use codes and names that appear in this handbook or the student's enrolment record.
+- For Core and Major subjects: do NOT invent subject codes or names. Only use codes and names that appear in this handbook or the student's enrolment record.
 - A subject counts toward exactly ONE category among Core / Major Core / No-Major Core / Elective / Excess.
 - This document covers the **Wollongong campus** offering ONLY (not Liverpool or SIM). 
 
@@ -409,8 +409,7 @@ No subject used on this path may already appear in Core.
 
 Elective subjects bring the total to **144 CP** (Global Rule (e)). 
 For any elective:
-- Assume ANY NON CSIT, CSCI or ISIT subject is a valid elective and is a part of the general schedule.
-- It can be any CSIT, CSCI or ISIT subject **not** already counted in Core or the chosen major(s) / No-Major category.
+- It can be any subject **not** already counted in Core or the chosen major(s) / No-Major category.
 - The elective subject’s CP is added to the elective category. 
 - There may be a maximum of 4 electives (24 CP).
 - **100-level cap:** total 100-level CP across the entire degree (complete + planned) must not exceed **60 CP** (Global Rule (f))
@@ -466,7 +465,7 @@ List every subject that is Complete or enrolled. Then categorise each as exactly
 | Core | Appears in Section A, **including CSIT321** (12 CP toward the 96 CP core) |
 | Major Core | Appears in the declared major's list in Section B |
 | No-major Core | Appears in the no-major path in Section B |
-| Elective | Everything else (including "losing" replacements and discontinued subjects. If a subject is not CSIT/ CSCI/ ISIT it is a valid elective). Can have a maximum of 4 subjects (or 24 CP), any extra subjects/CP are put in Excess. |
+| Elective | Everything else (including "losing" replacements and discontinued subjects). Can have a maximum of 4 subjects (or 24 CP), any extra subjects/CP are put in Excess. |
 | Excess| Any subject that does not fit in any of the above categories. |
 
 **Step 5 — Count CP per category:**
@@ -512,6 +511,7 @@ Do NOT prioritise building a perfect 4 subject per session study plan. Prioritis
 Compute Remaining CP: 144 - Total Complete CP - uncompleted core CP - (major core CP OR no-major core CP). 
 Electives are 6 CP, the number of needed electives is Remaining CP divided by 6. List these as Elective 1, …. Elective N. 
 
+Only once you have listed any needed electives:
 Inside your Internal Audit Block, write out the explicit evaluation for EVERY session (Session 1 through Session N). STRICTLY follow this template:
 
 #### Session [Year, Term - e.g., 2026 Autumn]:
@@ -527,7 +527,7 @@ Inside your Internal Audit Block, write out the explicit evaluation for EVERY se
      * Result: [ELIGIBLE / INELIGIBLE]
 5. **Selection (Max 4 subjects):**
    - Candidate List: [List eligible codes]
-   - Selected for this Session: [List up to 4 codes] (Priority order: 1. CSIT321, 2. Core subjects, 3. Major/no-major subjects, 4. Electives)
+   - Selected for this Session: [List up to 4 codes] (Prioritise starting CSIT321 if it is available)
    - Cumulative CP Added: [N CP] (**NOTE:** while CSIT321 is 12CP, CSIT321 part 1 and part 2 are 6CP each. So if CSIT321 is in a session it counts for 6CP in this total)
 
 ---
@@ -563,6 +563,7 @@ IF ANY CHECK is a FAIL/ NO:
 This is an INVALID PLAN. You MUST wipe the plan from the point of violation, extend the timeline by adding future sessions (e.g., Year 4 Session Autumn), and defer the subject to its real offered term.
 """
 
+
 # Handbook data for 1807 Bachelor of Information Technology (Liverpool Campus, 2026)
 HANDBOOK_1807_2026_LIVERPOOL = """# 1807 — Bachelor of Information Technology (Liverpool Campus, 2026 Handbook)
 
@@ -573,6 +574,7 @@ You MUST NOT force any subject into an invalid session to keep the plan "neat." 
 
 To prevent instruction skipping, hallucinated subject availability, and scheduling errors, **you are strictly forbidden from generating the final plan or JSON until all steps are passed**
 
+Every session candidate list MUST be filtered by the `session_availability` list BEFORE satisfying prerequisite/corequisite checks. Any violation of the session availability constraint must be treated as a fatal audit error, forcing a complete restart of the session calculation.
 
 ## Global Rules
 
@@ -583,13 +585,13 @@ To qualify for the award of Bachelor of Information Technology, complete **144 c
 - **(c) No-major path:** If not undertaking a major, in addition to the 96 CP core, complete:
   - **18 CP** of **300-level** CSCI, CSIT or ISIT subjects, **and**
   - an additional **6 CP** subject at **200/300-level** CSCI, CSIT or ISIT
-- **(d) Electives:** Elective subjects to bring the total to **144 CP**. An elective is any CSIT, CSCI or ISIT subject **not** in the core or chosen major. Assume ANY NON CSIT, CSCI or ISIT subject is a valid elective. A maximum of **24 CP** of electives can be counted towards the **144 credit points** to complete the degree. 
+- **(d) Electives:** Elective subjects to bring the total to **144 CP**. An elective is any subject **not** in the core or chosen major. For any unknown subject codes given in a student’s enrolment, assume they are a valid elective. A maximum of **24 CP** of electives can be counted towards the **144 credit points** to complete the degree. 
 - **(e) 100-level cap:** No more than **60 CP** at 100-level (complete + planned).
-- **(f) Subject placement:** A subject cannot be placed in a session not listed under Session Availability for that subject’s Subject Code in (A) Core Subjects or (B) Major Core Subjects. 
+- **(f) Subject placement:** A Core or Major subject cannot be placed in a session not listed under Session Availability for that subject’s Subject Code in (A) Core Subjects or (B) Major Core Subjects. 
 
 **Agent counting rules:**
 - **CSIT321 (Capstone) = 12 CP**; every other subject = 6 CP unless stated otherwise. Never count CSIT321 as 6 CP.
-- Do NOT invent subject codes or names. Only use codes and names that appear in this handbook or the student's enrolment record.
+- For Core and Major subjects: do NOT invent subject codes or names. Only use codes and names that appear in this handbook or the student's enrolment record.
 - A subject counts toward exactly ONE category among Core / Major Core / No-Major Core / Elective / Excess.
 - This document covers the **Liverpool campus** offering only (not Wollongong or SIM). Singapore's "no major + specified core + IT/Business electives" path does **not** apply here.
 
@@ -681,8 +683,7 @@ No subject used on this path may already appear in Core.
 
 Elective subjects bring the total to **144 CP** (Global Rule (d)). 
 For any elective:
-- Assume any non CSIT, CSCI or ISIT subject is a valid elective and is a part of the general schedule
-- It can be any CSIT, CSCI or ISIT subject **not** already counted in Core or the chosen major(s) / No-Major category.
+- It can be any subject **not** already counted in Core or the chosen major(s) / No-Major category.
 - The elective subject’s CP is added to the elective category. 
 - There may be a maximum of 4 electives.
 - **100-level cap:** total 100-level CP across the entire degree (complete + planned) must not exceed **60 CP** (Global Rule (e))
@@ -720,7 +721,7 @@ Complete ALL steps 1 to 7 in this stage in full before starting Stage 2.
 
 **Step 1 — Commencement Year and Major:**
 Identify the student's commencement year (earliest year in the enrolment record). Identify declared major, if any (MAJ40163 for Liverpool).
-If the major is anything other than Network Design and Development, stop generating the study plan and inform the user they CANNOT have this major. Ask if they would like to pursue MAJ40163 Network Design and Development or No major. 
+If the major is ANYTHING OTHER THAN NETWORK DESIGN AND DEVELOPMENT OR NO MAJOR, STOP GENERATING THE STUDY PLAN and inform the user they CANNOT have this major. Ask if they would like to pursue MAJ40163 Network Design and Development or No major. 
 
 **Step 2 (Campus Check): 
 Does the proposed study plan include any majors that are not listed in the provided Handbook for this degree?
@@ -739,7 +740,7 @@ List every subject that is Complete or enrolled. Then categorise each as exactly
 | Core | Appears in Section A, **including CSIT321** (12 CP toward the 96 CP core) |
 | Major Core | Appears in the declared major's list in Section B |
 | No-major Core | Appears in the no-major path in Section B |
-| Elective | Everything else (including "losing" replacements and discontinued subjects. If a subject is not CSIT/ CSCI/ ISIT assume it is a valid elective). Can have a maximum of 4 subjects (or 24 CP), any extra subjects/CP are put in Excess. |
+| Elective | Everything else (including "losing" replacements and discontinued subjects.). Can have a maximum of 4 subjects (or 24 CP), any extra subjects/CP are put in Excess. |
 | Excess| Any subject that does not fit in any of the above categories. |
 
 **Step 5 — Count CP per category:**
@@ -785,22 +786,24 @@ Do NOT prioritise building a perfect 4 subject per session study plan. Prioritis
 Compute Remaining CP: 144 - Total Complete CP - uncompleted core CP - (major core CP OR no-major core CP). 
 Electives are 6 CP, the number of needed electives is Remaining CP divided by 6. List these as Elective 1, … Elective N. 
 
+Only once you have listed any needed electives:
 Inside your Internal Audit Block, write out the explicit evaluation for EVERY session (Session 1 through Session N). STRICTLY follow this template:
 
 #### Session [Year, Term - e.g., 2026 Autumn]:
 1. **Current Completed CP before this session:** [N CP]
 2. **Remaining Required Subjects:** [List all uncompleted core, and (major codes or 4 no-major electives [e.g No-major (300-level)]), and any electives still remaining from Needed electives.]
 3. **Filter 1 - Term Availability Filter:** (Electives and no-major electives are valid in all sessions)
-   - [Subject Code]: Offered in [Autumn/Spring] -> [KEEP / DISCARD]
+   - No subject may be moved from the 'Available' candidate pool into a 'Session Draft' without a binary pass/fail verification against the `session_availability_map` for that specific term. If the subject's `session_availability` contains the `target_session` tag, it returns a `VALID_PLACEMENT` status; otherwise, it triggers a `TERMINATE_AND_RETRY` flag for that session.
 4. **Filter 2 - Prerequisite & Corequisite Check:** (Electives and no-major electives are valid in all sessions)
    - [Subject Code]: 
      * Direct Prereqs: [Codes] -> Met in Session <= N-1? [YES/NO]
      * CP Prereqs: [e.g., 18 CP at 200-level] -> Current Level CP = [X] -> Met? [YES/NO]
+     * CP Coreqs: [e.g., 12 CP at 200-level] -> Current Level CP + Enrolled in Session Level CP = [X] -> Met? [YES/NO]
      * Coreqs: [Codes] -> Enrolled in Session <= N? [YES/NO]
      * Result: [ELIGIBLE / INELIGIBLE]
 5. **Selection (Max 4 subjects):**
    - Candidate List: [List eligible codes]
-   - Selected for this Session: [List up to 4 codes] (Priority order: 1. CSIT321, 2. Core subjects, 3. Major/no-major subjects, 4. Electives)
+   - Selected for this Session: [List up to 4 codes] (Prioritise starting CSIT321 if it is available)
    - Cumulative CP Added: [N CP] (**NOTE:** while CSIT321 is 12CP, CSIT321 part 1 and part 2 are 6CP each. So if CSIT321 is in a session it counts for 6CP in this total)
 
 ---
@@ -835,7 +838,6 @@ Render the final Visible Study Plan Table .
 IF ANY CHECK is a FAIL/ NO:
 This is an INVALID PLAN. You MUST wipe the plan from the point of violation, extend the timeline by adding future sessions (e.g., Year 4 Session Autumn), and defer the subject to its real offered term.
 """
-
 
 # Handbook data for 1838 Bachelor of Business Information Systems (Wollongong Campus, 2026)
 # DRAFT from seeds/scraped/course_1838.json + subjects_1838.json — verify global rules
