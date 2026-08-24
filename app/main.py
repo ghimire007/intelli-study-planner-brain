@@ -8,6 +8,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 
 from app.api.v1.router import router as api_router
 from app.core.checkpointer import connect_checkpointer, disconnect_checkpointer
+from app.core.config import settings
 from app.core.database import connect, disconnect
 
 logger = logging.getLogger("uvicorn")
@@ -36,6 +37,7 @@ app = FastAPI(
 )
 app.add_middleware(
     CORSMiddleware,
+    allow_origins=settings.cors_origin_list(),
     allow_origin_regex=r"https?://(localhost|127\.0\.0\.1)(:\d+)?",
     allow_credentials=True,
     allow_methods=["*"],
@@ -46,7 +48,7 @@ app.include_router(api_router)
 
 @app.api_route("/health", methods=["GET", "HEAD"], tags=["health"])
 async def health():
-    """Liveness probe for deploy platforms (Render, etc.)."""
+    """Liveness probe for deploy platforms."""
     return {"status": "ok"}
 
 
