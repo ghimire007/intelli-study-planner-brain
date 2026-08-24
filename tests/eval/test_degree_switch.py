@@ -3,9 +3,8 @@ from __future__ import annotations
 
 import json
 
-from langchain_core.messages import ToolMessage
-
 from app.agents.graph import apply_confirm_metadata, fold_tool_results
+from langchain_core.messages import ToolMessage
 
 
 class TestApplyConfirmMetadata:

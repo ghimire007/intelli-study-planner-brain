@@ -1,0 +1,18 @@
+target-version = "py312"
+line-length = 100
+src = ["app", "tests"]
+
+[lint]
+select = ["E", "F", "I", "B", "W", "RUF"]
+ignore = [
+  # FastAPI idiom: Depends(...) in parameter defaults
+  "B008",
+  # Prompt / markdown strings are intentionally long
+  "E501",
+  # Ambiguous unicode in test comments is fine
+  "RUF003",
+]
+
+[lint.per-file-ignores]
+"app/prompts/**" = ["W291"]
+"tests/**" = ["W291"]

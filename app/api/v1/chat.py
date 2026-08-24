@@ -6,7 +6,13 @@ from langchain_google_genai.chat_models import ChatGoogleGenerativeAIError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.schemas.chat import ChatRequest, ContinueSessionOut, HistoryOut, MessageOut, StartSessionOut
+from app.schemas.chat import (
+    ChatRequest,
+    ContinueSessionOut,
+    HistoryOut,
+    MessageOut,
+    StartSessionOut,
+)
 from app.services.agent_chat_service import AgentChatService
 
 router = APIRouter()
@@ -43,7 +49,7 @@ async def start_session(
     try:
         session, reply = await service.start_session(body.message)
     except ValueError as e:
-        raise HTTPException(status_code=422, detail=str(e))
+        raise HTTPException(status_code=422, detail=str(e)) from e
     except (APIError, ChatGoogleGenerativeAIError) as e:
         _raise_llm_http_error(e)
     return StartSessionOut(session_id=str(session.id), reply=MessageOut.model_validate(reply))
@@ -58,7 +64,7 @@ async def continue_session(
     try:
         reply = await service.continue_session(session_id, body.message)
     except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
+        raise HTTPException(status_code=404, detail=str(e)) from e
     except (APIError, ChatGoogleGenerativeAIError) as e:
         _raise_llm_http_error(e)
     return ContinueSessionOut(session_id=str(session_id), reply=MessageOut.model_validate(reply))
@@ -72,7 +78,7 @@ async def get_history(
     try:
         session, messages = await service.get_history(session_id)
     except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
+        raise HTTPException(status_code=404, detail=str(e)) from e
     return HistoryOut(
         session_id=str(session_id),
         degree_code=session.degree_code,

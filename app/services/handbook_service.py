@@ -1,10 +1,9 @@
 """Handbook lookup — a persistence/domain concern, kept separate from
 `agents/skills.py` (which only adapts this into a LangChain tool call).
 """
+from app.models.handbook import Handbook
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from app.models.handbook import Handbook
 
 
 async def fetch_handbook(db: AsyncSession, degree_code: str, year: int, campus: str) -> str:

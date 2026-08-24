@@ -1,4 +1,4 @@
-"""
+r"""
 Convert .md(study plan outpt and enrollment record) to python objects
 
 
@@ -27,7 +27,6 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
-
 
 # ===========================================================================
 # Dataclasses — output (study plan)
@@ -135,7 +134,7 @@ def extract_subject_codes(text: str) -> set[str]:
 
 
 # ===========================================================================
-# Shared table helpers 
+# Shared table helpers
 # ===========================================================================
 
 # A divider row contains only `|`, `-`, `:`, and whitespace, e.g.

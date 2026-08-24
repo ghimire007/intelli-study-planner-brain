@@ -7,9 +7,8 @@ LangChain tool calls for the advisor agent).
 import json
 import re
 
-from pydantic import BaseModel
-
 from app.llm.text import as_text
+from pydantic import BaseModel
 
 _PARSER_MODEL_PROMPT = """
 Extract the following three fields from the UOW SOLS enrolment record and return ONLY a JSON object — no explanation, no markdown, no code block.
