@@ -36,7 +36,7 @@ HANDBOOK_766_2026_WOLLONGONG = """# 766 — Bachelor of Computer Science (Wollon
 
 ## (A) Core Subjects — Complete ALL
 
-> **Commencement year rule:** CSIT314 is **NOT** a core subject for students who commenced **2023 or before**. Remove it from the core list when auditing or planning for those students.
+> **Commencement year rule:** CSIT314 is **NOT** a core subject for students who commenced **2023 or before**. Remove it from the core list when auditing or planning for those students. This subject is mandatory for students who commenced 2024 or later.
 
 | Subject Code | Session Availability | Prerequisites |
 |-------------|---------------------|--------------|
@@ -92,6 +92,8 @@ If a student holds BOTH a subject and its replacement, the **replacement becomes
 ---
 
 ## (D) Major Core Subjects — Complete ALL subjects in the declared major
+
+Only refer and use the student's declared major's subtable. Do not include or reference requirements from any other major subtable in the audit or plan. if the student has declared no major, skip this and use the No-Major Path below.
 
 If no major is declared, skip this section and use the **No-Major Path** below.
 For a **double major**, list requirements for BOTH majors. At most **ONE subject** may be cross-counted between the two majors.
@@ -252,7 +254,8 @@ For every subject being scheduled:
 - All prerequisites must be **Complete** (Stage 1) or planned in a **strictly earlier** session.
 - All corequisites must be **Complete** or planned in the **same or earlier** session.
 - "CP at level X" prerequisites: count only Complete CP or CP planned in earlier sessions.
-- Never assume a corequisite satisfies a prerequisite.
+- Never assume a corequisite satisfies a prerequisite. 
+- Subjects that are a prerequisite to another subject cannot be treated as corequisites eg. CSIT214 is a prerequisites for CSIT314, not a corequisite. CSIT214 must be Complete or scheduled in an earlier session -- it should never share a session with CSIT314.
 
 **Step 2.4 — Schedule CSIT321:**
 - Place Part 1 (Autumn) in the final year.
@@ -264,6 +267,8 @@ Each session must contain at most **4 subjects**. Redistribute if any session ex
 
 **Step 2.6 — Calculate Required Remaining CP:**
 Required CP = 144 − Total Complete CP (from Stage 1.5)
+
+Before commencing with step 2.7, compute and state Total Complete CP (stage 1.5) + Total Planned CP so far. For each electives, recompute this equation after each addition and stop the instant the sum equals 144 cp. Exceeding 144 is treated as an error, however ensure that all requirements -- major subjects (if applicable), core subjects, core selection, and any other requirements are fulfilled.
 
 **Step 2.7 — Add Electives:**
 Add elective subjects (using valid sources listed above) until total planned CP equals Required CP from Step 2.6. Do not invent subject codes; use a placeholder "Elective (level)" if needed.
@@ -813,11 +818,41 @@ async def seed_knowledge_base(session, course: str, year: int = KB_YEAR) -> None
                 "title": data["title"],
                 "credit_points": int(data["cp"]),
                 "url": data["url"],
-                "card": card_path.read_text(),
+                "card": card_path.read_text(encoding="utf-8", errors="ignore"),
                 "data": data,
             })
             print(f"{action} {kind[:-1]} {code}")
 
+
+async def seed() -> None:
+    async with AsyncSessionLocal() as session:
+        for entry in SEED_DATA:
+            result = await session.execute(
+                select(Handbook).where(
+                    Handbook.year == entry["year"],
+                    Handbook.course == entry["course"],
+                    Handbook.campus == entry["campus"],
+                )
+            )
+            row = result.scalar_one_or_none()
+
+            if row:
+                # Update existing record values
+                for key, value in entry.items():
+                    setattr(row, key, value)
+                print(f"Updated {entry['course']} {entry['year']} ({entry['campus']})")
+            else:
+                # Insert new record
+                session.add(Handbook(**entry))
+                print(f"Inserted {entry['course']} {entry['year']} ({entry['campus']})")
+
+        for course in KB_COURSES:
+            await seed_knowledge_base(session, course)
+        await session.commit()
+    print("Seed complete.")
+
+"""
+Original:
 
 async def seed() -> None:
     async with AsyncSessionLocal() as session:
@@ -838,6 +873,7 @@ async def seed() -> None:
             await seed_knowledge_base(session, course)
         await session.commit()
     print("Seed complete.")
+"""
 
 
 if __name__ == "__main__":
