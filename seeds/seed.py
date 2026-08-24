@@ -36,7 +36,9 @@ HANDBOOK_766_2026_WOLLONGONG = """# 766 — Bachelor of Computer Science (Wollon
 
 ## (A) Core Subjects — Complete ALL
 
-> **Commencement year rule:** CSIT314 is **NOT** a core subject for students who commenced **2023 or before**. Remove it from the core list when auditing or planning for those students. This subject is mandatory for students who commenced 2024 or later.
+> **Commencement year rule:** CSIT314 is **NOT** a core subject for students with commencement year ≤ 2023, so remove it from the core list when auditing or planning for those students. 
+This subject is mandatory for students with commencement year ≥ 2024. Example: a student who commenced 2025 → 2025 ≥ 2024 → CSIT314 IS core.
+
 
 | Subject Code | Session Availability | Prerequisites |
 |-------------|---------------------|--------------|
@@ -74,6 +76,7 @@ If a student holds BOTH a subject and its replacement, the **replacement becomes
 | CSIT213 | Autumn | CSIT110 OR CSIT111 |
 
 **If BOTH CSCI251 and CSIT213 are complete:** CSCI251 satisfies the Core Selection; CSIT213 becomes an elective.
+CSCI251 is Spring-only; CSIT213 is Autumn-only. Do not swap these two when scheduling Core Selection.
 
 ---
 
@@ -262,13 +265,18 @@ For every subject being scheduled:
 - Place Part 2 (Spring) in the immediately following session.
 - If the student was already enrolled in Part 1 last session, Part 2 must appear in the current session.
 
+CSIT321 must appear as two separate rows in the Study Plan, for example, one in Autumn (Part 1), one in the following Spring (Part 2). 
+If the Part 1 occurs in Spring, Part 2 occurs in the next year in Autumn. It must never appear as a single row or be treated as satisfied by enrolment in only one session.
+
 **Step 2.5 — Session Load Cap:**
 Each session must contain at most **4 subjects**. Redistribute if any session exceeds this.
 
 **Step 2.6 — Calculate Required Remaining CP:**
 Required CP = 144 − Total Complete CP (from Stage 1.5)
 
-Before commencing with step 2.7, compute and state Total Complete CP (stage 1.5) + Total Planned CP so far. For each electives, recompute this equation after each addition and stop the instant the sum equals 144 cp. Exceeding 144 is treated as an error, however ensure that all requirements -- major subjects (if applicable), core subjects, core selection, and any other requirements are fulfilled.
+Before commencing with step 2.7, compute and state Total Complete CP (stage 1.5) + Total Planned CP so far. 
+For each electives, recompute this equation after each addition and stop the instant the sum equals 144 cp. 
+Exceeding 144 is treated as an error, however ensure that all requirements -- major subjects (if applicable), core subjects, core selection, and any other requirements -- are fulfilled.
 
 **Step 2.7 — Add Electives:**
 Add elective subjects (using valid sources listed above) until total planned CP equals Required CP from Step 2.6. Do not invent subject codes; use a placeholder "Elective (level)" if needed.
@@ -412,6 +420,8 @@ Wollongong / Liverpool rule (Global Rule (c)(ii)) — in addition to the **96 CP
 Then fill remaining CP with electives (Global Rule (e)) to reach 144.
 
 No subject used on this path may already appear in Core.
+When a specific subject code isn't selected for this path, use the placeholder "No-Major Requirement (300-level)" or "No-Major Requirement (200-level)".
+Never label these subjects as "Elective" as No-Major Path and Elective are separate categories as providing incorrect labels affects the cp calculation in Step 2.7.
 
 ---
 
