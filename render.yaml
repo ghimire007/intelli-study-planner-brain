@@ -18,5 +18,7 @@ services:
         value: "30"
       - key: AUTH_COOKIE_SECURE
         value: "true"
+      - key: CORS_ORIGINS
+        sync: false
       - key: PORT
         value: "7777"
