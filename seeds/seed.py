@@ -289,7 +289,8 @@ HANDBOOK_1807_2026_WOLLONGONG = """# 1807 — Bachelor of Information Technology
 - **Major (24 CP):** Complete Section B declared major list.
 - **No-Major Path (24 CP):** 18 CP at 300-level + 6 CP at 200/300-level (CSCI/CSIT/ISIT). Do not make up no-major subjects. Write no-major 1 (200/300 lv) etc.
 - **Double Major:** Satisfy both majors (15 core + 8 major subjects). No electives.
-- **Electives:** Max 24 CP (4 subjects). Unknown codes in record count as electives. Electives are NOT strictly restricted to discipline-specific codes (e.g., CSCI/CSIT/ISIT), any general university-level subject can count as an unspecified elective.
+- **Electives:** Max 24 CP (4 subjects). NON-IT SUBJECTS ARE VALID ELECTIVES. ANY MAJOR CORE SUBJECT THAT IS NOT A PART OF THE CHOSEN MAJOR IS AN ELECTIVE.
+- **Excess:** Not counted towards the total CP. Excess is any subject that would be an elective but there are already 24 CP (4 subjects) of electives.
 - **Level Cap:** Max 60 CP at 100-level overall.
 
 ---
@@ -312,8 +313,9 @@ HANDBOOK_1807_2026_WOLLONGONG = """# 1807 — Bachelor of Information Technology
 - CSIT321 (12 CP) | Aut/Spr | Prereq: CSIT214 AND 18 CP at 200-level CSCI/CSIT/ISIT | Coreq: CSIT226 AND CSIT314 |
 
 ### Specifically for CSIT321:
-- CSIT321 is split into Part 1 and Part 2 both worth 6CP each for the purpose of scheduling. 
-- Place Part 2 in the **immediately following** session from Part 1 (Spring then Autumn the next year or Autumn then Spring the same year).
+- CSIT321 is split into Part 1 and Part 2 both worth 6CP each for the purpose of scheduling. They CANNOT BE TAKEN SIMULTANEOUSLY AND YOU CANNOT COMBINE BOTH PARTS. 
+- CSIT321 Part 1 has ALL the prequisites and corequisites of CSIT321. CSIT321 Part 2 only has CSIT321 Part 1 as a prerequisite. 
+- Part 2 MUST be in the **immediately following** session from Part 1 (Session N then Session N + 1).
 - If the student was already enrolled in Part 1 last session, Part 2 must appear in next current session.
 - Prioritise starting CSIT321 in the same session as CSIT314 if possible. 
 - CSIT321 Part 1 is 6 CP. CSIT321 Part 2 is 6 CP.
@@ -364,20 +366,27 @@ Unspecified Credits table format: `Course | Level | NomCP`
 
 –-
 
-## EXECUTION STEPS
+## EXECUTION STEPS & AUDIT PROTOCOL
 
-### STAGE 1: ANALYSIS
-1. Identify Commencement Year & Declared Major. If Declared Major is NOT listed in (B) MAJORS stop and ask the student to choose from the listed majors/ no-major path. 
-2. Resolve Replacements (MATH255 -> CSIT205).
-3. Categorise Completed subjects: Core / Major Core / No-Major / Elective / Excess.
-  - Any major subject taken that is not in the chosen major core is an elective.
-4. Calculate CP Totals. Verify: Core + Major + Elective = Completed CP.
+### STAGE 1: ANALYSIS & AUDIT
+1. Identify Commencement Year & Declared Major.
+   - Valid Majors: Network Design & Management (MAJ40163), Web Design & Development (MAJ40246), or No-Major Path.
+   - If invalid: Trigger CIRCUIT BREAKER -> Abort immediately to Scenario A.
+2. Resolve Replacements (e.g., MATH255 -> CSIT205).
+3. Audit COMPLETED and ENROLLED subjects in strict priority order (Core -> Major -> Elective -> Excess):
+   - Core_CP_Completed = [X] CP
+   - Major_CP_Completed = [X] CP
+   - Raw_Elective_CP_Taken = [X] CP
+   - Valid_Elective_CP = MIN(24, Raw_Elective_CP_Taken) = [X] CP
+   - Excess_CP = MAX(0, Raw_Elective_CP_Taken - 24) = [X] CP (List codes here immediately)
+   - Total_Applicable_Earned = Core_CP_Completed + Major_CP_Completed + Valid_Elective_CP = [X] / 144 CP
 
-### STAGE 2: PLANNING
-1. Compute Needed Electives = (144 - Total Completed - Uncompleted Core/Major) / 6.
-2. Run Session Scratchpad for ALL sessions in order until 144 CP reached. Max 4 subjects per session. If you have to move a previously placed subject, you MUST run the session scratchpad for ALL sessions again, especially checking prerequisites and corequisites. 
-3. Verify the plan using `lookup_subjects_tool`. Run Anti-Rationalization Check and 144 CP Check.
-4. Populate Validation Matrix. All rows MUST be PASS to output the final table and JSON.
+### STAGE 2: SESSION SCRATCHPAD
+1. Calculate Remaining Needed CP to reach 144 CP.
+2. Run Session Scratchpad for ALL future sessions in chronological order until 144 CP is reached.
+3. Apply Session Filters (Availability, Prereq <= N-1, Coreq <= N, CP level thresholds) to every uncompleted subject.
+4. Enforce Session Load Limits (Standard: 4 subjects / 24 CP; Hard Cap: Max 4 subjects).
+5. Proceed to Step 10 (Macro & Tool Audit) and Step 11 (Pre-Flight Verification Matrix).
 """
 
 
@@ -385,11 +394,12 @@ Unspecified Credits table format: `Course | Level | NomCP`
 HANDBOOK_1807_2026_LIVERPOOL = """# 1807 — Bachelor of Information Technology (Liverpool, 2026)
 
 ## CORE DEGREE RULES (Total: 144 CP)
-- **Core (96 CP):** Complete all Section A subjects.
-- **Major (24 CP):** Complete Section B declared major list. If the major is anything other than Network Design and Development, stop generating the study plan and inform the user they CANNOT have this major. Ask if they would like to pursue MAJ40163 Network Design and Development or No major.
+- **Core (96 CP):** Complete all Section A subjects. 
+- **Major (24 CP):** Complete Section B declared major list.
 - **No-Major Path (24 CP):** 18 CP at 300-level + 6 CP at 200/300-level (CSCI/CSIT/ISIT). Do not make up no-major subjects. Write no-major 1 (200/300 lv) etc.
-- **Double Major:** Does not exist.
-- **Electives:** Max 24 CP (4 subjects). Unknown codes in record count as electives. Electives are NOT strictly restricted to discipline-specific codes (e.g., CSCI/CSIT/ISIT), any general university-level subject can count as an unspecified elective.
+- **Double Major:** Satisfy both majors (15 core + 8 major subjects). No electives.
+- **Electives:** Max 24 CP (4 subjects). NON-IT SUBJECTS ARE VALID ELECTIVES. ANY MAJOR CORE SUBJECT THAT IS NOT A PART OF THE CHOSEN MAJOR IS AN ELECTIVE.
+- **Excess:** Not counted towards the total CP. Excess is any subject that would be an elective but there are already 24 CP (4 subjects) of electives.
 - **Level Cap:** Max 60 CP at 100-level overall.
 
 ---
@@ -412,8 +422,8 @@ HANDBOOK_1807_2026_LIVERPOOL = """# 1807 — Bachelor of Information Technology 
 - CSIT321 (12 CP) | Aut/Spr | Prereq: CSIT214 AND 18 CP at 200-level CSCI/CSIT/ISIT | Coreq: CSIT226 AND CSIT314 |
 
 ### Specifically for CSIT321:
-- CSIT321 is split into Part 1 and Part 2 both worth 6CP each for the purpose of scheduling. 
-- Place Part 2 in the **immediately following** session from Part 1 (Spring then Autumn the next year or Autumn then Spring the same year).
+- CSIT321 is split into Part 1 and Part 2 both worth 6CP each for the purpose of scheduling. They CANNOT BE TAKEN SIMULTANEOUSLY AND YOU CANNOT COMBINE BOTH PARTS. 
+- Part 2 MUST be in the **immediately following** session from Part 1 (Session N then Session N + 1).
 - If the student was already enrolled in Part 1 last session, Part 2 must appear in next current session.
 - Prioritise starting CSIT321 in the same session as CSIT314 if possible. 
 - CSIT321 Part 1 is 6 CP. CSIT321 Part 2 is 6 CP.
@@ -458,20 +468,27 @@ Unspecified Credits table format: `Course | Level | NomCP`
 
 –-
 
-## EXECUTION STEPS
+## EXECUTION STEPS & AUDIT PROTOCOL
 
-### STAGE 1: ANALYSIS
-1. Identify Commencement Year & Declared Major. If Declared Major is NOT Network Design and Development OR No-Major stop and ask the student to choose from Network Design and Development or no-major path.
-2. Resolve Replacements (MATH255 -> CSIT205).
-3. Categorise Completed subjects: Core / Major Core / No-Major / Elective / Excess.
-  - Any major subject taken that is not in the chosen major is an elective
-4. Calculate CP Totals. Verify: Core + Major + Elective = Completed CP.
+### STAGE 1: ANALYSIS & AUDIT
+1. Identify Commencement Year & Declared Major.
+   - Valid Majors: Network Design & Management (MAJ40163), Web Design & Development (MAJ40246), or No-Major Path.
+   - If invalid: Trigger CIRCUIT BREAKER -> Abort immediately to Scenario A.
+2. Resolve Replacements (e.g., MATH255 -> CSIT205).
+3. Audit COMPLETED and ENROLLED subjects in strict priority order (Core -> Major -> Elective -> Excess):
+   - Core_CP_Completed = [X] CP
+   - Major_CP_Completed = [X] CP
+   - Raw_Elective_CP_Taken = [X] CP
+   - Valid_Elective_CP = MIN(24, Raw_Elective_CP_Taken) = [X] CP
+   - Excess_CP = MAX(0, Raw_Elective_CP_Taken - 24) = [X] CP (List codes here immediately)
+   - Total_Applicable_Earned = Core_CP_Completed + Major_CP_Completed + Valid_Elective_CP = [X] / 144 CP
 
-### STAGE 2: PLANNING
-1. Compute Needed Electives = (144 - Total Completed - Uncompleted Core/Major) / 6.
-2. Run Session Scratchpad for ALL sessions in order until 144 CP reached. Max 4 subjects per session. If you have to move a previously placed subject, you MUST run the session scratchpad for ALL sessions again, especially checking prerequisites and corequisites.
-3. Verify the plan using `lookup_subjects_tool`. Run Anti-Rationalization Check and 144 CP Check.
-4. Populate Validation Matrix. All rows MUST be PASS to output the final table and JSON.
+### STAGE 2: SESSION SCRATCHPAD
+1. Calculate Remaining Needed CP to reach 144 CP.
+2. Run Session Scratchpad for ALL future sessions in chronological order until 144 CP is reached.
+3. Apply Session Filters (Availability, Prereq <= N-1, Coreq <= N, CP level thresholds) to every uncompleted subject.
+4. Enforce Session Load Limits (Standard: 4 subjects / 24 CP; Hard Cap: Max 4 subjects).
+5. Proceed to Step 10 (Macro & Tool Audit) and Step 11 (Pre-Flight Verification Matrix).
 """
 
 
