@@ -96,6 +96,21 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+@app.middleware("http")
+async def log_incoming_auth_state(request: Request, call_next):
+    if request.url.path.startswith("/api/v1/chat") or request.url.path.startswith("/api/v1/auth/me"):
+        client_ip = request.client.host if request.client else "unknown"
+        cookies = request.cookies
+        has_session = settings.AUTH_COOKIE_NAME in cookies
+        
+        logger.info(
+            f"[AUTH DEBUG] {request.method} {request.url.path} | Client IP: {client_ip} | "
+            f"Has Cookie ({settings.AUTH_COOKIE_NAME}): {has_session} | "
+            f"All Cookies: {list(cookies.keys())}"
+        )
+
+    response = await call_next(request)
+    return response
 app.include_router(api_router)
 
 
