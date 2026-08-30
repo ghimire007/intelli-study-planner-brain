@@ -13,13 +13,13 @@ class Settings(BaseSettings):
     GEMINI_MODEL: str = "gemini-3.5-flash"
     AUTH_COOKIE_NAME: str = "courseo_session"
     AUTH_SESSION_DAYS: int = 30
-    AUTH_COOKIE_SECURE: bool = False
+    AUTH_COOKIE_SECURE: bool = True
     # "lax" is right when the frontend is served from the same site as the API.
     # When they are different sites — and two *.onrender.com services are, because
     # onrender.com is on the Public Suffix List — the browser drops a lax cookie on
     # every cross-site fetch, so every authenticated call 401s. Use "none" there,
     # which browsers only honour together with AUTH_COOKIE_SECURE=true.
-    AUTH_COOKIE_SAMESITE: Literal["lax", "strict", "none"] = "lax"
+    AUTH_COOKIE_SAMESITE: Literal["lax", "strict", "none"] = "none"
     # Comma-separated frontend origins (no trailing slash). Local Vite is included by default.
     CORS_ORIGINS: str = "http://localhost:5173,http://127.0.0.1:5173"
 
