@@ -18,7 +18,47 @@ services:
         value: "30"
       - key: AUTH_COOKIE_SECURE
         value: "true"
+      # The frontend is a different *.onrender.com service, and onrender.com is a
+      # public suffix — so it is a different *site*, and a lax cookie would never
+      # be sent. "none" needs AUTH_COOKIE_SECURE=true, which is set above.
+      - key: AUTH_COOKIE_SAMESITE
+        value: "none"
       - key: CORS_ORIGINS
         sync: false
+      # Seals every student's stored API key — required on BOTH backends, because
+      # the Infisical one stores our ciphertext rather than the key itself.
+      # Generate with:
+      #   python -c "import base64,os;print(base64.b64encode(os.urandom(32)).decode())"
+      # and paste it into the Render dashboard. Never commit it, and back it up
+      # somewhere other than the database — losing it makes every key unreadable.
+      - key: SECRETS_MASTER_KEYS
+        sync: false
+      - key: SECRETS_ACTIVE_KEY_VERSION
+        value: "1"
+      - key: VAULT_VERIFY_ON_WRITE
+        value: "true"
+      # On: a student with no Gemini key of their own falls back to GEMINI_API_KEY
+      # above, so the advisor works before anyone has added anything. Their own key
+      # always wins when they have one. Set "false" to force everyone onto their
+      # own quota.
+      - key: ALLOW_SYSTEM_FALLBACK_KEY
+        value: "true"
+      # Both backends seal the key with SECRETS_MASTER_KEYS first; this only picks
+      # where the resulting ciphertext is kept — "local" in our own table, or
+      # "infisical" as a secret in the project below. Infisical never sees a
+      # usable key either way. Set this to match whatever you run locally.
+      - key: SECRET_BACKEND
+        value: "infisical"
+      # Only read when SECRET_BACKEND=infisical.
+      - key: INFISICAL_CLIENT_ID
+        sync: false
+      - key: INFISICAL_CLIENT_SECRET
+        sync: false
+      - key: INFISICAL_PROJECT_ID
+        sync: false
+      # Point staging at its own Infisical environment rather than sharing "dev"
+      # with local development, so a mistake in one cannot disturb the other.
+      - key: INFISICAL_ENVIRONMENT
+        value: "dev"
       - key: PORT
         value: "7777"

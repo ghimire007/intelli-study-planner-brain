@@ -12,3 +12,4 @@ build/
 *.log
 handbook.pdf
 .vscode/
+.DS_Store
