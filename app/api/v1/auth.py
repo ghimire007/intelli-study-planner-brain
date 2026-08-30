@@ -1,8 +1,10 @@
 from fastapi import APIRouter, Cookie, Depends, HTTPException, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.deps import get_current_user
 from app.core.config import settings
 from app.core.database import get_db
+from app.models.auth import User
 from app.schemas.auth import LoginRequest, RegisterRequest, UserOut
 from app.services.auth_service import AuthService
 
@@ -20,7 +22,7 @@ def _set_session_cookie(response: Response, token: str) -> None:
         max_age=settings.AUTH_SESSION_DAYS * 24 * 60 * 60,
         httponly=True,
         secure=settings.AUTH_COOKIE_SECURE,
-        samesite="none",
+        samesite=settings.AUTH_COOKIE_SAMESITE,
         path="/",
     )
 
@@ -64,26 +66,17 @@ async def logout(
     service: AuthService = Depends(_get_service),
 ):
     await service.logout(session_token)
+    # These attributes must match the ones the cookie was set with, or the
+    # browser keeps the old cookie and "logout" silently does nothing.
     response.delete_cookie(
         settings.AUTH_COOKIE_NAME,
         path="/",
         httponly=True,
         secure=settings.AUTH_COOKIE_SECURE,
-        samesite="lax",
+        samesite=settings.AUTH_COOKIE_SAMESITE,
     )
 
 
 @router.get("/me", response_model=UserOut)
-async def me(
-    session_token: str | None = Cookie(
-        default=None, alias=settings.AUTH_COOKIE_NAME
-    ),
-    service: AuthService = Depends(_get_service),
-):
-    user = await service.authenticate(session_token)
-    if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated",
-        )
+async def me(user: User = Depends(get_current_user)):
     return user

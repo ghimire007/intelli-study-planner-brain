@@ -11,3 +11,11 @@ langchain-google-genai>=2.0
 langgraph-checkpoint-postgres>=2.0
 google-genai>=1.0
 argon2-cffi>=23.1
+# Envelope encryption for the student key vault (app/core/crypto.py).
+cryptography>=42.0
+# Bring-your-own-key providers. Both are imported lazily, so the app still runs
+# with one of them missing — that provider just reports as unavailable.
+langchain-anthropic>=0.3
+langchain-openai>=0.2
+# Infisical secret backend talks to its REST API.
+httpx>=0.27

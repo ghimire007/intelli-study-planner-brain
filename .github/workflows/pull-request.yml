@@ -41,6 +41,10 @@ jobs:
         run: >
           python -m pytest
           tests/test_health.py
+          tests/test_crypto.py
+          tests/test_registry.py
+          tests/test_vault_logic.py
+          tests/test_api_auth.py
           tests/eval/test_parser.py
           -m "smoke and not needs_db"
           --llm=fake -q
