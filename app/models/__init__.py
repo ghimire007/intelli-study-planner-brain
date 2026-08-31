@@ -13,13 +13,13 @@ from app.models.subject import Subject
 __all__ = [
     "AuditAction",
     "AuthSession",
-    "PasswordResetToken",
     "ChatSession",
     "CredentialStatus",
     "Handbook",
     "LLMCredential",
     "LLMCredentialAudit",
     "Major",
+    "PasswordResetToken",
     "Subject",
     "User",
 ]

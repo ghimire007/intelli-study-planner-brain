@@ -102,7 +102,7 @@ async def log_incoming_auth_state(request: Request, call_next):
         client_ip = request.client.host if request.client else "unknown"
         cookies = request.cookies
         has_session = settings.AUTH_COOKIE_NAME in cookies
-        
+
         logger.info(
             f"[AUTH DEBUG] {request.method} {request.url.path} | Client IP: {client_ip} | "
             f"Has Cookie ({settings.AUTH_COOKIE_NAME}): {has_session} | "
