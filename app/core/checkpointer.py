@@ -9,10 +9,9 @@ This is deliberately separate from app/core/database.py's SQLAlchemy engine:
 """
 import logging
 
-from psycopg_pool import AsyncConnectionPool
-from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
-
 from app.core.config import settings
+from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
+from psycopg_pool import AsyncConnectionPool
 
 logger = logging.getLogger("uvicorn")
 

@@ -2,14 +2,14 @@ import hashlib
 import secrets
 from datetime import datetime, timedelta, timezone
 
+from app.core.config import settings
+from app.models.auth import AuthSession, PasswordResetToken, User
+from app.services.email_service import send_password_reset_email
 from argon2 import PasswordHasher
 from argon2.exceptions import InvalidHashError, VerifyMismatchError
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
-
-from app.core.config import settings
-from app.models.auth import AuthSession, User
 
 password_hasher = PasswordHasher()
 
@@ -74,6 +74,51 @@ class AuthService:
                 )
             )
             await self.db.commit()
+
+    async def request_password_reset(self, email: str) -> None:
+        user = await self.db.scalar(select(User).where(User.email == email))
+        if user is None:
+            return
+
+        now = datetime.now(timezone.utc)
+        await self.db.execute(
+            delete(PasswordResetToken).where(
+                PasswordResetToken.user_id == user.id,
+                PasswordResetToken.used_at.is_(None),
+            )
+        )
+
+        raw_token = secrets.token_urlsafe(32)
+        self.db.add(
+            PasswordResetToken(
+                user_id=user.id,
+                token_hash=hash_session_token(raw_token),
+                expires_at=now + timedelta(minutes=settings.PASSWORD_RESET_EXPIRE_MINUTES),
+            )
+        )
+        await self.db.commit()
+        send_password_reset_email(to_email=user.email, raw_token=raw_token)
+
+    async def reset_password(self, token: str, new_password: str) -> None:
+        now = datetime.now(timezone.utc)
+        reset_token = await self.db.scalar(
+            select(PasswordResetToken).where(
+                PasswordResetToken.token_hash == hash_session_token(token),
+                PasswordResetToken.used_at.is_(None),
+                PasswordResetToken.expires_at > now,
+            )
+        )
+        if reset_token is None:
+            raise ValueError("Invalid or expired reset link")
+
+        user = await self.db.get(User, reset_token.user_id)
+        if user is None:
+            raise ValueError("Invalid or expired reset link")
+
+        user.password_hash = password_hasher.hash(new_password)
+        reset_token.used_at = now
+        await self.db.execute(delete(AuthSession).where(AuthSession.user_id == user.id))
+        await self.db.commit()
 
     async def _create_session(self, user: User) -> str:
         token = secrets.token_urlsafe(32)

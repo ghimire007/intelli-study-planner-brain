@@ -11,9 +11,9 @@ from __future__ import annotations
 import pytest
 
 from tests.eval.parser import (
-    EnrolmentRow,
     PASSING_GRADES,
     SUBJECT_CODE_PATTERN,
+    EnrolmentRow,
     ScheduledSubject,
     SpecifiedCredit,
     UnspecifiedCredit,
@@ -28,7 +28,6 @@ from tests.eval.parser import (
     parse_unspecified_credits,
     total_completed_cp,
 )
-
 
 pytestmark = [pytest.mark.smoke]
 

@@ -1,9 +1,13 @@
 from datetime import datetime
+
 from pydantic import BaseModel, ConfigDict
 
 
 class ChatRequest(BaseModel):
     message: str
+    #: Which model to answer with. None uses the session's model, then the
+    #: server default. The provider — and so the key — follows from the model.
+    model: str | None = None
 
 
 class MessageOut(BaseModel):
@@ -34,4 +38,5 @@ class ContinueSessionOut(BaseModel):
 class HistoryOut(BaseModel):
     session_id: str
     degree_code: str
+    model: str | None = None
     messages: list[MessageOut]

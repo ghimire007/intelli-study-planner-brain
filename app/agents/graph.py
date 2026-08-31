@@ -12,8 +12,8 @@ are untouched by this and still own domain data + API-facing history.
 import json
 from typing import Annotated, TypedDict
 
+from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import AIMessage, BaseMessage, SystemMessage, ToolMessage
-from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.checkpoint.base import BaseCheckpointSaver
 from langgraph.graph import END, StateGraph
 from langgraph.graph.message import add_messages
@@ -21,7 +21,8 @@ from langgraph.prebuilt import ToolNode
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.agents.skills import build_skills
-from app.core.config import settings
+from app.llm.config import LLMConfig
+from app.llm.factory import make_chat_model
 from app.prompts.builder import build_system_prompt
 from app.services.sols_parser import parse_sols
 
@@ -71,28 +72,41 @@ def fold_tool_results(state: AdvisorState, batch: list[ToolMessage]) -> dict:
     return updates
 
 
-def _make_llm() -> ChatGoogleGenerativeAI:
-    return ChatGoogleGenerativeAI(
-        model=settings.GEMINI_MODEL,
-        google_api_key=settings.GEMINI_API_KEY,
-    )
-
-
-def build_advisor_graph(db: AsyncSession, checkpointer: BaseCheckpointSaver):
+def build_advisor_graph(
+    db: AsyncSession,
+    checkpointer: BaseCheckpointSaver,
+    llm_config: LLMConfig | None = None,
+):
     """Compile the advisor StateGraph, bound to a DB session for its skills.
 
     `checkpointer` persists AdvisorState per thread_id, so callers only ever
     need to supply the *new* message(s) for a turn — not the full history.
+
+    `llm_config` carries the student's own decrypted API key. It is held in this
+    closure for the life of the request and deliberately never written into
+    AdvisorState: the checkpointer msgpacks state into Postgres after every step,
+    so a key placed there would be persisted in the clear. Pass None for
+    read-only work (history, state inspection) — no model is then constructed.
     """
     skills = build_skills(db)
-    parser_llm = _make_llm()
-    confirm_llm = _make_llm().bind_tools(skills["confirm"])
-    full_llm = _make_llm().bind_tools(skills["full"])
+    models: dict[str, BaseChatModel] = {}
+
+    def llm(kind: str) -> BaseChatModel:
+        """Build a chat model on first use, so a read-only graph needs no key."""
+        if kind not in models:
+            if llm_config is None:
+                raise RuntimeError(
+                    "This graph was built without an LLM config — it can read "
+                    "checkpointed state but cannot call a model"
+                )
+            base = make_chat_model(llm_config)
+            models[kind] = base if kind == "parser" else base.bind_tools(skills[kind])
+        return models[kind]
 
     async def parse_input(state: AdvisorState) -> dict:
         if state.get("meta") is not None:
             return {}
-        meta = await parse_sols(parser_llm, state["raw_sols"])
+        meta = await parse_sols(llm("parser"), state["raw_sols"])
         data = meta.model_dump()
         # Never auto-confirm: the agent must ask the student (one question) and
         # call confirm_metadata_tool, even if the parser extracted candidate values.
@@ -100,7 +114,7 @@ def build_advisor_graph(db: AsyncSession, checkpointer: BaseCheckpointSaver):
 
     async def agent(state: AdvisorState) -> dict:
         confirmed = state.get("meta_confirmed", False)
-        agent_llm = full_llm if confirmed else confirm_llm
+        agent_llm = llm("full") if confirmed else llm("confirm")
 
         system_content = build_system_prompt(
             meta=state["meta"],
