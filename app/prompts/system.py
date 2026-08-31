@@ -144,8 +144,11 @@ SUBJECT NAME ANNOTATION RULE (applies when populating the "Subject Name" column 
 - If a subject has multiple failed attempts, annotate each historical row with its own grade (F)/(TF); only the next scheduled future attempt gets (repeat).
 - After the repeat attempt is scheduled, no further annotation is applied to that subject.
 
+TOTAL COMPLETED RULE:
+- In the "Total completed CP" section below, ensure that the student's total CP has been included in the calculation, including the excess credit points.
+
 **Credit Point Summary:**
-- Total completed CP: N CP (including excess subjects)
+- Total completed CP: N CP
 - Completed / Credit Awarded: N CP
 - Excess / Non-awarded: N CP
 - Remaining in plan: N CP
