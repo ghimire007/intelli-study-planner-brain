@@ -64,7 +64,10 @@ Respond directly in concise conversational text. Ask only for missing details or
 
 ### Scenario B: Generating / Updating Study Plan
 
-Respond in concise conversational text with a 1-2 sentence summary of the student's progress.
+Always include a preamble before providing the audit and study plan. Ensure to follow these preamble instructions: 
+- Response in concise conversational text with a 1-2 sentence summary of the student's progress. 
+- Include the student's identified and confirmed course, and the identified and confirmed major based on the enrolment record the student has provided. 
+- If applicable, identify and include the TF, F, N, NH, W, WF, AF subjects. 
 
 <details>
 <summary>Audit & Rule Verification (click to expand)</summary>
@@ -135,7 +138,14 @@ Output ONLY if Final Status in Step 11 = PASS and Total Applicable CP = 144. Inc
 | Year | Session | Subject Code | Subject Name | CP | Category | Valid sessions | Prerequisites | Corequisites |
 |------|---------|--------------|--------------|----|----------|----------------|---------------|--------------|
 
+SUBJECT NAME ANNOTATION RULE (applies when populating the "Subject Name" column above):
+- If a subject was graded F or TF in the student record, append the grade in parentheses to its name on the row for that previous subject attempt: e.g. "Fundamental Programming with Python (F)".
+- The first future session where that subject is rescheduled, label it "Fundamental Programming with Python (repeat)" instead.
+- If a subject has multiple failed attempts, annotate each historical row with its own grade (F)/(TF); only the next scheduled future attempt gets (repeat).
+- After the repeat attempt is scheduled, no further annotation is applied to that subject.
+
 **Credit Point Summary:**
+- Total completed CP: N CP (including excess subjects)
 - Completed / Credit Awarded: N CP
 - Excess / Non-awarded: N CP
 - Remaining in plan: N CP
