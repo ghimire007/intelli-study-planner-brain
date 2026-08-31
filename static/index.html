@@ -355,16 +355,270 @@
     }
 
     #dev-tools-btn:hover { background: #3a3a5e; }
+
+    #keys-btn {
+      background: #2d2d4e;
+      color: #aab;
+      font-size: 0.75rem;
+      padding: 5px 12px;
+      border: 1px solid #444;
+    }
+
+    #keys-btn:hover { background: #3a3a5e; }
+
+    /* A student with no usable key cannot get an answer at all — say so on the
+       button that fixes it, rather than waiting for the 409 mid-chat. */
+    #keys-btn.warn { color: #ffd27f; border-color: #8a6d3b; }
+
+    /* ── Model picker ── */
+    #composer-side {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    #model-select {
+      font: inherit;
+      font-size: 0.78rem;
+      padding: 6px 8px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      background: #fafafa;
+      max-width: 220px;
+    }
+
+    #model-select:focus { outline: none; border-color: #1a1a2e; }
+
+    /* ── Provider keys modal ── */
+    #keys-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background: rgba(0,0,0,0.55);
+      align-items: center;
+      justify-content: center;
+    }
+
+    #keys-modal.open { display: flex; }
+
+    #keys-box {
+      background: #fff;
+      border-radius: 10px;
+      width: 90vw;
+      max-width: 620px;
+      max-height: 88vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.3);
+    }
+
+    #keys-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    #keys-header h3 { font-size: 0.9rem; font-weight: 600; color: #1a1a2e; }
+
+    #keys-close {
+      background: none;
+      border: 1px solid #ddd;
+      color: #555;
+      font-size: 1.1rem;
+      padding: 2px 10px;
+    }
+
+    #keys-close:hover { background: #f0f0f0; }
+
+    #keys-body {
+      overflow-y: auto;
+      padding: 16px 20px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .keys-hint { font-size: 0.78rem; color: #666; line-height: 1.5; }
+
+    .provider-card {
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .provider-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      color: #1a1a2e;
+    }
+
+    .key-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      font-size: 0.78rem;
+      color: #333;
+      border-top: 1px solid #f0f0f0;
+      padding-top: 8px;
+    }
+
+    .key-name { font-family: monospace; }
+
+    .key-actions { margin-left: auto; display: flex; gap: 6px; }
+
+    .key-actions button {
+      font-size: 0.72rem;
+      padding: 4px 8px;
+      background: #eee;
+      color: #1a1a2e;
+    }
+
+    .key-actions button.danger { background: #f7dcd8; color: #a03024; }
+
+    .key-actions button[disabled] { opacity: 0.5; cursor: default; }
+
+    .key-empty { font-size: 0.78rem; color: #777; }
+
+    .key-empty a { color: #1a1a2e; }
+
+    .tag {
+      font-size: 0.68rem;
+      border-radius: 10px;
+      padding: 2px 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .tag.ok, .tag.active { background: #e3f4e6; color: #1e7a37; }
+    .tag.none, .tag.invalid { background: #fdeaea; color: #b3352a; }
+    .tag.revoked { background: #eee; color: #666; }
+    .tag.default { background: #e6ecfa; color: #2d4a8a; }
+
+    #add-key-form {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      border-top: 1px solid #e0e0e0;
+      padding-top: 14px;
+    }
+
+    #add-key-form h4 { font-size: 0.8rem; color: #1a1a2e; }
+
+    #add-key-form input, #add-provider {
+      font: inherit;
+      font-size: 0.82rem;
+      padding: 8px 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    .add-row { display: flex; gap: 8px; }
+
+    .add-row > * { flex: 1; min-width: 0; }
+
+    #add-console-link { font-size: 0.75rem; color: #1a1a2e; }
+
+    #add-key-btn { background: #1a1a2e; color: white; align-self: flex-start; }
+
+    #add-key-btn[disabled] { opacity: 0.6; cursor: default; }
+
+    #keys-error { font-size: 0.78rem; color: #c0392b; min-height: 1em; }
+
+
+    #auth-gate {
+      position: fixed;
+      inset: 0;
+      background: #1a1a2e;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+    }
+
+    #auth-gate.show { display: flex; }
+
+    #auth-card {
+      background: white;
+      border-radius: 12px;
+      padding: 28px;
+      width: min(360px, calc(100vw - 40px));
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    #auth-card h2 { font-size: 1.1rem; }
+
+    #auth-card .hint { font-size: 0.8rem; color: #666; line-height: 1.4; }
+
+    #auth-card input {
+      font: inherit;
+      padding: 10px 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    #auth-actions { display: flex; gap: 8px; }
+
+    #auth-actions button { flex: 1; background: #1a1a2e; color: white; }
+
+    #auth-actions button.secondary {
+      background: #eee;
+      color: #1a1a2e;
+    }
+
+    #auth-actions button[disabled] { opacity: 0.6; cursor: default; }
+
+    #auth-error {
+      font-size: 0.8rem;
+      color: #c0392b;
+      min-height: 1em;
+    }
+
+    #user-chip { font-size: 0.75rem; color: #aaa; }
+
+    #sign-out-btn { background: #444; color: white; }
   </style>
 </head>
 <body>
 
+<div id="auth-gate">
+  <form id="auth-card" onsubmit="event.preventDefault(); signIn();">
+    <h2>Sign in to IntelliStudy</h2>
+    <p class="hint">
+      Your chats and your saved API keys belong to your account, so the planner
+      needs to know who you are before it will answer.
+    </p>
+    <input id="auth-email" type="email" placeholder="you@example.com" autocomplete="username" required />
+    <input id="auth-password" type="password" placeholder="Password (8+ characters)" autocomplete="current-password" minlength="8" required />
+    <div id="auth-error"></div>
+    <div id="auth-actions">
+      <button type="submit" id="auth-signin">Sign in</button>
+      <button type="button" id="auth-register" class="secondary" onclick="createAccount()">Create account</button>
+    </div>
+  </form>
+</div>
+
 <header>
   <h1>IntelliStudy Planner — UOW CS 766</h1>
   <div style="display:flex;align-items:center;gap:10px">
+    <span id="user-chip"></span>
     <span id="session-info">No active session</span>
+    <button id="keys-btn" onclick="openKeys()">API Keys</button>
     <button id="dev-tools-btn" onclick="toggleTestPanel()">Test Scenarios</button>
     <button id="new-chat-btn" onclick="newChat()">New Chat</button>
+    <button id="sign-out-btn" onclick="signOut()">Sign out</button>
   </div>
 </header>
 
@@ -408,23 +662,138 @@
   </div>
 </div>
 
+<!-- Provider keys -->
+<div id="keys-modal" onclick="closeKeys(event)">
+  <div id="keys-box" onclick="event.stopPropagation()">
+    <div id="keys-header">
+      <h3>AI provider keys</h3>
+      <button id="keys-close" onclick="closeKeys()">&#x2715;</button>
+    </div>
+    <div id="keys-body">
+      <p class="keys-hint">
+        The planner answers on your own account at whichever provider the model
+        you pick belongs to. Keys are encrypted before they are stored and never
+        come back out &mdash; only the last four characters are ever shown again.
+      </p>
+      <div id="provider-cards"></div>
+      <form id="add-key-form" onsubmit="event.preventDefault(); addKey();">
+        <h4>Add a key</h4>
+        <div class="add-row">
+          <select id="add-provider" onchange="onAddProviderChange()"></select>
+          <input id="add-label" placeholder="Label (optional)" maxlength="100" />
+        </div>
+        <input id="add-key" type="password" placeholder="Paste API key" autocomplete="off" required />
+        <a id="add-console-link" target="_blank" rel="noopener"></a>
+        <div id="keys-error"></div>
+        <button type="submit" id="add-key-btn">Save key</button>
+      </form>
+    </div>
+  </div>
+</div>
+
 <footer>
   <textarea
     id="input"
     placeholder="Paste your SOLS enrolment record here to start, or type a follow-up question..."
     onkeydown="handleKey(event)"
   ></textarea>
-  <button id="send-btn" onclick="send()">Send</button>
+  <div id="composer-side">
+    <select id="model-select" onchange="onModelChange()" title="Which model answers this chat"></select>
+    <button id="send-btn" onclick="send()">Send</button>
+  </div>
 </footer>
 
 <script>
-  let sessionId = localStorage.getItem('session_id');
+  let sessionId = null;
+  let currentUser = null;
 
-  // Restore existing session on load
-  if (sessionId) {
-    updateSessionInfo(sessionId);
-    loadHistory(sessionId);
+  // ── Auth ────────────────────────────────────────────────────────
+  // The chat endpoints authenticate with an httpOnly session cookie, so
+  // there is no token to keep here — the browser attaches it to every
+  // same-origin call. All this code does is find out whether we have one
+  // and, if not, get the student signed in.
+
+  const sessionKey = () => `session_id:${currentUser.id}`;
+
+  async function boot() {
+    try {
+      const res = await fetch('/api/v1/auth/me');
+      if (res.ok) { enterApp(await res.json()); return; }
+    } catch {
+      // Server unreachable — the sign-in card will report the real error
+      // as soon as they try.
+    }
+    showGate();
   }
+
+  function showGate(message = '') {
+    currentUser = null;
+    sessionId = null;
+    forgetProviders();
+    document.getElementById('keys-modal').classList.remove('open');
+    document.getElementById('user-chip').textContent = '';
+    document.querySelectorAll('#chat .message').forEach(el => el.remove());
+    updateSessionInfo(null);
+    document.getElementById('auth-error').textContent = message;
+    document.getElementById('auth-gate').classList.add('show');
+    document.getElementById('auth-email').focus();
+  }
+
+  function enterApp(user) {
+    currentUser = user;
+    document.getElementById('auth-gate').classList.remove('show');
+    document.getElementById('auth-password').value = '';
+    document.getElementById('user-chip').textContent = user.display_name || user.email;
+    loadProviders();
+    // Sessions are per-account: a stored id from another login is not ours.
+    sessionId = localStorage.getItem(sessionKey());
+    if (sessionId) {
+      updateSessionInfo(sessionId);
+      loadHistory(sessionId);
+    } else {
+      updateSessionInfo(null);
+    }
+  }
+
+  async function authenticate(path, body) {
+    const buttons = document.querySelectorAll('#auth-actions button');
+    buttons.forEach(b => { b.disabled = true; });
+    document.getElementById('auth-error').textContent = '';
+    try {
+      enterApp(await post(path, body));
+    } catch (err) {
+      document.getElementById('auth-error').textContent = err.message;
+    } finally {
+      buttons.forEach(b => { b.disabled = false; });
+    }
+  }
+
+  function credentialsFromForm() {
+    return {
+      email: document.getElementById('auth-email').value.trim(),
+      password: document.getElementById('auth-password').value,
+    };
+  }
+
+  async function signIn() {
+    await authenticate('/api/v1/auth/login', credentialsFromForm());
+  }
+
+  async function createAccount() {
+    await authenticate('/api/v1/auth/register', credentialsFromForm());
+  }
+
+  async function signOut() {
+    try {
+      await fetch('/api/v1/auth/logout', { method: 'POST' });
+    } catch {
+      // Nothing useful to do — drop the local state either way.
+    }
+    if (currentUser) localStorage.removeItem(sessionKey());
+    showGate();
+  }
+
+  boot();
 
   async function send() {
     const input = document.getElementById('input');
@@ -437,17 +806,22 @@
 
     try {
       if (!sessionId) {
-        const data = await post('/api/v1/chat', { message });
+        const data = await post('/api/v1/chat', chatBody(message));
         sessionId = data.session_id;
-        localStorage.setItem('session_id', sessionId);
+        localStorage.setItem(sessionKey(), sessionId);
         updateSessionInfo(sessionId);
         appendMessage('assistant', data.reply.content, data.reply);
+        syncModelFromReply(data.reply);
       } else {
-        const data = await post(`/api/v1/chat/${sessionId}`, { message });
+        const data = await post(`/api/v1/chat/${sessionId}`, chatBody(message));
         appendMessage('assistant', data.reply.content, data.reply);
+        syncModelFromReply(data.reply);
       }
     } catch (err) {
       appendMessage('assistant', `Error: ${err.message}`);
+      // A 409 from a chat call is always about the key behind the chosen model,
+      // and the key settings are where it gets fixed.
+      if (err.status === 409) document.getElementById('keys-btn').classList.add('warn');
     } finally {
       setLoading(false);
     }
@@ -456,8 +830,10 @@
   async function loadHistory(id) {
     try {
       const res = await fetch(`/api/v1/chat/${id}`);
+      if (res.status === 401) { showGate('Your session expired. Sign in again.'); return; }
       if (!res.ok) { newChat(); return; }
       const data = await res.json();
+      if (data.model) selectModel(chosenModel = data.model);
       data.messages.forEach(m => appendMessage(m.role, m.content, m));
     } catch {
       newChat();
@@ -465,7 +841,7 @@
   }
 
   function newChat() {
-    localStorage.removeItem('session_id');
+    if (currentUser) localStorage.removeItem(sessionKey());
     sessionId = null;
     document.querySelectorAll('#chat .message').forEach(el => el.remove());
     updateSessionInfo(null);
@@ -540,7 +916,15 @@
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({ detail: res.statusText }));
-      throw new Error(err.detail || res.statusText);
+      const detail = Array.isArray(err.detail)
+        ? err.detail.map(e => e.msg).join(', ')
+        : err.detail;
+      // 401 on a chat call means the cookie expired mid-conversation. The
+      // sign-in card is the answer to that, not a message in the transcript.
+      if (res.status === 401 && currentUser) showGate('Your session expired. Sign in again.');
+      const error = new Error(detail || res.statusText);
+      error.status = res.status;
+      throw error;
     }
     return res.json();
   }
@@ -550,6 +934,260 @@
       e.preventDefault();
       send();
     }
+  }
+
+  // ── Models & provider keys ──────────────────────────────────────
+  // A chat request names a *model*; the server maps it to that model's provider
+  // and then to this student's key for it (app/services/credential_resolver.py).
+  // So the picker only ever has to send a model name.
+
+  let _providers = [];
+  let _keys = [];
+  let _systemFallback = false;
+  // null means "server's choice" — that is what lets the resolver answer a
+  // student who holds only an OpenAI key without them having to pick first.
+  let chosenModel = null;
+
+  async function loadProviders() {
+    try {
+      const res = await fetch('/api/v1/keys/providers');
+      if (!res.ok) return;
+      const data = await res.json();
+      _providers = data.providers;
+      _systemFallback = data.system_fallback_enabled;
+    } catch {
+      return;  // offline; the picker stays as it is
+    }
+    renderModelOptions();
+    renderKeyWarning();
+    renderAddProviders();
+  }
+
+  function forgetProviders() {
+    _providers = [];
+    _keys = [];
+    chosenModel = null;
+    document.getElementById('model-select').innerHTML = '';
+  }
+
+  function usable(provider) {
+    return provider.has_usable_key || (_systemFallback && provider.provider === 'gemini');
+  }
+
+  function renderModelOptions() {
+    const sel = document.getElementById('model-select');
+    const showing = chosenModel || sel.value;
+    sel.innerHTML = '';
+    _providers.forEach(p => {
+      const group = document.createElement('optgroup');
+      group.label = usable(p) ? p.label : `${p.label} — add a key`;
+      p.models.forEach(m => {
+        const opt = document.createElement('option');
+        opt.value = m.name;
+        opt.textContent = m.label;
+        // Nothing is gained by letting a student pick a model whose provider
+        // they hold no key for; the server would only answer with a 409.
+        opt.disabled = !usable(p);
+        group.appendChild(opt);
+      });
+      sel.appendChild(group);
+    });
+    selectModel(showing || firstUsableModel());
+  }
+
+  function firstUsableModel() {
+    const ready = _providers.find(p => usable(p) && p.models.length);
+    return ready ? ready.default_model : null;
+  }
+
+  function selectModel(name) {
+    if (!name) return;
+    const sel = document.getElementById('model-select');
+    if (!Array.from(sel.options).some(o => o.value === name)) {
+      // A model the registry does not list — a new release, say. Show its raw
+      // name rather than silently displaying some other model's.
+      const opt = document.createElement('option');
+      opt.value = name;
+      opt.textContent = name;
+      sel.appendChild(opt);
+    }
+    sel.value = name;
+  }
+
+  function onModelChange() {
+    chosenModel = document.getElementById('model-select').value;
+  }
+
+  function chatBody(message) {
+    return chosenModel ? { message, model: chosenModel } : { message };
+  }
+
+  function providerOf(model) {
+    const owner = _providers.find(p => p.models.some(m => m.name === model));
+    return owner ? owner.provider : null;
+  }
+
+  function syncModelFromReply(reply) {
+    // Adopt the answering model only when it came from a *different* provider
+    // than the picker shows — that is the resolver switching a student with no
+    // Gemini key onto the provider they do hold. Within one provider the
+    // reported name can differ from the requested one (Google may answer a
+    // -flash request as -flash-lite), and pinning that would quietly change
+    // what the next turn asks for.
+    if (!reply || !reply.model || !reply.provider) return;
+    if (providerOf(document.getElementById('model-select').value) === reply.provider) return;
+    selectModel(chosenModel = reply.model);
+  }
+
+  function renderKeyWarning() {
+    const ready = _systemFallback || _providers.some(p => p.has_usable_key);
+    const btn = document.getElementById('keys-btn');
+    btn.classList.toggle('warn', !ready);
+    btn.title = ready ? 'Manage your provider keys' : 'Add an API key to start chatting';
+  }
+
+  async function openKeys() {
+    document.getElementById('keys-modal').classList.add('open');
+    document.addEventListener('keydown', onKeysKey);
+    await refreshKeys();
+  }
+
+  function closeKeys(e) {
+    if (e && e.target !== e.currentTarget) return;  // click inside the card
+    document.getElementById('keys-modal').classList.remove('open');
+    document.removeEventListener('keydown', onKeysKey);
+    setKeysError('');
+  }
+
+  function onKeysKey(e) {
+    if (e.key === 'Escape') closeKeys();
+  }
+
+  async function refreshKeys() {
+    try {
+      const res = await fetch('/api/v1/keys');
+      if (res.status === 401) { closeKeys(); showGate('Your session expired. Sign in again.'); return; }
+      _keys = res.ok ? await res.json() : [];
+    } catch {
+      _keys = [];
+    }
+    await loadProviders();  // key counts changed, so the picker did too
+    renderProviderCards();
+  }
+
+  function renderProviderCards() {
+    document.getElementById('provider-cards').innerHTML = _providers.map(p => {
+      const mine = _keys.filter(k => k.provider === p.provider);
+      const rows = mine.map(k => `
+        <div class="key-row">
+          <span class="key-name">${esc(k.label)} · ••••${esc(k.last4)}</span>
+          ${k.is_default ? '<span class="tag default">default</span>' : ''}
+          <span class="tag ${esc(k.status)}">${esc(k.status)}</span>
+          <span class="key-actions">
+            ${k.is_default ? '' : `<button onclick="makeDefault('${esc(k.id)}')">Make default</button>`}
+            <button onclick="recheckKey('${esc(k.id)}')">Re-check</button>
+            <button class="danger" onclick="deleteKey('${esc(k.id)}')">Delete</button>
+          </span>
+        </div>`).join('');
+      const empty = `<div class="key-empty">No key yet —
+        <a href="${esc(p.console_url)}" target="_blank" rel="noopener">get one from ${esc(p.label)}</a>,
+        then add it below.</div>`;
+      return `
+        <div class="provider-card">
+          <div class="provider-head">
+            <strong>${esc(p.label)}</strong>
+            <span class="tag ${usable(p) ? 'ok' : 'none'}">${usable(p) ? 'ready' : 'no usable key'}</span>
+          </div>
+          ${rows || empty}
+        </div>`;
+    }).join('');
+  }
+
+  function renderAddProviders() {
+    const sel = document.getElementById('add-provider');
+    const showing = sel.value;
+    sel.innerHTML = '';
+    _providers.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.provider;
+      opt.textContent = p.label;
+      sel.appendChild(opt);
+    });
+    if (showing) sel.value = showing;
+    onAddProviderChange();
+  }
+
+  function onAddProviderChange() {
+    const chosen = _providers.find(p => p.provider === document.getElementById('add-provider').value);
+    const link = document.getElementById('add-console-link');
+    link.href = chosen ? chosen.console_url : '#';
+    link.textContent = chosen ? `Where to get a ${chosen.label} key →` : '';
+  }
+
+  async function addKey() {
+    const button = document.getElementById('add-key-btn');
+    button.disabled = true;
+    setKeysError('');
+    try {
+      await post('/api/v1/keys', {
+        provider: document.getElementById('add-provider').value,
+        api_key: document.getElementById('add-key').value,
+        label: document.getElementById('add-label').value.trim() || null,
+        make_default: true,
+      });
+      document.getElementById('add-key').value = '';
+      document.getElementById('add-label').value = '';
+      await refreshKeys();
+    } catch (err) {
+      setKeysError(err.message);
+    } finally {
+      button.disabled = false;
+    }
+  }
+
+  async function makeDefault(id) {
+    await keyAction(() => fetch(`/api/v1/keys/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ make_default: true }),
+    }));
+  }
+
+  async function recheckKey(id) {
+    await keyAction(() => fetch(`/api/v1/keys/${id}/verify`, { method: 'POST' }));
+  }
+
+  async function deleteKey(id) {
+    if (!confirm('Delete this key? Chats running on it stop working straight away.')) return;
+    await keyAction(() => fetch(`/api/v1/keys/${id}`, { method: 'DELETE' }));
+  }
+
+  async function keyAction(call) {
+    setKeysError('');
+    document.querySelectorAll('.key-actions button').forEach(b => { b.disabled = true; });
+    try {
+      const res = await call();
+      if (res.status === 401) { closeKeys(); showGate('Your session expired. Sign in again.'); return; }
+      const body = res.status === 204 ? null : await res.json().catch(() => null);
+      if (!res.ok) {
+        setKeysError(detailOf(body) || res.statusText);
+      } else if (body && body.verified === false) {
+        // A re-check that failed is the normal way this ends, not an error.
+        setKeysError(body.detail);
+      }
+    } catch (err) {
+      setKeysError(err.message);
+    }
+    await refreshKeys();
+  }
+
+  function detailOf(body) {
+    const detail = body && body.detail;
+    return Array.isArray(detail) ? detail.map(e => e.msg).join(', ') : detail;
+  }
+
+  function setKeysError(message) {
+    document.getElementById('keys-error').textContent = message || '';
   }
 
   // ── Test Scenarios ──────────────────────────────────────────────
