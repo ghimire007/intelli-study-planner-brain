@@ -77,6 +77,8 @@ def test_protected_routes_are_padlocked_in_the_openapi_schema() -> None:
     # Signing in must not itself require being signed in.
     assert "/api/v1/auth/login" not in secured
     assert "/api/v1/auth/register" not in secured
+    assert "/api/v1/auth/forgot-password" not in secured
+    assert "/api/v1/auth/reset-password" not in secured
 
 
 def test_the_cookie_is_the_only_documented_way_in() -> None:

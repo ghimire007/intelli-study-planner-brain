@@ -1,4 +1,4 @@
-from app.models.auth import AuthSession, User
+from app.models.auth import AuthSession, PasswordResetToken, User
 from app.models.credential import (
     AuditAction,
     CredentialStatus,
@@ -19,6 +19,7 @@ __all__ = [
     "LLMCredential",
     "LLMCredentialAudit",
     "Major",
+    "PasswordResetToken",
     "Subject",
     "User",
 ]

@@ -23,6 +23,16 @@ class Settings(BaseSettings):
     # Comma-separated frontend origins (no trailing slash). Local Vite is included by default.
     CORS_ORIGINS: str = "http://localhost:5173,http://127.0.0.1:5173"
 
+    # Password reset links are built from this origin (no trailing slash).
+    FRONTEND_URL: str = "https://courseo-frontend.onrender.com"
+    PASSWORD_RESET_EXPIRE_MINUTES: int = 60
+
+    SMTP_HOST: str = ""
+    SMTP_PORT: int = 2525
+    SMTP_USER: str = ""
+    SMTP_PASSWORD: str = ""
+    EMAIL_FROM: str = ""
+
     # ── Secrets vault (students' own LLM API keys) ────────────────────────────
     # Master key(s) that wrap each credential's data key. Format "1:<b64>,2:<b64>";
     # a bare base64 value is read as version 1. Every version that ever sealed a row
@@ -57,6 +67,11 @@ class Settings(BaseSettings):
             self.INFISICAL_CLIENT_ID
             and self.INFISICAL_CLIENT_SECRET
             and self.INFISICAL_PROJECT_ID
+        )
+
+    def smtp_configured(self) -> bool:
+        return bool(
+            self.SMTP_HOST and self.SMTP_USER and self.SMTP_PASSWORD and self.EMAIL_FROM
         )
 
     # Fall back to the project's own GEMINI_API_KEY when a student has no usable
