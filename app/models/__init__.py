@@ -1,4 +1,4 @@
-from app.models.auth import AuthSession, User
+from app.models.auth import AuthSession, PasswordResetToken, User
 from app.models.credential import (
     AuditAction,
     CredentialStatus,
@@ -13,6 +13,7 @@ from app.models.subject import Subject
 __all__ = [
     "AuditAction",
     "AuthSession",
+    "PasswordResetToken",
     "ChatSession",
     "CredentialStatus",
     "Handbook",
