@@ -5,7 +5,13 @@ from app.api.deps import get_current_user
 from app.core.config import settings
 from app.core.database import get_db
 from app.models.auth import User
-from app.schemas.auth import LoginRequest, RegisterRequest, UserOut
+from app.schemas.auth import (
+    ForgotPasswordRequest,
+    LoginRequest,
+    RegisterRequest,
+    ResetPasswordRequest,
+    UserOut,
+)
 from app.services.auth_service import AuthService
 
 router = APIRouter()
@@ -80,3 +86,24 @@ async def logout(
 @router.get("/me", response_model=UserOut)
 async def me(user: User = Depends(get_current_user)):
     return user
+
+
+@router.post("/forgot-password", status_code=status.HTTP_204_NO_CONTENT)
+async def forgot_password(
+    body: ForgotPasswordRequest,
+    service: AuthService = Depends(_get_service),
+):
+    await service.request_password_reset(body.email)
+
+
+@router.post("/reset-password", status_code=status.HTTP_204_NO_CONTENT)
+async def reset_password(
+    body: ResetPasswordRequest,
+    service: AuthService = Depends(_get_service),
+):
+    try:
+        await service.reset_password(body.token, body.password)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)
+        ) from exc
