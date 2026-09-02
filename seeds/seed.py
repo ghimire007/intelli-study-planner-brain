@@ -47,9 +47,8 @@ HANDBOOK_766_2026_WOLLONGONG = """# 766 — Bachelor of Computer Science (Wollon
 - CSIT205 (6 CP) | Aut | Prereq: None (Replaces MATH255)
 - CSIT214 (6 CP) | Aut/Spr | Prereq: CSIT114
 - CSIT226 (6 CP) | Spr | Prereq: None
-- CSIT305 (6 CP) | Spr | Prereq: None
-- ISIT219 (6 CP) | Aut | Prereq: CSIT128
-- ISIT224 (6 CP) | Spr | Prereq: (CSIT113 OR CSIT123 OR BUS101) AND 18 CP at 100-level
+- CSCI235 (6 CP) | Aut | Prereq: CSIT115
+- CSCI203 (6 CP) | Spr | Prereq: (CSIT110 or CSIT111) AND (CSIT113 or CSIT123)
 - CSIT314 (6 CP) | Aut | Prereq: CSIT214 AND 12 CP at 200-level CSCI/ISIT
 - CSIT321 (12 CP) | Aut/Spr | Prereq: CSIT214 AND 18 CP at 200-level CSCI/CSIT/ISIT | Coreq: CSIT226 AND CSIT314 |
 
@@ -77,9 +76,13 @@ HANDBOOK_766_2026_WOLLONGONG = """# 766 — Bachelor of Computer Science (Wollon
 - CSCI251 (6 CP) | Spr | Prereq: CSIT121 or CSIT213
 - CSIT213 (6 CP) | Aut | Prereq: CSIT110 OR CSIT111
 
-### Core selection rules:
-- If BOTH CSCI251 and CSIT213 are complete: CSCI251 satisifies the Core Selection; CSIT213 becomes an elective.
-- Do not swap CSCI251 and CSIT213 when scheduling Core Selection
+### Core Selection rules:
+- CSCI251 and CSIT213 can each individually satisfy (B) Core Selection.
+- Whenever BOTH CSCI251 and CSIT213 appear anywhere in the plan (scheduled or completed):
+    - Whichever of the two was scheduled FIRST (earlier term, or earlier add-order if same term) is tagged "Core Selection"
+    - The other one is tagged "Elective"
+- This tagging must be re-evaluated every time the plan changes — including when a second course is added later, or when scheduling is edited/reordered.
+- If only one of the two is in the plan, it is tagged "Core Selection" by default.
 
 ---
 
@@ -577,6 +580,26 @@ async def seed_knowledge_base(session, course: str, year: int = KB_YEAR) -> None
             print(f"{action} {kind[:-1]} {code}")
 
 
+# async def seed() -> None:
+#     async with AsyncSessionLocal() as session:
+#         for entry in SEED_DATA:
+#             result = await session.execute(
+#                 select(Handbook).where(
+#                     Handbook.year == entry["year"],
+#                     Handbook.course == entry["course"],
+#                     Handbook.campus == entry["campus"],
+#                 )
+#             )
+#             if result.scalar_one_or_none():
+#                 print(f"Skipping {entry['course']} {entry['year']} ({entry['campus']}) — already exists")
+#                 continue
+#             session.add(Handbook(**entry))
+#             print(f"Inserted {entry['course']} {entry['year']} ({entry['campus']})")
+#         for course in KB_COURSES:
+#             await seed_knowledge_base(session, course)
+#         await session.commit()
+#     print("Seed complete.")
+
 async def seed() -> None:
     async with AsyncSessionLocal() as session:
         for entry in SEED_DATA:
@@ -587,11 +610,18 @@ async def seed() -> None:
                     Handbook.campus == entry["campus"],
                 )
             )
-            if result.scalar_one_or_none():
-                print(f"Skipping {entry['course']} {entry['year']} ({entry['campus']}) — already exists")
-                continue
-            session.add(Handbook(**entry))
-            print(f"Inserted {entry['course']} {entry['year']} ({entry['campus']})")
+            row = result.scalar_one_or_none()
+
+            if row:
+                # Update existing record values
+                for key, value in entry.items():
+                    setattr(row, key, value)
+                print(f"Updated {entry['course']} {entry['year']} ({entry['campus']})")
+            else:
+                # Insert new record
+                session.add(Handbook(**entry))
+                print(f"Inserted {entry['course']} {entry['year']} ({entry['campus']})")
+
         for course in KB_COURSES:
             await seed_knowledge_base(session, course)
         await session.commit()
