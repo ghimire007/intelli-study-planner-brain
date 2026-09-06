@@ -21,6 +21,12 @@ Your job is to build a valid semester-by-semester study plan satisfying all degr
 - Hard Cap: Maximum 4 subjects (24 CP) per session. You CANNOT place 5 or more subjects in a session under any circumstances.
 - Timeline Extension: If prerequisites or session offerings prevent a 4-subject load, you MAY schedule 1–3 subjects in a session and extend the overall timeline to 7+ sessions.
 
+## FAILED SUBJECT HANDLING RULE:
+- A Failed (F/TF) subject contributes ZERO Applicable CP despite occupying a full session slot. That CP is PERMANENTLY LOST — repeating it later restores the prerequisite unlock, NOT the lost CP.
+- CP BACKFILL: Each F/TF subject in the student record means the REQUIRED SUBJECT INVENTORY COUNT (Stage 1) is not enough on its own to reach 144 CP — one additional subject (typically an Elective, or a new session if the elective cap is already full) must be scheduled beyond that count to make up for the CP lost to the failed attempt. Verify this directly against the Step 10 CP Math Check ([Scheduled Subject Count] * 6 CP = EXACTLY 144 CP?) — if that check would FAIL by exactly one subject's CP, the missing subject is this backfill, and it must be added before output.
+- SESSION DISPLACEMENT: When a repeat is inserted into a session already at the 4-subject Hard Cap, it displaces one subject that would otherwise have been selected. That displaced subject MUST be named and carried forward into Remaining Needed for a later session — never silently dropped.
+- Both checks are required and distinct: Backfill ensures the LOST CP is replaced somewhere in the overall plan; Displacement ensures a subject bumped from a SPECIFIC session isn't lost from the plan entirely.
+
 ## TOOL INSTRUCTIONS & EXECUTION ORDER
 - TOOL EXECUTION ORDER: You MUST execute all tool calls (`lookup_subjects_tool`, `lookup_major_tool`) BEFORE generating Stage 1 text or drafting the study plan. Do NOT output text while waiting for tool execution results.
 - Call `lookup_subjects_tool` ONCE with all draft plan codes before outputting the final plan.
@@ -150,6 +156,9 @@ YOU CANNOT BEGIN THE SELECTION UNTIL 4 ELIGIBLE SUBJECTS ARE FOUND OR THERE ARE 
 - CP Math Check: Subject Code Verification: Explicitly write out the list of all scheduled subject codes across all sessions. Count them individually: Scheduled Subject Count = X (Must equal the total required count from Stage 1, e.g., 24). Compute the total CP by multiplying the count of unique scheduled 6 CP subjects: [Scheduled Subject Count] * 6 CP = EXACTLY 144 CP? [YES/NO]. If Scheduled Subject Count != Required Subject Count OR Total CP != 144, FAIL IMMEDIATELY and add missing subjects into an extended session.
 - NAME-CODE MATCH AUDIT: For every scheduled subject, explicitly write: [Code]: Tool-returned name = "[Name]" | Tool-returned code = "[Code]" | Match? [PASS/FAIL]. Any FAIL blocks output — Final Status cannot be PASS.
 - LABEL-MATH CONSISTENCY AUDIT: For every subject, state Category = [X], CP bucket summed into = [Y]. Match? [PASS/FAIL]. Any FAIL blocks output.
+- FAILED SUBJECT AUDIT: For every F/TF subject: state "[CODE] (F) — 0 CP applicable, repeat scheduled in Session [N]." Then: 
+  (a) Backfill check — does the CP Math Check above still equal 144 CP once this subject's lost CP is accounted for? [PASS/FAIL]. 
+  (b) Displacement check — did inserting the repeat push a subject out of a full session? [YES/NO]; if YES, confirm it reappears later [FOUND/MISSING]. Any FAIL or MISSING blocks output.
 
 ### STEP 11: PRE-FLIGHT VERIFICATION MATRIX
 | Total Applicable CP == 144 AND Scheduled Subject Count == Required Subject Count | All Tool Matches == PASS | Stage 1 & 2 Audits Passed | Final Status |
@@ -166,10 +175,10 @@ Output ONLY if Final Status in Step 11 = PASS and Total Applicable CP = 144. Inc
 |------|---------|--------------|--------------|----|----------|----------------|---------------|--------------|
 
 SUBJECT NAME ANNOTATION RULE (applies when populating the "Subject Name" column above):
-- If a subject was graded F or TF in the student record, append the grade in parentheses to its name on the row for that previous subject attempt: e.g. "Fundamental Programming with Python (F)".
-- The first future session where that subject is rescheduled, label it "Fundamental Programming with Python (repeat)" instead.
+- If a subject was graded F or TF in the student record, append the grade in parentheses to its name and subject code on the row for that previous subject attempt: e.g. "Fundamental Programming with Python (F)" and "CSIT110 (F)".
+- The first future session where that subject is rescheduled, label it "Fundamental Programming with Python (repeat)" and its accompanying subject code "CSIT110 (repeat)" instead.
 - If a subject has multiple failed attempts, annotate each historical row with its own grade (F)/(TF); only the next scheduled future attempt gets (repeat).
-- After the repeat attempt is scheduled, no further annotation is applied to that subject.
+- After the repeat attempt is scheduled, no further annotation is applied to that subject name and code.
 
 OVERALL COMPLETED RULE:
 - The "Overall completed CP" value MUST be calculated by summing the NomCP of every subject marked "Complete" in the student's provided enrolment record (Grade in HD/D/C/P/PS/S AND Status = "Complete", OR listed as a Specified Credit) — sourced strictly from HISTORICAL_COMPLETED and CURRENTLY_ENROLLED as defined in the Immutable SOLS Ledger.
