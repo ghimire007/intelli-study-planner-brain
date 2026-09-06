@@ -1,7 +1,12 @@
-# CSCI316 â€” Big Data Mining Techniques and Implementation
+# CSCI316 — Big Data Mining Techniques and Implementation
 
 - **Credit Points:** 6
-- **Pre-Requisite:** CSCI203
+- **Subject Level:** 300-level
+- **Prerequisites:** CSCI203
+- **Corequisites:** none
+- **Exclusions:** none
+- **Degree Restrictions:** none
+- **Tags / Topic Areas:** none
 - **Availability:**
   - Dubai: DXB UG Winter
   - Liverpool: Autumn

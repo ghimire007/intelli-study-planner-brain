@@ -1,6 +1,12 @@
 # CSIT115 — Database Management Systems
 
 - **Credit Points:** 6
+- **Subject Level:** 100-level
+- **Prerequisites:** none
+- **Corequisites:** none
+- **Exclusions:** none
+- **Degree Restrictions:** none
+- **Tags / Topic Areas:** none
 - **Availability:**
   - Dubai: DXB UG Spring, DXB UG Winter
   - Liverpool: Autumn, Spring

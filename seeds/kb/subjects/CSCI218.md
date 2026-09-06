@@ -1,7 +1,12 @@
-# CSCI218 â€” Foundations of Artificial Intelligence
+# CSCI218 — Foundations of Artificial Intelligence
 
 - **Credit Points:** 6
-- **Pre-Requisite:** (CSIT110 or CSIT111) and another 18cp at 100 level
+- **Subject Level:** 200-level
+- **Prerequisites:** (CSIT110 or CSIT111) and another 18cp at 100 level
+- **Corequisites:** none
+- **Exclusions:** none
+- **Degree Restrictions:** none
+- **Tags / Topic Areas:** none
 - **Availability:**
   - Dubai: DXB UG Autumn
   - Liverpool: Spring

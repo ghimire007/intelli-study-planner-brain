@@ -1,7 +1,12 @@
 # ISIT219 — Knowledge and Information Engineering
 
 - **Credit Points:** 6
-- **Pre-Requisite:** CSIT128
+- **Subject Level:** 200-level
+- **Prerequisites:** CSIT128
+- **Corequisites:** none
+- **Exclusions:** none
+- **Degree Restrictions:** none
+- **Tags / Topic Areas:** none
 - **Availability:**
   - Liverpool: Autumn
   - Singapore Institute of Management: SIM S2, SIM S4

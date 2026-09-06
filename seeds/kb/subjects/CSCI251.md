@@ -1,7 +1,12 @@
 # CSCI251 — Advanced Programming
 
 - **Credit Points:** 6
-- **Pre-Requisite:** CSIT121 or CSIT213
+- **Subject Level:** 200-level
+- **Prerequisites:** CSIT121 or CSIT213
+- **Corequisites:** none
+- **Exclusions:** none
+- **Degree Restrictions:** none
+- **Tags / Topic Areas:** none
 - **Availability:**
   - Dubai: DXB UG Autumn, DXB UG Spring
   - Liverpool: Spring

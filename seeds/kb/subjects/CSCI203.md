@@ -1,7 +1,12 @@
 # CSCI203 — Algorithms and Data Structures
 
 - **Credit Points:** 6
-- **Pre-Requisite:** (CSIT110 or CSIT111) AND (CSIT113 or CSIT123)
+- **Subject Level:** 200-level
+- **Prerequisites:** (CSIT110 or CSIT111) AND (CSIT113 or CSIT123)
+- **Corequisites:** none
+- **Exclusions:** none
+- **Degree Restrictions:** none
+- **Tags / Topic Areas:** none
 - **Availability:**
   - Dubai: DXB UG Spring, DXB UG Winter
   - Liverpool: Spring

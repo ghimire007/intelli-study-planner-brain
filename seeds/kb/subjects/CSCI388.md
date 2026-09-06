@@ -1,7 +1,12 @@
-# CSCI388 â€” Virtual and Augmented Reality
+# CSCI388 — Virtual and Augmented Reality
 
 - **Credit Points:** 6
-- **Pre-Requisite:** CSIT121 and 18 credit points at 200 level
+- **Subject Level:** 300-level
+- **Prerequisites:** CSIT121 and 18 credit points at 200 level
+- **Corequisites:** none
+- **Exclusions:** none
+- **Degree Restrictions:** none
+- **Tags / Topic Areas:** none
 - **Availability:**
   - Dubai: DXB UG Autumn
   - Singapore Institute of Management: SIM S2

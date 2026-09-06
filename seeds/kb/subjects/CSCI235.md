@@ -1,7 +1,12 @@
 # CSCI235 — Database Systems
 
 - **Credit Points:** 6
-- **Pre-Requisite:** CSIT115
+- **Subject Level:** 200-level
+- **Prerequisites:** CSIT115
+- **Corequisites:** none
+- **Exclusions:** none
+- **Degree Restrictions:** none
+- **Tags / Topic Areas:** none
 - **Availability:**
   - Dubai: DXB UG Autumn
   - Liverpool: Autumn

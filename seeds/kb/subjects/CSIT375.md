@@ -1,7 +1,12 @@
-# CSIT375 â€” Artificial Intelligence and Cybersecurity
+# CSIT375 — Artificial Intelligence and Cybersecurity
 
 - **Credit Points:** 6
-- **Pre-Requisite:** CSIT121 and CSIT127 and 18cp 200-level CSCI/CSIT
+- **Subject Level:** 300-level
+- **Prerequisites:** CSIT121 and CSIT127 and 18cp 200-level CSCI/CSIT
+- **Corequisites:** none
+- **Exclusions:** none
+- **Degree Restrictions:** none
+- **Tags / Topic Areas:** none
 - **Availability:**
   - Dubai: DXB UG Autumn
   - Liverpool: Autumn

@@ -1,6 +1,12 @@
 # CSIT114 — System Analysis
 
 - **Credit Points:** 6
+- **Subject Level:** 100-level
+- **Prerequisites:** none
+- **Corequisites:** none
+- **Exclusions:** none
+- **Degree Restrictions:** none
+- **Tags / Topic Areas:** none
 - **Availability:**
   - Dubai: DXB UG Autumn, DXB UG Spring
   - Liverpool: Autumn

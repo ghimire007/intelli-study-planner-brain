@@ -1,7 +1,12 @@
 # ISIT312 — Big Data Management
 
 - **Credit Points:** 6
-- **Pre-Requisite:** CSIT115 and 18 credit points at 200 level
+- **Subject Level:** 300-level
+- **Prerequisites:** CSIT115 and 18 credit points at 200 level
+- **Corequisites:** none
+- **Exclusions:** none
+- **Degree Restrictions:** none
+- **Tags / Topic Areas:** none
 - **Availability:**
   - Dubai: DXB UG Autumn
   - Liverpool: Spring

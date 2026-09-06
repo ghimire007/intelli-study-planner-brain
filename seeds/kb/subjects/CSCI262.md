@@ -1,7 +1,12 @@
 # CSCI262 — System Security
 
 - **Credit Points:** 6
-- **Pre-Requisite:** CSIT121 and CSIT115 and CSIT127
+- **Subject Level:** 200-level
+- **Prerequisites:** CSIT121 and CSIT115 and CSIT127
+- **Corequisites:** none
+- **Exclusions:** none
+- **Degree Restrictions:** none
+- **Tags / Topic Areas:** none
 - **Availability:**
   - Dubai: DXB UG Spring
   - Liverpool: Spring

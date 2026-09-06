@@ -1,7 +1,12 @@
 # CSCI361 — Cryptography and Secure Applications
 
 - **Credit Points:** 6
-- **Pre-Requisite:** CSIT121 + 12cp 200 level CSCI
+- **Subject Level:** 300-level
+- **Prerequisites:** CSIT121 + 12cp 200 level CSCI
+- **Corequisites:** none
+- **Exclusions:** none
+- **Degree Restrictions:** none
+- **Tags / Topic Areas:** none
 - **Availability:**
   - Singapore Institute of Management: SIM S1, SIM S3
   - UOWCHK: UOWCHK Sem C

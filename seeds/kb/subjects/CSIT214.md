@@ -1,7 +1,12 @@
 # CSIT214 — IT Project Management
 
 - **Credit Points:** 6
-- **Pre-Requisite:** CSIT114
+- **Subject Level:** 200-level
+- **Prerequisites:** CSIT114
+- **Corequisites:** none
+- **Exclusions:** none
+- **Degree Restrictions:** none
+- **Tags / Topic Areas:** none
 - **Availability:**
   - Dubai: DXB UG Autumn
   - Liverpool: Autumn, Spring

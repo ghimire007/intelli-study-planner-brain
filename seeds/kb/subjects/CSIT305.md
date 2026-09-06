@@ -1,6 +1,12 @@
 # CSIT305 — Emerging Information Technologies and their Applications
 
 - **Credit Points:** 6
+- **Subject Level:** 300-level
+- **Prerequisites:** none
+- **Corequisites:** none
+- **Exclusions:** none
+- **Degree Restrictions:** none
+- **Tags / Topic Areas:** none
 - **Availability:**
   - Dubai: DXB UG Autumn
   - Liverpool: Spring

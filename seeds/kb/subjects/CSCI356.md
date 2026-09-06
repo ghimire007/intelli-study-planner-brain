@@ -1,8 +1,12 @@
 # CSCI356 — Game Engine Essentials
 
 - **Credit Points:** 6
-- **Co-Requisite:** CSIT214
-- **Pre-Requisite:** CSIT121
+- **Subject Level:** 300-level
+- **Prerequisites:** CSIT121
+- **Corequisites:** CSIT214
+- **Exclusions:** none
+- **Degree Restrictions:** none
+- **Tags / Topic Areas:** none
 - **Availability:**
   - Dubai: DXB UG Winter
   - Singapore Institute of Management: SIM S4

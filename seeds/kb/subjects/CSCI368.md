@@ -1,7 +1,12 @@
 # CSCI368 — Network Security
 
 - **Credit Points:** 6
-- **Pre-Requisite:** CSIT127, CSIT121, and 12cp 200 level CSCI/CSIT
+- **Subject Level:** 300-level
+- **Prerequisites:** CSIT127, CSIT121, and 12cp 200 level CSCI/CSIT
+- **Corequisites:** none
+- **Exclusions:** none
+- **Degree Restrictions:** none
+- **Tags / Topic Areas:** none
 - **Availability:**
   - Dubai: DXB UG Autumn
   - Liverpool: Spring
