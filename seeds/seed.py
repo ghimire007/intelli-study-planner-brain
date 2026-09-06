@@ -44,11 +44,11 @@ HANDBOOK_766_2026_WOLLONGONG = """# 766 — Bachelor of Computer Science (Wollon
 - CSIT121 (6 CP) | Aut/Spr | Prereq: CSIT110 OR CSIT111 OR ENGG100
 - CSIT127 (6 CP) | Spr | Prereq: None
 - CSIT128 (6 CP) | Aut/Spr | Prereq: None
+- CSCI203 (6 CP) | Spr | Prereq: (CSIT110 or CSIT111) AND (CSIT113 or CSIT123)
 - CSIT205 (6 CP) | Aut | Prereq: None (Replaces MATH255)
 - CSIT214 (6 CP) | Aut/Spr | Prereq: CSIT114
 - CSIT226 (6 CP) | Spr | Prereq: None
 - CSCI235 (6 CP) | Aut | Prereq: CSIT115
-- CSCI203 (6 CP) | Spr | Prereq: (CSIT110 or CSIT111) AND (CSIT113 or CSIT123)
 - CSIT314 (6 CP) | Aut | Prereq: CSIT214 AND 12 CP at 200-level CSCI/ISIT
 - CSIT321 (12 CP) | Aut/Spr | Prereq: CSIT214 AND 18 CP at 200-level CSCI/CSIT/ISIT | Coreq: CSIT226 AND CSIT314 |
 
@@ -122,7 +122,6 @@ For a **double major**, list requirements for BOTH majors. At most **ONE subject
 
 
 ### Software Engineering (MAJ40277)
-
 - CSCI318 (6 CP) | Spr | Prereq: (CSIT121 AND CSIT214) OR (ECTE250 AND CSCI291)
 - CSCI334 (6 CP) | Aut | Prereq: CSIT121 AND CSIT214
 - CSIT377 (6 CP) | Spr | Prereq: CSIT128 AND 6 CP at 200-level | Coreq: 12 CP at 200-level |
@@ -167,7 +166,7 @@ Unspecified Credits table format: `Course | Level | NomCP`
 
 ### STAGE 1: ANALYSIS & AUDIT
 1. Identify Commencement Year & Declared Major.
-   - Valid Majors: Network Design & Management (MAJ40163), Web Design & Development (MAJ40246), or No-Major Path.
+   - Valid Majors: AI & Big Data (MAJ44204), Cybersecurity (MAJ40516), Digital Systems Security (MAJ40164), Game and Mobile Development (MAJ41477), Software Engineering (MAJ40277), or No-Major Path.
    - If invalid: Trigger CIRCUIT BREAKER -> Abort immediately to Scenario A.
 2. Resolve Replacements (e.g., MATH255 -> CSIT205).
 3. Audit COMPLETED and ENROLLED subjects in strict priority order (Core -> Major -> Elective -> Excess):
