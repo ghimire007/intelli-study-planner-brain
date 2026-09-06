@@ -7,7 +7,9 @@ subject (/subjects/...) link, and writes three files under seeds/scraped/:
   course_<code>.json    — curriculum structure per campus
   majors_<code>.json    — one entry per major: subjects, campuses, CP
   subjects_<code>.json  — one entry per subject: title, CP, prerequisites,
-                          session/campus offerings, handbook URL
+                          corequisites, exclusions, degree_restrictions,
+                          subject_level, tags, session/campus offerings,
+                          handbook URL
 
 Usage:  python scripts/scrape_courseloop.py 766 2026
 """
@@ -23,6 +25,19 @@ from urllib.parse import quote
 BASE = "https://courses.uow.edu.au"
 NEXT_DATA_RE = re.compile(
     r'<script id="__NEXT_DATA__" type="application/json">(.*?)</script>', re.DOTALL
+)
+NO_RESTRICTIONS = "No restrictions/exclusions for this subject"
+_DEGREE_RESTRICTION_MARKERS = (
+    "restricted",
+    "student",
+    "hsc",
+    "completed",
+    "must",
+    "only",
+    "approval",
+    "%",
+    "enrol",
+    "enroll",
 )
 
 
@@ -83,6 +98,10 @@ def collect_links(node: dict, majors: dict, subjects: dict) -> None:
         collect_links(child, majors, subjects)
 
 
+def strip_html(text: str | None) -> str:
+    return re.sub(r"<[^>]+>", "", text or "").strip()
+
+
 def parse_rules(pc: dict) -> list[dict]:
     """Extract human-readable enrolment rules (prerequisites etc.) from a page."""
     rules = []
@@ -90,10 +109,88 @@ def parse_rules(pc: dict) -> list[dict]:
         rules.append(
             {
                 "type": (rule.get("type") or {}).get("label"),
-                "description": re.sub(r"<[^>]+>", "", rule.get("description") or "").strip(),
+                "description": strip_html(rule.get("description")),
             }
         )
     return rules
+
+
+def _split_rule_list(text: str) -> list[str]:
+    parts = re.split(r"\s*(?:,|;\s*|\n)\s*", text)
+    return [part.strip() for part in parts if part.strip()]
+
+
+def _rules_by_label(pc: dict) -> dict[str, list[str]]:
+    """Map CourseLoop enrolment rule labels to normalized list fields."""
+    grouped: dict[str, list[str]] = {
+        "prerequisites": [],
+        "corequisites": [],
+        "exclusions": [],
+    }
+    for rule in pc.get("enrolment_rules_applied_to_all") or []:
+        label = ((rule.get("type") or {}).get("label") or "").strip().lower()
+        desc = strip_html(rule.get("description"))
+        if not desc:
+            continue
+        if label in {"pre-requisite", "prerequisite"}:
+            grouped["prerequisites"].append(desc)
+        elif label in {"co-requisite", "corequisite"}:
+            grouped["corequisites"].append(desc)
+        elif label in {"exclusion", "exclusions"}:
+            grouped["exclusions"].append(desc)
+    return grouped
+
+
+def _classify_restrictions_exclusions(text: str) -> tuple[list[str], list[str]]:
+    """Split CourseLoop restrictions_exclusions into exclusions vs degree restrictions."""
+    if not text or text == NO_RESTRICTIONS:
+        return [], []
+    lower = text.lower()
+    if any(marker in lower for marker in _DEGREE_RESTRICTION_MARKERS):
+        return [], [text]
+    parts = re.split(r"\s*(?:,|and|or)\s*", text, flags=re.IGNORECASE)
+    exclusions = [part.strip() for part in parts if part.strip()]
+    return exclusions, []
+
+
+def parse_subject_fields(pc: dict, code: str) -> dict:
+    """Return normalized subject metadata with a consistent shape for every subject."""
+    rules = _rules_by_label(pc)
+    exclusions = list(rules["exclusions"])
+    degree_restrictions: list[str] = []
+
+    explicit_exclusions = strip_html(pc.get("exclusions"))
+    if explicit_exclusions:
+        exclusions.extend(_split_rule_list(explicit_exclusions))
+
+    restr_excl = strip_html(pc.get("restrictions_exclusions"))
+    restr_exclusions, restr_degree = _classify_restrictions_exclusions(restr_excl)
+    exclusions.extend(restr_exclusions)
+    degree_restrictions.extend(restr_degree)
+
+    quota = strip_html(pc.get("quota_enrolment_requirements"))
+    if quota:
+        degree_restrictions.append(quota)
+
+    level = pc.get("level") or {}
+    label = strip_html(level.get("label"))
+    if label.isdigit():
+        subject_level = f"{label}-level"
+    else:
+        value = strip_html(level.get("value"))
+        subject_level = f"{int(value) * 100}-level" if value.isdigit() else "Unknown"
+
+    tags_raw = strip_html(pc.get("cs_tags"))
+    tags = [tag.strip() for tag in re.split(r",\s*", tags_raw) if tag.strip()] if tags_raw else []
+
+    return {
+        "prerequisites": rules["prerequisites"],
+        "corequisites": rules["corequisites"],
+        "exclusions": exclusions,
+        "degree_restrictions": degree_restrictions,
+        "subject_level": subject_level,
+        "tags": tags,
+    }
 
 
 def parse_offerings(pc: dict) -> list[dict]:
@@ -129,11 +226,14 @@ def scrape_subject(code: str, year: int, url: str | None = None) -> dict | None:
             break
     if pc is None or path is None:
         return None
+    code = pc.get("code") or code
+    fields = parse_subject_fields(pc, code)
     return {
-        "code": pc.get("code"),
+        "code": code,
         "title": pc.get("title"),
         "cp": pc.get("credit_points"),
-        "description": re.sub(r"<[^>]+>", "", pc.get("description") or "").strip(),
+        "description": strip_html(pc.get("description")),
+        **fields,
         "rules": parse_rules(pc),
         "offerings": parse_offerings(pc),
         "url": f"{BASE}{quote(path, safe='/:?=&%')}",
