@@ -187,7 +187,6 @@ Unspecified Credits table format: `Course | Level | NomCP`
 """
 
 # Handbook data for 1807 Bachelor of Information Technology (Wollongong Campus, 2026)
-# Handbook data for 1807 Bachelor of Information Technology (Wollongong Campus, 2026)
 HANDBOOK_1807_2026_WOLLONGONG = """# 1807 — Bachelor of Information Technology (Wollongong, 2026)
 
 ## CORE DEGREE RULES (Total: 144 CP)
@@ -294,6 +293,109 @@ Unspecified Credits table format: `Course | Level | NomCP`
 4. Enforce Session Load Limits (Standard: 4 subjects / 24 CP; Hard Cap: Max 4 subjects).
 5. Proceed to Step 10 (Macro & Tool Audit) and Step 11 (Pre-Flight Verification Matrix).
 """
+
+
+# Handbook data for 1807 Bachelor of Information Technology (Liverpool Campus, 2026)
+HANDBOOK_1807_2026_LIVERPOOL = """# 1807 — Bachelor of Information Technology (Liverpool, 2026)
+
+## CORE DEGREE RULES (Total: 144 CP)
+- **Core (96 CP):** Complete all Section A subjects. 
+- **Major (24 CP):** Complete Section B declared major list.
+- **No-Major Path (24 CP):** 18 CP at 300-level + 6 CP at 200/300-level (CSCI/CSIT/ISIT). Do not make up no-major subjects. Write no-major 1 (200/300 lv) etc.
+- **Double Major:** Satisfy both majors (15 core + 8 major subjects). No electives.
+- **Electives:** Max 24 CP (4 subjects). NON-IT SUBJECTS ARE VALID ELECTIVES. ANY MAJOR CORE SUBJECT THAT IS NOT A PART OF THE CHOSEN MAJOR IS AN ELECTIVE.
+- **Excess:** Not counted towards the total CP. Excess is any subject that would be an elective but there are already 24 CP (4 subjects) of electives.
+- **Level Cap:** Max 60 CP at 100-level overall.
+
+---
+
+## (A) CORE SUBJECTS (96 CP Total)
+- CSIT110 (6 CP) | Aut/Spr | Prereq: None
+- CSIT123 (6 CP) | Aut | Prereq: None
+- CSIT114 (6 CP) | Aut | Prereq: None
+- CSIT115 (6 CP) | Aut/Spr | Prereq: None
+- CSIT121 (6 CP) | Aut/Spr | Prereq: CSIT110 OR CSIT111 OR ENGG100
+- CSIT127 (6 CP) | Spr | Prereq: None
+- CSIT128 (6 CP) | Aut/Spr | Prereq: None
+- CSIT205 (6 CP) | Aut | Prereq: None (Replaces MATH255)
+- CSIT214 (6 CP) | Aut/Spr | Prereq: CSIT114
+- CSIT226 (6 CP) | Spr | Prereq: None
+- CSIT305 (6 CP) | Spr | Prereq: None
+- ISIT219 (6 CP) | Aut | Prereq: CSIT128
+- ISIT224 (6 CP) | Spr | Prereq: (CSIT113 OR CSIT123 OR BUS101) AND 18 CP at 100-level
+- CSIT314 (6 CP) | Aut | Prereq: CSIT214 AND 12 CP at 200-level CSCI/ISIT
+- CSIT321 (12 CP) | Aut/Spr | Prereq: CSIT214 AND 18 CP at 200-level CSCI/CSIT/ISIT | Coreq: CSIT226 AND CSIT314 |
+
+### Specifically for CSIT321:
+- CSIT321 is split into Part 1 and Part 2 both worth 6CP each for the purpose of scheduling. They CANNOT BE TAKEN SIMULTANEOUSLY AND YOU CANNOT COMBINE BOTH PARTS. 
+- Part 2 MUST be in the **immediately following** session from Part 1 (Session N then Session N + 1).
+- If the student was already enrolled in Part 1 last session, Part 2 must appear in next current session.
+- Prioritise starting CSIT321 in the same session as CSIT314 if possible. 
+- CSIT321 Part 1 is 6 CP. CSIT321 Part 2 is 6 CP.
+
+### Core Replacements & Alternates
+- MATH255 Complete -> Satisfies CSIT205 core. If both present, CSIT205 = Core, MATH255 = Elective.
+- CSIT111 satisfies CSIT110 where allowed. CSIT113 satisfies CSIT123 where allowed.
+
+---
+
+## (B) MAJOR (24 CP)
+
+### Network Design & Management (MAJ40163)
+- ISIT212 (6 CP) | Aut | Prereq: ISIT105 OR CSIT127
+- CSCI322 (6 CP) | Spr | Prereq: CSIT127 AND 18 CP at 200-level
+- ISIT302 (6 CP) | Aut | Prereq: CSIT127 AND 6 CP at 200-level | Coreq: 12 CP at 200-level
+- CSIT302 (6 CP) | Aut | Prereq: CSIT127 AND 12 CP at 100-level CSIT
+
+---
+
+## Unspecified Credits
+
+Unspecified credits count toward the total CP and toward the 100-level cap based on their listed level. Include them in the Stage 1 total.
+
+---
+
+## Student Enrolment Record Format
+
+The enrolment record is a table with the following columns:
+
+    Year | Session | Campus | Delivery | Subject Code | NomCP | Mark | Grade | Status
+
+A subject is **Complete** if ALL of the following are true:
+- Grade is one of: **HD, D, C, P, PS, S**
+- Status is **"Complete"**
+- OR it is listed as a **Specified Credit**
+
+Grades TF, F, N, NH, W, WF, AF, or any blank Grade do **NOT** count as complete or towards the CP total.
+
+Specified Credits table format: `Course | Subject Code | Name | Level | NomCP`
+Unspecified Credits table format: `Course | Level | NomCP`
+
+–-
+
+## EXECUTION STEPS & AUDIT PROTOCOL
+
+### STAGE 1: ANALYSIS & AUDIT
+1. Identify Commencement Year & Declared Major.
+   - Valid Majors: Network Design & Management (MAJ40163), Web Design & Development (MAJ40246), or No-Major Path.
+   - If invalid: Trigger CIRCUIT BREAKER -> Abort immediately to Scenario A.
+2. Resolve Replacements (e.g., MATH255 -> CSIT205).
+3. Audit COMPLETED and ENROLLED subjects in strict priority order (Core -> Major -> Elective -> Excess):
+   - Core_CP_Completed = [X] CP
+   - Major_CP_Completed = [X] CP
+   - Raw_Elective_CP_Taken = [X] CP
+   - Valid_Elective_CP = MIN(24, Raw_Elective_CP_Taken) = [X] CP
+   - Excess_CP = MAX(0, Raw_Elective_CP_Taken - 24) = [X] CP (List codes here immediately)
+   - Total_Applicable_Earned = Core_CP_Completed + Major_CP_Completed + Valid_Elective_CP = [X] / 144 CP
+
+### STAGE 2: SESSION SCRATCHPAD
+1. Calculate Remaining Needed CP to reach 144 CP.
+2. Run Session Scratchpad for ALL future sessions in chronological order until 144 CP is reached.
+3. Apply Session Filters (Availability, Prereq <= N-1, Coreq <= N, CP level thresholds) to every uncompleted subject.
+4. Enforce Session Load Limits (Standard: 4 subjects / 24 CP; Hard Cap: Max 4 subjects).
+5. Proceed to Step 10 (Macro & Tool Audit) and Step 11 (Pre-Flight Verification Matrix).
+"""
+
 
 # Handbook data for 1838 Bachelor of Business Information Systems (Wollongong Campus, 2026)
 # DRAFT from seeds/scraped/course_1838.json + subjects_1838.json — verify global rules
@@ -532,6 +634,12 @@ SEED_DATA = [
         "information": HANDBOOK_1807_2026_WOLLONGONG,
     },
     {
+            "year": 2026,
+            "course": "1807",
+            "campus": "Liverpool",
+            "information": HANDBOOK_1807_2026_LIVERPOOL,
+        },
+    {
         "year": 2026,
         "course": "1838",
         "campus": "Wollongong",
@@ -610,7 +718,7 @@ async def seed() -> None:
                 )
             )
             row = result.scalar_one_or_none()
-
+            
             if row:
                 # Update existing record values
                 for key, value in entry.items():
