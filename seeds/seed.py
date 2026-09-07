@@ -25,143 +25,116 @@ KB_YEAR = 2026
 
 HANDBOOK_766_2026_WOLLONGONG = """# 766 — Bachelor of Computer Science (Wollongong Campus, 2026 Handbook)
 
-## Global Rules
-- Total **144 credit points (CP)** required to graduate.
-- Maximum **60 CP** of 100-level subjects (subject codes with a 1xx number, e.g. CSIT110) — including those already completed.
-- **CSIT321 (Capstone) = 12 CP**; every other subject = 6 CP. Never count CSIT321 as 6 CP.
-- Do NOT invent subject codes. Only use codes that appear in this handbook or the student's enrolment record.
-- A subject counts toward exactly ONE category: Core, Core Selection, Major Core, or Elective. No double-counting.
+## CORE DEGREE RULES (Total: 144 CP)
+- **Core (96 CP):** Complete all Section A subjects. 
+- **Major (24 CP):** Complete Section B declared major list.
+- **No-Major Path (24 CP):** 18 CP at 300-level + 6 CP at 200/300-level (CSCI/CSIT/ISIT). Do not make up no-major subjects. Write no-major 1 (200/300 lv) etc.
+- **Double Major:** Satisfy both majors (15 core + 8 major subjects). No electives.
+- **Electives:** Max 24 CP (4 subjects). NON-IT SUBJECTS ARE VALID ELECTIVES. ANY MAJOR CORE SUBJECT THAT IS NOT A PART OF THE CHOSEN MAJOR IS AN ELECTIVE.
+- **Excess:** Not counted towards the total CP. Excess is any subject that would be an elective but there are already 24 CP (4 subjects) of electives.
+- **Level Cap:** Max 60 CP at 100-level overall.
 
 ---
 
-## (A) Core Subjects — Complete ALL
+## (A) CORE SUBJECTS (96 CP Total)
+- CSIT110 (6 CP) | Aut/Spr | Prereq: None
+- CSIT123 (6 CP) | Aut | Prereq: None
+- CSIT114 (6 CP) | Aut | Prereq: None
+- CSIT115 (6 CP) | Aut/Spr | Prereq: None
+- CSIT121 (6 CP) | Aut/Spr | Prereq: CSIT110 OR CSIT111 OR ENGG100
+- CSIT127 (6 CP) | Spr | Prereq: None
+- CSIT128 (6 CP) | Aut/Spr | Prereq: None
+- CSCI203 (6 CP) | Spr | Prereq: (CSIT110 or CSIT111) AND (CSIT113 or CSIT123)
+- CSIT205 (6 CP) | Aut | Prereq: None (Replaces MATH255)
+- CSIT214 (6 CP) | Aut/Spr | Prereq: CSIT114
+- CSIT226 (6 CP) | Spr | Prereq: None
+- CSCI235 (6 CP) | Aut | Prereq: CSIT115
+- CSIT314 (6 CP) | Aut | Prereq: CSIT214 AND 12 CP at 200-level CSCI/ISIT
+- CSIT321 (12 CP) | Aut/Spr | Prereq: CSIT214 AND 18 CP at 200-level CSCI/CSIT/ISIT | Coreq: CSIT226 AND CSIT314 |
 
-> **Commencement year rule:** CSIT314 is **NOT** a core subject for students who commenced **2023 or before**. Remove it from the core list when auditing or planning for those students.
+### Specifically for CSIT321:
+- CSIT321 is split into Part 1 and Part 2 both worth 6CP each for the purpose of scheduling. They CANNOT BE TAKEN SIMULTANEOUSLY AND YOU CANNOT COMBINE BOTH PARTS. 
+- CSIT321 Part 1 has ALL the prequisites and corequisites of CSIT321. CSIT321 Part 2 only has CSIT321 Part 1 as a prerequisite. 
+- Part 2 MUST be in the **immediately following** session from Part 1 (Session N then Session N + 1).
+- If the student was already enrolled in Part 1 last session, Part 2 must appear in next current session.
+- Prioritise starting CSIT321 in the same session as CSIT314 if possible. 
+- CSIT321 Part 1 is 6 CP. CSIT321 Part 2 is 6 CP.
 
-| Subject Code | Session Availability | Prerequisites |
-|-------------|---------------------|--------------|
-| CSIT110 | Autumn or Spring | None |
-| CSIT123 | Autumn | None |
-| CSIT114 | Autumn | None |
-| CSIT115 | Autumn or Spring | None |
-| CSIT121 | Autumn or Spring | CSIT110 OR CSIT111 OR ENGG100 |
-| CSIT127 | Spring | None |
-| CSIT128 | Autumn or Spring | None |
-| CSCI235 | Autumn | CSIT115 |
-| CSIT214 | Autumn or Spring | CSIT114 |
-| CSIT205 | Autumn | None |
-| CSCI203 | Spring | (CSIT110 OR CSIT111) AND (CSIT113 OR CSIT123) |
-| CSIT226 | Spring | None |
-| CSIT314 | Autumn | CSIT214 AND 12 CP at 200-level (2024+ cohort only) |
+### Specifically for CSIT314:
+- CSIT314 is a corequisite of CSIT321
+- CSIT314 is **NOT** a core subject for students with commencement year ≤ 2023, so remove it from the core list when auditing or planning for those students.
+- CSIT314 is a mandatory subject for students with commencement year ≥ 2024. Example: A student who commenced 2025 -> 2025 ≥ 2024 -> CSIT314 IS core.
 
-### Equivalency / Replacement Rules
-If a student holds BOTH a subject and its replacement, the **replacement becomes an elective**.
-
-| Replacement Code | Replaces Core Subject | Session | Note |
-|-----------------|----------------------|---------|------|
-| CSIT111 | CSIT110 | Autumn or Spring | CSIT111 satisfies all CSIT110 prerequisites throughout |
-| CSIT113 | CSIT123 | Autumn or Spring | CSIT113 satisfies all CSIT123 prerequisites throughout |
-| MATH255 | CSIT205 | Autumn or Spring | Either MATH255 or MATH221 replaces CSIT205 |
-| MATH221 | CSIT205 | Autumn or Spring | Either MATH255 or MATH221 replaces CSIT205 |
-
----
-
-## (B) Core Selection — Complete ONE
-
-| Subject Code | Session Availability | Prerequisites |
-|-------------|---------------------|--------------|
-| CSCI251 | Spring | CSIT121 OR CSIT213 |
-| CSIT213 | Autumn | CSIT110 OR CSIT111 |
-
-**If BOTH CSCI251 and CSIT213 are complete:** CSCI251 satisfies the Core Selection; CSIT213 becomes an elective.
+### Core Replacements & Alternates
+- MATH255 Complete -> Satisfies CSIT205 core. If both present, CSIT205 = Core, MATH255 = Elective.
+- CSIT111 satisfies CSIT110 where allowed. CSIT113 satisfies CSIT123 where allowed.
 
 ---
 
-## (C) Capstone — CSIT321 (12 CP)
+## (B) Core Selection — (6 CP required)
 
-| Subject Code | CP | Session | Prerequisites | Corequisites |
-|-------------|-----|---------|--------------|-------------|
-| CSIT321 | 12 | Annual: Part 1 = Autumn, Part 2 = Spring | CSIT214 AND 18 CP at 200-level CSCI/CSIT/ISIT | CSIT226 |
+- CSCI251 (6 CP) | Spr | Prereq: CSIT121 or CSIT213
+- CSIT213 (6 CP) | Aut | Prereq: CSIT110 OR CSIT111
 
-**Scheduling rules:**
-- CSIT321 spans exactly **two consecutive sessions**: Autumn (Part 1) then the following Spring (Part 2).
-- If the student was enrolled in Part 1 in the **immediately preceding session**, they MUST be enrolled in Part 2 in the current session — do not insert a gap.
-- Schedule CSIT321 only after all prerequisites are fully satisfied (not merely enrolled).
-- CSIT226 must be complete or co-enrolled alongside Part 1.
+### Core Selection rules:
+- CSCI251 and CSIT213 can each individually satisfy (B) Core Selection.
+- Whenever BOTH CSCI251 and CSIT213 appear anywhere in the plan (scheduled or completed):
+    - Whichever of the two was scheduled FIRST (earlier term, or earlier add-order if same term) is tagged "Core Selection"
+    - The other one is tagged "Elective"
+- This tagging must be re-evaluated every time the plan changes — including when a second course is added later, or when scheduling is edited/reordered.
+- If only one of the two is in the plan, it is tagged "Core Selection" by default.
 
 ---
 
-## (D) Major Core Subjects — Complete ALL subjects in the declared major
+## (C) MAJORS (24 CP Each)
+
+Only refer and use the student's declared major's subtable. Do not include or reference requirements from any other major subtable in the audit or plan. if the student has declared no major, skip this and use the No-Major Path below.
 
 If no major is declared, skip this section and use the **No-Major Path** below.
 For a **double major**, list requirements for BOTH majors. At most **ONE subject** may be cross-counted between the two majors.
 
-### AI & Big Data (AIBD) — Complete ALL 4
+### AI & Big Data (MAJ44204)
+- CSCI218 (6 CP) | Spr | Prereq: (CSIT110 OR CSIT111) AND 18 CP at 100-level 
+- CSCI316 (6 CP) | Aut | Prereq: CSCI203
+- CSCI323 (6 CP) | Aut | Prereq: (CSIT110 OR CSIT111) AND 12 CP of 200-level CSCI/CSIT
+- ISIT312 (6 CP) | Spr | Prereq: CSIT115 AND 18 CP at 200-level
 
-| Subject Code | Session | Prerequisites |
-|-------------|---------|--------------|
-| CSCI218 | Spring | (CSIT110 OR CSIT111) AND 18 CP at 100-level |
-| CSCI316 | Autumn | CSCI203 |
-| CSCI323 | Autumn | (CSIT110 OR CSIT111) AND 12 CP of 200-level CSCI/CSIT |
-| ISIT312 | Spring | CSIT115 AND 18 CP at 200-level |
 
-### Cybersecurity (CySe) — Complete ALL 4
+### Cybersecurity (MAJ40516)
+- CSCI262 (6 CP) | Spr | Prereq: CSIT121 AND CSIT115 AND CSIT127
+- CSCI369 (6 CP) | Spr | (CSIT110 OR CSIT111) AND 18 CP at 200-level
+- CSIT302 (6 CP) | Aut | CSIT127 AND 12 CP at 100-level CSIT
+- CSIT375 (6 CP) | Aut | CSIT121 AND CSIT127 AND 18 CP at 200-level CSCI/CSIT
 
-| Subject Code | Session | Prerequisites |
-|-------------|---------|--------------|
-| CSCI262 | Spring | CSIT121 AND CSIT115 AND CSIT127 |
-| CSCI369 | Spring | (CSIT110 OR CSIT111) AND 18 CP at 200-level |
-| CSIT302 | Autumn | CSIT127 AND 12 CP at 100-level CSIT |
-| CSIT375 | Autumn | CSIT121 AND CSIT127 AND 18 CP at 200-level |
 
-### Digital Systems Security (DSS) — Complete ALL 4
+### Digital Systems Security (MAJ40164)
+- CSCI262 (6 CP) | Spr | Prereq: CSIT121 AND CSIT115 AND CSIT127
+- CSCI361 (6 CP) | Aut | Prereq: CSIT121 AND 12 CP of 200-level CSCI
+- CSCI368 (6 CP) | Spr | Prereq: CSIT127 AND CSIT121 AND 12 CP of 200-level CSCI/CSIT
+- CSIT328 (6 CP) | Aut | Prereq: (CSIT110 OR CSIT111) AND CSIT128 | Coreq: 12 CP at 200-level
 
-| Subject Code | Session | Prerequisites | Corequisites |
-|-------------|---------|--------------|-------------|
-| CSCI262 | Spring | CSIT121 AND CSIT115 AND CSIT127 | None |
-| CSCI361 | Autumn | CSIT121 AND 12 CP of 200-level CSCI | None |
-| CSCI368 | Spring | CSIT127 AND CSIT121 AND 12 CP of 200-level CSCI/CSIT | None |
-| CSIT328 | Autumn | (CSIT110 OR CSIT111) AND CSIT128 | 12 CP at 200-level |
 
-### Game and Mobile Development (GMD) — Complete ALL 4
+### Game and Mobile Development (MAJ41477)
+- CSCI336 (6 CP) | Spr | Prereq: CSIT121 AND 18 CP at 200-level
+- CSCI356 (6 CP) | Spr | Prereq: CSIT121 | Coreq: CSIT214
+- CSCI388 (6 CP) | Aut | Prereq: CSIT121 AND 18 CP at 200-level
+- CSIT242 (6 CP) | Aut | Prereq: CSIT121 | Coreq: CSIT213 |
 
-| Subject Code | Session | Prerequisites | Corequisites |
-|-------------|---------|--------------|-------------|
-| CSCI336 | Spring | CSIT121 AND 18 CP at 200-level | None |
-| CSCI356 | Spring | CSIT121 | CSIT214 |
-| CSCI388 | Autumn | CSIT121 AND 18 CP at 200-level | None |
-| CSIT242 | Autumn | CSIT121 | CSIT213 |
 
-### Software Engineering (SE) — Complete ALL 4
+### Software Engineering (MAJ40277)
+- CSCI318 (6 CP) | Spr | Prereq: (CSIT121 AND CSIT214) OR (ECTE250 AND CSCI291)
+- CSCI334 (6 CP) | Aut | Prereq: CSIT121 AND CSIT214
+- CSIT377 (6 CP) | Spr | Prereq: CSIT128 AND 6 CP at 200-level | Coreq: 12 CP at 200-level |
+- ISIT219 (6 CP) | Aut | Prereq: CSIT128
 
-| Subject Code | Session | Prerequisites | Corequisites |
-|-------------|---------|--------------|-------------|
-| CSCI318 | Spring | (CSIT121 AND CSIT214) OR (ECTE250 AND CSCI291) | None |
-| CSCI334 | Autumn | CSIT121 AND CSIT214 | None |
-| CSIT377 | Spring | CSIT128 AND 6 CP at 200-level | 12 CP at 200-level |
-| ISIT219 | Autumn | CSIT128 | None |
+#### Specifically for Software Engineering majors:
+- ISIT219 is **NOT** an SE major core for students with commencement year ≤ 2023. 
+- CSIT314 **IS** an SE major core for students with commencement year ≤ 2023.
 
-> **SE Commencement Year Rule:** For SE students who commenced **2023 or before**: ISIT219 is **NOT** an SE major core. CSIT314 **IS** an SE major core for those students (treat it as both a core subject exemption AND a major core requirement).
 
----
-
-## No-Major Path (if no major is declared)
-
-Complete **24 CP** from CSCI/CSIT/ISIT subjects **not already in Core or Core Selection**, as follows:
-- **18 CP** of 300-level CSCI/CSIT/ISIT subjects (subject codes with a 3xx number)
-- **6 CP** at 200-level OR 300-level CSCI/CSIT/ISIT subjects
-
-No subject used here may already appear in Core or Core Selection.
-
----
-
-## Electives
-
-Fill any remaining CP to reach 144 total. Valid elective sources:
-- Any CSIT/CSCI/ISIT subject not already counted in Core, Core Selection, Major Core, or No-Major path
-- General Schedule subjects (from any UOW faculty)
-- **100-level cap:** total 100-level CP across the entire degree (complete + planned) must not exceed 60 CP
-- **Do not invent subject codes.** If a specific elective code is not available, write "Elective (200-level)" or "Elective (300-level)" as a placeholder rather than fabricating a code.
+### No-Major Path (if no major is declared)
+- **18 CP** of 300-level CSCI/CSIT/ISIT subjects (subject codes with a 3xx number) **Not** already in the Core or Core Selection
+- **6 CP** at 200-level OR 300-level CSCI/CSIT/ISIT subjects **Not** already in the Core or Core Selection
 
 ---
 
@@ -182,103 +155,35 @@ A subject is **Complete** if ALL of the following are true:
 - Status is **"Complete"**
 - OR it is listed as a **Specified Credit**
 
-Grades F, N, NH, W, WF, AF, or any blank Grade do **NOT** count as complete.
+Grades TF, F, N, NH, W, WF, AF, or any blank Grade do **NOT** count as complete or count towards the CP total.
 
 Specified Credits table format: `Course | Subject Code | Name | Level | NomCP`
 Unspecified Credits table format: `Course | Level | NomCP`
 
----
+–-
 
-## STAGE 1: ANALYSIS (Audit of Completed Credits)
+## EXECUTION STEPS & AUDIT PROTOCOL
 
-Complete this stage in full before starting Stage 2.
+### STAGE 1: ANALYSIS & AUDIT
+1. Identify Commencement Year & Declared Major.
+   - Valid Majors: AI & Big Data (MAJ44204), Cybersecurity (MAJ40516), Digital Systems Security (MAJ40164), Game and Mobile Development (MAJ41477), Software Engineering (MAJ40277), or No-Major Path.
+   - If invalid: Trigger CIRCUIT BREAKER -> Abort immediately to Scenario A.
+2. Resolve Replacements (e.g., MATH255 -> CSIT205).
+3. Audit COMPLETED and ENROLLED subjects in strict priority order (Core -> Major -> Elective -> Excess):
+   - Core_CP_Completed = [X] CP
+   - Major_CP_Completed = [X] CP
+   - Raw_Elective_CP_Taken = [X] CP
+   - Valid_Elective_CP = MIN(24, Raw_Elective_CP_Taken) = [X] CP
+   - Excess_CP = MAX(0, Raw_Elective_CP_Taken - 24) = [X] CP (List codes here immediately)
+   - Total_Applicable_Earned = Core_CP_Completed + Major_CP_Completed + Valid_Elective_CP = [X] / 144 CP
 
-**Step 1.1 — Commencement Year and Major:**
-Identify the student's commencement year (earliest year in the enrolment record). Identify declared major(s), if any. Note whether commencement year is 2023 or before.
+### STAGE 2: SESSION SCRATCHPAD
+1. Calculate Remaining Needed CP to reach 144 CP.
+2. Run Session Scratchpad for ALL future sessions in chronological order until 144 CP is reached.
+3. Apply Session Filters (Availability, Prereq <= N-1, Coreq <= N, CP level thresholds) to every uncompleted subject.
+4. Enforce Session Load Limits (Standard: 4 subjects / 24 CP; Hard Cap: Max 4 subjects).
+5. Proceed to Step 10 (Macro & Tool Audit) and Step 11 (Pre-Flight Verification Matrix).
 
-**Step 1.2 — Apply Equivalency Rules:**
-Before categorising, resolve all replacements:
-- CSIT111 present → treat as CSIT110 for core and prerequisite purposes. If CSIT110 also present, CSIT111 is an elective.
-- CSIT113 present → treat as CSIT123 for core and prerequisite purposes. If CSIT123 also present, CSIT113 is an elective.
-- MATH255 or MATH221 present → satisfies CSIT205 core. If CSIT205 is also present, the math subject is an elective.
-- Apply commencement year rule for CSIT314 and (if SE major) for ISIT219.
-
-**Step 1.3 — Identify Complete Subjects:**
-List every subject that is Complete (per the definition above). Then categorise each as exactly one of:
-
-| Category | Rule |
-|----------|------|
-| Core | Appears in Section A core list, adjusted for commencement year |
-| Core Selection | One qualifying subject from Section B (CSCI251 takes priority if both present) |
-| Major Core | Appears in the declared major's list in Section D |
-| Elective | Everything else (including "losing" replacements and discontinued subjects) |
-
-**Step 1.4 — Count CP per category:**
-Sum CP for Core, Core Selection, Major Core, Electives. Remember: CSIT321 = 12 CP, all others = 6 CP.
-
-**Step 1.5 — Total Complete CP:**
-Total Complete CP = Core CP + Core Selection CP + Major Core CP + Elective CP + Unspecified CP
-
-⚠️ **DOUBLE CHECK Stage 1 before continuing:**
-1. Is the commencement year correct?
-2. Is CSIT314 correctly included or excluded from Core based on commencement year?
-3. Does each subject appear in exactly ONE category?
-4. Is CSIT321 counted as 12 CP?
-5. Does the arithmetic add up?
-Correct any errors and repeat until all checks pass.
-
----
-
-## STAGE 2: PLANNING (Drafting the Study Plan)
-
-Start only after Stage 1 is fully verified.
-
-**Step 2.1 — List Outstanding Mandatory Subjects:**
-Identify subjects not completed in Stage 1 that are still required:
-- All remaining Core subjects (per commencement year rule)
-- Core Selection (if neither CSCI251 nor CSIT213 is complete)
-- All remaining Major Core subjects for each declared major
-- CSIT321 if not already complete
-
-**Step 2.2 — Assign Sessions:**
-Schedule each subject into the correct session based on Section A–D availability:
-- Autumn-only subjects → only Autumn
-- Spring-only subjects → only Spring
-- Autumn-or-Spring subjects → choose whichever fits the plan
-- A subject missed in its only available session incurs a one-year delay — flag this clearly if it occurs.
-
-**Step 2.3 — Enforce Prerequisites and Corequisites:**
-For every subject being scheduled:
-- All prerequisites must be **Complete** (Stage 1) or planned in a **strictly earlier** session.
-- All corequisites must be **Complete** or planned in the **same or earlier** session.
-- "CP at level X" prerequisites: count only Complete CP or CP planned in earlier sessions.
-- Never assume a corequisite satisfies a prerequisite.
-
-**Step 2.4 — Schedule CSIT321:**
-- Place Part 1 (Autumn) in the final year.
-- Place Part 2 (Spring) in the immediately following session.
-- If the student was already enrolled in Part 1 last session, Part 2 must appear in the current session.
-
-**Step 2.5 — Session Load Cap:**
-Each session must contain at most **4 subjects**. Redistribute if any session exceeds this.
-
-**Step 2.6 — Calculate Required Remaining CP:**
-Required CP = 144 − Total Complete CP (from Stage 1.5)
-
-**Step 2.7 — Add Electives:**
-Add elective subjects (using valid sources listed above) until total planned CP equals Required CP from Step 2.6. Do not invent subject codes; use a placeholder "Elective (level)" if needed.
-
-⚠️ **DOUBLE CHECK Stage 2 before outputting:**
-1. Total Complete CP (Stage 1) + Total Planned CP = exactly 144
-2. No subject appears more than once across the entire plan
-3. Every subject's prerequisites are satisfied in a strictly earlier session
-4. Every corequisite is satisfied in the same or earlier session
-5. All Autumn-only subjects are in Autumn sessions; all Spring-only subjects are in Spring sessions
-6. No session has more than 4 subjects
-7. CSIT321 spans exactly two consecutive sessions (Autumn → Spring)
-8. Total 100-level CP (complete + planned) does not exceed 60 CP
-9. No subject code has been invented
-Correct any errors and repeat until all nine checks pass.
 """
 
 # Handbook data for 1807 Bachelor of Information Technology (Wollongong Campus, 2026)
@@ -490,7 +395,6 @@ Unspecified Credits table format: `Course | Level | NomCP`
 4. Enforce Session Load Limits (Standard: 4 subjects / 24 CP; Hard Cap: Max 4 subjects).
 5. Proceed to Step 10 (Macro & Tool Audit) and Step 11 (Pre-Flight Verification Matrix).
 """
-
 
 
 # Handbook data for 1838 Bachelor of Business Information Systems (Wollongong Campus, 2026)
@@ -777,11 +681,31 @@ async def seed_knowledge_base(session, course: str, year: int = KB_YEAR) -> None
                 "title": data["title"],
                 "credit_points": int(data["cp"]),
                 "url": data["url"],
-                "card": card_path.read_text(),
+                "card": card_path.read_text(encoding="utf-8", errors="ignore"),
                 "data": data,
             })
             print(f"{action} {kind[:-1]} {code}")
 
+
+# async def seed() -> None:
+#     async with AsyncSessionLocal() as session:
+#         for entry in SEED_DATA:
+#             result = await session.execute(
+#                 select(Handbook).where(
+#                     Handbook.year == entry["year"],
+#                     Handbook.course == entry["course"],
+#                     Handbook.campus == entry["campus"],
+#                 )
+#             )
+#             if result.scalar_one_or_none():
+#                 print(f"Skipping {entry['course']} {entry['year']} ({entry['campus']}) — already exists")
+#                 continue
+#             session.add(Handbook(**entry))
+#             print(f"Inserted {entry['course']} {entry['year']} ({entry['campus']})")
+#         for course in KB_COURSES:
+#             await seed_knowledge_base(session, course)
+#         await session.commit()
+#     print("Seed complete.")
 
 async def seed() -> None:
     async with AsyncSessionLocal() as session:
