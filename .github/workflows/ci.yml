@@ -1,8 +1,11 @@
-name: Pull Request
+name: CI
 
 on:
   workflow_dispatch:
   pull_request:
+    branches:
+      - main
+  push:
     branches:
       - main
 
@@ -11,8 +14,10 @@ permissions:
   pull-requests: read
 
 concurrency:
-  group: pr-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  # Superseded PR runs are pointless, but never cancel a run on main midway --
+  # that could kill the deploy job between triggering Render and confirming it.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   smoke:
@@ -44,6 +49,7 @@ jobs:
           tests/test_crypto.py
           tests/test_registry.py
           tests/test_vault_logic.py
+          tests/test_enrolment.py
           tests/test_api_auth.py
           tests/eval/test_parser.py
           -m "smoke and not needs_db"
@@ -130,3 +136,61 @@ jobs:
           DATABASE_URL: postgresql+psycopg_async://ci:ci@127.0.0.1:5432/ci
           GEMINI_API_KEY: ci-not-used
         run: python -m alembic upgrade head
+
+  deploy:
+    name: Deploy to Render
+    # Only after every check above has gone green, and only for main itself --
+    # a pull_request run never reaches this job.
+    needs: [smoke, lint, import-check, db]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    env:
+      RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+      RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
+    steps:
+      - name: Trigger Render deploy
+        id: trigger
+        env:
+          HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -z "$HOOK_URL" ]; then
+            echo "::error::RENDER_DEPLOY_HOOK_URL is not set. Add it under Settings > Secrets and variables > Actions."
+            exit 1
+          fi
+          # ref pins the deploy to the exact commit CI just tested, rather than
+          # whatever the branch tip happens to be by the time Render pulls.
+          response=$(curl --fail --silent --show-error --retry 3 --retry-delay 5 \
+            "${HOOK_URL}&ref=${GITHUB_SHA}")
+          echo "$response"
+          echo "deploy_id=$(printf '%s' "$response" | jq -r '.deploy.id // empty')" >> "$GITHUB_OUTPUT"
+
+      - name: Wait for the deploy to go live
+        # Optional: without an API key we can start a deploy but not watch it.
+        if: steps.trigger.outputs.deploy_id != '' && env.RENDER_API_KEY != '' && env.RENDER_SERVICE_ID != ''
+        env:
+          DEPLOY_ID: ${{ steps.trigger.outputs.deploy_id }}
+        run: |
+          for _ in $(seq 1 60); do
+            status=$(curl --fail --silent --show-error \
+              -H "Authorization: Bearer ${RENDER_API_KEY}" \
+              "https://api.render.com/v1/services/${RENDER_SERVICE_ID}/deploys/${DEPLOY_ID}" \
+              | jq -r '.status')
+            echo "${DEPLOY_ID}: ${status}"
+            case "$status" in
+              live)
+                echo "Deploy ${DEPLOY_ID} is live."
+                exit 0
+                ;;
+              build_failed|update_failed|pre_deploy_failed|canceled|deactivated)
+                echo "::error::Render deploy ${DEPLOY_ID} ended as: ${status}"
+                exit 1
+                ;;
+            esac
+            sleep 15
+          done
+          echo "::error::Timed out after 15 minutes waiting on deploy ${DEPLOY_ID}."
+          exit 1
+
+      - name: Deploy started (not waited on)
+        if: steps.trigger.outputs.deploy_id == '' || env.RENDER_API_KEY == '' || env.RENDER_SERVICE_ID == ''
+        run: echo "Render deploy triggered. Set RENDER_API_KEY and RENDER_SERVICE_ID to have CI wait for it and fail on a broken deploy."
