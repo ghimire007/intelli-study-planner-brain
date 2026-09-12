@@ -1,6 +1,6 @@
 import uuid
 
-from app.agents.graph import build_advisor_graph
+from app.agents.graphAPI import build_advisor_graph
 from app.agents.history import MessageView, build_history, latest_reply
 from app.core.checkpointer import get_checkpointer
 from app.llm.config import LLMConfig
@@ -64,6 +64,13 @@ class AgentChatService:
                 "meta": None,
                 "meta_confirmed": False,
                 "handbook": None,
+                "electives": None,
+                "remaining_subjects": None,
+                "electives_feedback": None,
+                "remaining_feedback": None,
+                "plan": None,
+                "plan_feedback": None,
+                "retry_count": None
             },
             {"configurable": {"thread_id": str(session_id)}},
         )

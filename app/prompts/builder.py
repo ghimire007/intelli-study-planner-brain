@@ -23,7 +23,7 @@ def _course_handbook_link(degree_code: str | None) -> str:
     return f'<a href="{url}" target="_blank">course handbook</a>'
 
 
-def build_system_prompt(*, meta: dict, meta_confirmed: bool, handbook: str | None, raw_sols: str) -> str:
+def build_system_prompt(*, prompt: str, meta: dict, meta_confirmed: bool, handbook: str | None, raw_sols: str) -> str:
     """Assemble the system prompt for this turn from handbook, SOLS, and meta state."""
     degree_code = (meta or {}).get("degree_code")
 
@@ -58,7 +58,7 @@ def build_system_prompt(*, meta: dict, meta_confirmed: bool, handbook: str | Non
         handbook_placeholder = "(unavailable — missing student details must be confirmed first)"
 
     return (
-        SYSTEM_PROMPT
+        prompt
         .replace("{{handbook}}", handbook or handbook_placeholder)
         .replace("{{sols}}", raw_sols)
         .replace(
