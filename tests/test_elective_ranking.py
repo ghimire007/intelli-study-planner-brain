@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import json
+
+from app.agents.skills import get_elective_priorities_tool
 from app.schemas.elective_ranking import ElectivePriorityInput
 from app.services.elective_pools import resolve_pool_candidates
 from app.services.elective_ranking import (
@@ -72,6 +75,25 @@ def test_major_mode_returns_ranked_priorities_for_766() -> None:
     assert len(result.pools) == 1
     # First-year Autumn: only a small elective-eligible set; ranking may be empty.
     assert result.pools[0].pool_id == "elective"
+
+
+def test_agent_tool_returns_json_payload() -> None:
+    payload = json.loads(
+        get_elective_priorities_tool.invoke(
+            {
+                "course": "766",
+                "campus": "Wollongong",
+                "session": "Autumn",
+                "mode": "interest",
+                "completed_subjects": [],
+                "planned_subjects": [],
+                "interests": "artificial intelligence",
+                "limit": 5,
+            }
+        )
+    )
+    assert payload["mode"] == "interest"
+    assert "pools" in payload
 
 
 def test_interest_mode_requires_interests_text() -> None:

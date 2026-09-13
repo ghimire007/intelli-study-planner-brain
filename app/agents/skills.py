@@ -12,6 +12,8 @@ from langchain_core.tools import StructuredTool, tool
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.schemas.elective_ranking import ElectivePriorityInput
+from app.services.elective_ranking import get_elective_priorities
 from app.services.handbook_service import fetch_handbook
 from app.services.kb_service import fetch_major, fetch_subjects
 from app.services.knowledge_service import TOPIC_SLUGS, TOPICS, load_topic
@@ -103,6 +105,42 @@ def make_lookup_major_tool(db: AsyncSession):
     return lookup_major_tool
 
 
+@tool
+def get_elective_priorities_tool(
+    course: str,
+    campus: str,
+    session: str,
+    mode: Literal["major", "interest"],
+    completed_subjects: list[str],
+    planned_subjects: list[str],
+    major: str | None = None,
+    interests: str | None = None,
+    limit: int = 25,
+) -> str:
+    """Return ranked elective shortlists per handbook pool for planning.
+
+    Call when filling elective slots in Stage 2. Use mode=major to rank by the
+    student's declared major; use mode=interest with interests text when the
+    student names topics (e.g. "cybersecurity, startups"). Pass completed and
+    planned subject codes from the SOLS record. Prefer higher-ranked codes
+    when scheduling electives unless session/prereqs rule them out.
+    """
+    result = get_elective_priorities(
+        ElectivePriorityInput(
+            course=course,
+            campus=campus,
+            session=session,
+            major=major,
+            completed_subjects=completed_subjects,
+            planned_subjects=planned_subjects,
+            mode=mode,
+            interests=interests,
+            limit=limit,
+        )
+    )
+    return json.dumps(result.model_dump(), indent=2)
+
+
 _topic_list = "\n".join(f"- {t.slug}: {t.description}" for t in TOPICS)
 
 
@@ -141,5 +179,6 @@ def build_skills(db: AsyncSession):
             make_fetch_handbook_tool(db),
             make_lookup_subjects_tool(db),
             make_lookup_major_tool(db),
+            get_elective_priorities_tool,
         ],
     }
