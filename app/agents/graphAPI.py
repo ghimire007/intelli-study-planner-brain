@@ -15,7 +15,7 @@ from app.llm.factory import make_chat_model
 from app.prompts.builder import build_system_prompt
 from app.services.sols_parser import parse_sols
 
-from app.prompts.prompts import SYSTEM_PROMPT, ELECTIVE_GENERATION_PROMPT, SUBJECT_GENERATION_PROMPT, EVAL_SUBJECTS_ELECTIVES 
+from app.prompts.prompts import SYSTEM_PROMPT, ELECTIVE_GENERATION_PROMPT, SUBJECT_GENERATION_PROMPT, EVAL_SUBJECTS_ELECTIVES, MAKE_PLAN, EVAL_PLAN, SYSTEM_PROMPT_V1
 
 ## graph state
 class AdvisorState(TypedDict):
@@ -35,7 +35,9 @@ class AdvisorState(TypedDict):
     remaining_feedback: str | None
     plan: str | None
     plan_feedback: str | None
+
     retry_count: int | None
+    stage1_retry_count: int | None
 
 # input
 
@@ -104,7 +106,14 @@ def build_advisor_graph(
                     "checkpointed state but cannot call a model"
                 )
             base = make_chat_model(llm_config)
-            models[kind] = base if kind == "parser" else base.bind_tools(skills[kind])
+
+            model_to_retry = base if kind == "parser" else base.bind_tools(skills[kind])
+
+            models[kind] = model_to_retry.with_retry(
+                wait_exponential_jitter=True, # Calculates exponential delays with jitter
+                stop_after_attempt=4,         # Retry up to 4 times per LLM call
+            )
+
         return models[kind]
 
     async def parse_input(state: AdvisorState) -> dict:
@@ -225,9 +234,18 @@ def build_advisor_graph(
         ])
         try:
             data = json.loads(res.content)
+
+            current_retry = state.get("stage1_retry_count", 0)
+
+            has_error = (
+                not data.get("electives_valid")
+                or not data.get("remaining_valid")
+            )
+
             return {
                 "electives_feedback": None if data.get("electives_valid") else data.get("electives_feedback", "Invalid electives found."),
                 "remaining_feedback": None if data.get("remaining_valid") else data.get("remaining_feedback", "Invalid core subjects found."),
+                "stage1_retry_count": (current_retry + 1 if has_error else 0)
             }
         except Exception:
             # Fallback if parsing fails
@@ -238,10 +256,19 @@ def build_advisor_graph(
 
     def route_stage1_eval(state: AdvisorState) -> list[str] | str:
         """Routes back to invalid branches (in parallel if both fail) or advances to stage 2."""
+
+        retries = state.get("stage1_retry_count", 0)
+
         has_electives_error = bool(state.get("electives_feedback"))
         has_remaining_error = bool(state.get("remaining_feedback"))
 
+        # PASSED
         if not has_electives_error and not has_remaining_error:
+            return "stage2_make_plan"
+
+        # STOP AFTER ONE RETRY
+        if retries >= 1:
+            print("Stage 1 retry limit reached. Continuing.")
             return "stage2_make_plan"
 
         rerun_branches = []
@@ -257,9 +284,6 @@ def build_advisor_graph(
     async def stage2_make_plan(state: AdvisorState) -> dict:
         """Generates or updates the degree completion plan based on feedback."""
         feedback = state.get("plan_feedback")
-        system_msg = (
-            "You are an academic course planning optimizer. Draft a session-by-session degree completion plan."
-        )
         if feedback:
             system_msg += f"\n\nAddress this previous evaluation feedback:\n{feedback}"
 
@@ -270,7 +294,7 @@ def build_advisor_graph(
         )
 
         res = await llm("full").ainvoke(
-            [SystemMessage(content=system_msg), HumanMessage(content=content_prompt)]
+            [SystemMessage(content=SYSTEM_PROMPT_V1), HumanMessage(content=content_prompt)]
         )
         return {"plan": str(res.content)}
 
@@ -278,7 +302,7 @@ def build_advisor_graph(
     async def evaluate_stage2(state: AdvisorState) -> dict:
         """Evaluates session correctness, credit point totals, and prerequisite order."""
         retries = state.get("retry_count") or 0
-        if retries >= 3:
+        if retries >= 1:
             # Stop looping after 3 attempts; accept the plan or fall back
             return {"plan_feedback": None, "retry_count": 0}
     

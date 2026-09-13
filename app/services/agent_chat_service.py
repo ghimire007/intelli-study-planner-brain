@@ -70,7 +70,8 @@ class AgentChatService:
                 "remaining_feedback": None,
                 "plan": None,
                 "plan_feedback": None,
-                "retry_count": None
+                "retry_count": None,
+                "stage1_retry_count": None
             },
             {"configurable": {"thread_id": str(session_id)}},
         )
