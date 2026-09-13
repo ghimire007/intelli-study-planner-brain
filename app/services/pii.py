@@ -1,9 +1,11 @@
-"""Scrub personally identifiable information from a raw SOLS enrolment paste.
+"""Scrub personally identifiable information from a free-form chat turn.
 
-Per sponsor guidance: grades/marks stay (needed to know whether a subject is
-complete), but the student's name, student number, and similar identifiers must
-never be stored or sent to the LLM. Applied once, at session start, before the
-record enters the checkpointer or a prompt.
+This is a blocklist, so it only removes what its patterns anticipate. That is
+acceptable for conversational prose, where there is no structure to project
+onto and a student may simply type their own name or number mid-conversation.
+It is NOT what guards the enrolment record: that goes through
+`app/services/enrolment.py`, which allowlists by parsing and re-rendering, so
+an unanticipated field is never carried rather than merely unmatched.
 """
 import re
 

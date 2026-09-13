@@ -9,6 +9,7 @@ from app.llm.registry import PROVIDER_LABELS
 from app.models.auth import User
 from app.models.session import ChatSession
 from app.services.credential_resolver import CredentialResolver
+from app.services.enrolment import project
 from app.services.pii import scrub_pii
 from app.services.vault_service import VaultService
 from langchain_core.messages import HumanMessage
@@ -45,9 +46,12 @@ class AgentChatService:
         self, raw_sols: str, *, model: str | None = None
     ) -> tuple[ChatSession, MessageView]:
         session_id = uuid.uuid4()
-        # Redact name/student-number/contact PII before anything is persisted or
-        # sent to the LLM; grades stay (needed to tell completed from enrolled).
-        raw_sols = scrub_pii(raw_sols)
+        # Project the paste onto its allowlisted fields before anything is
+        # persisted or sent to a provider. The paste itself stops here: only
+        # `projected` travels, and an unreadable one raises UnreadableRecord
+        # rather than falling back to the raw text. The state key stays
+        # `raw_sols` so existing checkpoints keep loading.
+        projected = project(raw_sols)
 
         llm_config = await self._resolver.resolve(self._user, requested_model=model)
         graph = build_advisor_graph(self._db, get_checkpointer(), llm_config)
@@ -55,8 +59,8 @@ class AgentChatService:
             graph,
             llm_config,
             {
-                "messages": [HumanMessage(content=raw_sols)],
-                "raw_sols": raw_sols,
+                "messages": [HumanMessage(content=projected)],
+                "raw_sols": projected,
                 "meta": None,
                 "meta_confirmed": False,
                 "handbook": None,
@@ -99,8 +103,11 @@ class AgentChatService:
                 f"Session {session_id} has no conversation state — it may be stale or was never started"
             )
 
+        # Later turns are free-form prose with nothing to project, so the
+        # pattern scrubber is the right tool here — a student may well type
+        # their own name or student number mid-conversation.
         await self._invoke(
-            graph, llm_config, {"messages": [HumanMessage(content=user_message)]}, config
+            graph, llm_config, {"messages": [HumanMessage(content=scrub_pii(user_message))]}, config
         )
 
         # A student may switch models mid-conversation; keep the session in step

@@ -4,6 +4,11 @@ services:
     runtime: docker
     plan: free
     dockerfilePath: ./Dockerfile
+    # Render must not deploy on its own push notification -- the GitHub Actions
+    # workflow (.github/workflows/ci.yml) calls the deploy hook only after lint,
+    # tests and migrations pass on main. Turning this on again would ship red
+    # commits and double every deploy.
+    autoDeploy: false
     healthCheckPath: /health
     envVars:
       - key: DATABASE_URL
