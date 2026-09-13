@@ -1,4 +1,4 @@
-"""Student subject eligibility for course 766 (and extensible to other courses)."""
+"""Student subject eligibility for each specific major (user's major)."""
 
 from __future__ import annotations
 
