@@ -1,9 +1,9 @@
 """Discover General Schedule subjects via CourseLoop search, then scrape each page.
 
-Uses the handbook search API filtered by the General Schedule csTag, handbook
-year, Wollongong campus, and Undergraduate award type, then reuses
-scrape_courseloop.scrape_subject for the same subject JSON shape as
-subjects_<course>.json.
+Uses the same handbook search filters as the public UI (DevTools payload):
+availableInYears, General Schedule csTag, Wollongong location id, and
+Undergraduate studyLevelValue — then reuses scrape_courseloop.scrape_subject
+for the same subject JSON shape as subjects_<course>.json.
 
 Source search (browser):
   https://courses.uow.edu.au/search?ct=subject&csTags=2a2d01c94f52db0044a3cf401310c7ef
@@ -34,10 +34,13 @@ from scrape_courseloop import scrape_subject  # noqa: E402
 BASE = "https://courses.uow.edu.au"
 SEARCH_URL = f"{BASE}/api/search/search-academic-items"
 SITE_ID = "uow-prod-pres"
-# General Schedule of Subjects tag from the public handbook search URL above.
+# IDs from the public handbook search UI request payload.
 GENERAL_SCHEDULE_TAG = "2a2d01c94f52db0044a3cf401310c7ef"
-WOLLONGONG_CAMPUS = "Wollongong"
-UNDERGRADUATE_STUDY_LEVEL = "Undergraduate"
+# Second csTag from the UI (e.g. faculty / schedule facet alongside General Schedule).
+SECONDARY_SCHEDULE_TAG = "808ec50d4f52db0044a3cf401310c721"
+SEARCH_CS_TAGS = [GENERAL_SCHEDULE_TAG, SECONDARY_SCHEDULE_TAG]
+WOLLONGONG_LOCATION_ID = "d58bdcf64f46d7004beec61f0310c727"
+UNDERGRADUATE_STUDY_LEVEL_VALUE = "ugrd"
 PAGE_SIZE = 100
 REQUEST_PAUSE_S = 0.25
 SUBJECT_PAUSE_S = 0.3
@@ -69,30 +72,30 @@ def _post_json(url: str, body: dict) -> dict:
 def discover_general_schedule_subjects(year: int) -> dict[str, str]:
     """Return {code: /subjects/... url} for General Schedule subjects in ``year``.
 
-    Filters by csTags, implementationYear, Wollongong campus, and Undergraduate
-    study level so multi-year duplicates (same code across 2020–2026) are
-    collapsed to the handbook year entry.
+    Mirrors the official UI searchFilters: availableInYears, csTags (General
+    Schedule), location (Wollongong id), studyLevelValue (ugrd). Unique by
+    code; subject pages are fetched for the requested handbook year.
     """
     filters = [
         {
-            "filterField": "csTags",
-            "filterValue": [GENERAL_SCHEDULE_TAG],
-            "isExactMatch": True,
-        },
-        {
-            "filterField": "implementationYear",
+            "filterField": "availableInYears",
             "filterValue": [str(year)],
-            "isExactMatch": True,
+            "isExactMatch": False,
         },
         {
-            "filterField": "locationDisplay",
-            "filterValue": [WOLLONGONG_CAMPUS],
-            "isExactMatch": True,
+            "filterField": "csTags",
+            "filterValue": list(SEARCH_CS_TAGS),
+            "isExactMatch": False,
         },
         {
-            "filterField": "studyLevel",
-            "filterValue": [UNDERGRADUATE_STUDY_LEVEL],
-            "isExactMatch": True,
+            "filterField": "location",
+            "filterValue": [WOLLONGONG_LOCATION_ID],
+            "isExactMatch": False,
+        },
+        {
+            "filterField": "studyLevelValue",
+            "filterValue": [UNDERGRADUATE_STUDY_LEVEL_VALUE],
+            "isExactMatch": False,
         },
     ]
     links: dict[str, str] = {}
@@ -197,16 +200,19 @@ def main() -> None:
     index = {
         "year": year,
         "cs_tag": GENERAL_SCHEDULE_TAG,
-        "campus": WOLLONGONG_CAMPUS,
-        "study_level": UNDERGRADUATE_STUDY_LEVEL,
+        "cs_tags": list(SEARCH_CS_TAGS),
+        "campus": "Wollongong",
+        "campus_location_id": WOLLONGONG_LOCATION_ID,
+        "study_level": "Undergraduate",
+        "study_level_value": UNDERGRADUATE_STUDY_LEVEL_VALUE,
         "source_search_url": (
             f"{BASE}/search?ct=subject&csTags={GENERAL_SCHEDULE_TAG}"
         ),
         "search_filters": {
-            "csTags": GENERAL_SCHEDULE_TAG,
-            "implementationYear": str(year),
-            "locationDisplay": WOLLONGONG_CAMPUS,
-            "studyLevel": UNDERGRADUATE_STUDY_LEVEL,
+            "availableInYears": str(year),
+            "csTags": list(SEARCH_CS_TAGS),
+            "location": WOLLONGONG_LOCATION_ID,
+            "studyLevelValue": UNDERGRADUATE_STUDY_LEVEL_VALUE,
         },
         "discovered_count": len(links),
         "codes": sorted(links.keys()),
