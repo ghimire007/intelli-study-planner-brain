@@ -1,0 +1,41 @@
+{
+  "course": "766",
+  "year": 2026,
+  "campus": "Wollongong",
+  "pools": [
+    {
+      "id": "elective",
+      "title": "Elective",
+      "cp": null,
+      "description": "Elective subjects, to bring the total to 144 credit points chosen from the School of Computing and Information Technology, that is any CSIT, CSCI or ISIT subjects, or from the General Schedule. A maximum of 60 credit points of subjects can be completed at 100 level which includes the core.",
+      "mode": "open",
+      "prefixes": [
+        "CSIT",
+        "CSCI",
+        "ISIT"
+      ],
+      "include_general_schedule": true,
+      "exclude": [
+        "core",
+        "core_selection",
+        "major_core"
+      ]
+    }
+  ],
+  "named_lists": {
+    "root_electives_list": {
+      "title": "Electives",
+      "cp": 36,
+      "codes": [
+        "CSCI323",
+        "ISIT219",
+        "CSCI318",
+        "CSCI334",
+        "CSCI262",
+        "CSIT302",
+        "ISIT312"
+      ],
+      "description": "Student will complete 36 credit points of electives from the list below. Please note not all electives may be offered"
+    }
+  }
+}
