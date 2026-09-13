@@ -5,7 +5,6 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
-
 SUBJECT_CODE_RE = re.compile(r"\b([A-Z]{3,5}\s?\d{2,3})\b", re.IGNORECASE)
 CP_LEVEL_RE = re.compile(
     r"(?:(\d+)\s*(?:cp|credit points?)|another\s+(\d+)\s*cp).*?(100|200|300)\s*-?\s*level|"

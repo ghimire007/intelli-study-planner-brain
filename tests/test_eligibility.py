@@ -3,10 +3,9 @@
 from __future__ import annotations
 
 import pytest
-
 from app.schemas.eligibility import StudentEligibilityInput
 from app.services.eligibility_service import get_eligible_subjects
-from app.services.prerequisite_parser import evaluate_expression, expressions_satisfied
+from app.services.prerequisite_parser import evaluate_expression
 
 
 def _cp_levels(codes: list[str]) -> tuple[dict[str, int], dict[str, int | None]]:

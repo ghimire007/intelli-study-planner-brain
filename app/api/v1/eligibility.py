@@ -1,8 +1,9 @@
+from fastapi import APIRouter
+
 from app.schemas.elective_ranking import ElectivePriorityInput, ElectivePriorityResult
 from app.schemas.eligibility import EligibilityResult, StudentEligibilityInput
 from app.services.elective_ranking import get_elective_priorities
 from app.services.eligibility_service import get_eligible_subjects
-from fastapi import APIRouter
 
 router = APIRouter()
 

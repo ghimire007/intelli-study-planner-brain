@@ -3,18 +3,19 @@
 from __future__ import annotations
 
 from app.schemas.eligibility import (
-    EligibleSubjectOut,
     EligibilityResult,
+    EligibleSubjectOut,
     StudentEligibilityInput,
 )
 from app.services.course_rules import CourseRules, load_course_rules
-from app.services.subject_catalog import load_subject_catalog
 from app.services.prerequisite_parser import (
     expand_held,
     expressions_satisfied,
     normalize_code,
     subject_level_from_code,
 )
+from app.services.subject_catalog import load_subject_catalog
+
 
 def resolve_major_code(major: str | None, rules: CourseRules) -> str | None:
     if not major or not major.strip():
