@@ -1,8 +1,9 @@
 """Discover General Schedule subjects via CourseLoop search, then scrape each page.
 
-Uses the handbook search API filtered by the General Schedule csTag (and handbook
-year), then reuses scrape_courseloop.scrape_subject for the same subject JSON
-shape as subjects_<course>.json.
+Uses the handbook search API filtered by the General Schedule csTag, handbook
+year, Wollongong campus, and Undergraduate award type, then reuses
+scrape_courseloop.scrape_subject for the same subject JSON shape as
+subjects_<course>.json.
 
 Source search (browser):
   https://courses.uow.edu.au/search?ct=subject&csTags=2a2d01c94f52db0044a3cf401310c7ef
@@ -35,6 +36,8 @@ SEARCH_URL = f"{BASE}/api/search/search-academic-items"
 SITE_ID = "uow-prod-pres"
 # General Schedule of Subjects tag from the public handbook search URL above.
 GENERAL_SCHEDULE_TAG = "2a2d01c94f52db0044a3cf401310c7ef"
+WOLLONGONG_CAMPUS = "Wollongong"
+UNDERGRADUATE_STUDY_LEVEL = "Undergraduate"
 PAGE_SIZE = 100
 REQUEST_PAUSE_S = 0.25
 SUBJECT_PAUSE_S = 0.3
@@ -66,8 +69,9 @@ def _post_json(url: str, body: dict) -> dict:
 def discover_general_schedule_subjects(year: int) -> dict[str, str]:
     """Return {code: /subjects/... url} for General Schedule subjects in ``year``.
 
-    Filters by csTags + implementationYear so multi-year duplicates (same code
-    across 2020–2026) are collapsed to the handbook year entry.
+    Filters by csTags, implementationYear, Wollongong campus, and Undergraduate
+    study level so multi-year duplicates (same code across 2020–2026) are
+    collapsed to the handbook year entry.
     """
     filters = [
         {
@@ -78,6 +82,16 @@ def discover_general_schedule_subjects(year: int) -> dict[str, str]:
         {
             "filterField": "implementationYear",
             "filterValue": [str(year)],
+            "isExactMatch": True,
+        },
+        {
+            "filterField": "locationDisplay",
+            "filterValue": [WOLLONGONG_CAMPUS],
+            "isExactMatch": True,
+        },
+        {
+            "filterField": "studyLevel",
+            "filterValue": [UNDERGRADUATE_STUDY_LEVEL],
             "isExactMatch": True,
         },
     ]
@@ -183,9 +197,17 @@ def main() -> None:
     index = {
         "year": year,
         "cs_tag": GENERAL_SCHEDULE_TAG,
+        "campus": WOLLONGONG_CAMPUS,
+        "study_level": UNDERGRADUATE_STUDY_LEVEL,
         "source_search_url": (
             f"{BASE}/search?ct=subject&csTags={GENERAL_SCHEDULE_TAG}"
         ),
+        "search_filters": {
+            "csTags": GENERAL_SCHEDULE_TAG,
+            "implementationYear": str(year),
+            "locationDisplay": WOLLONGONG_CAMPUS,
+            "studyLevel": UNDERGRADUATE_STUDY_LEVEL,
+        },
         "discovered_count": len(links),
         "codes": sorted(links.keys()),
     }
