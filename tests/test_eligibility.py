@@ -146,7 +146,7 @@ def test_exclusion_blocks_math221_when_math121_complete() -> None:
 
 
 def test_100_level_cap_blocks_extra_100_level() -> None:
-    all_100_level_in_catalog = [
+    completed_100_level = [
         "CSIT110",
         "CSIT111",
         "CSIT113",
@@ -159,8 +159,8 @@ def test_100_level_cap_blocks_extra_100_level() -> None:
     ]
     result = get_eligible_subjects(
         StudentEligibilityInput(
-            completed_subjects=all_100_level_in_catalog,
-            planned_subjects=[],
+            completed_subjects=completed_100_level,
+            planned_subjects=["ACCY121"],
             course="766",
             session="Autumn",
             campus="Wollongong",

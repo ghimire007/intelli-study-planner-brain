@@ -2,31 +2,19 @@
 
 from __future__ import annotations
 
-import json
-from pathlib import Path
-
 from app.schemas.eligibility import (
     EligibleSubjectOut,
     EligibilityResult,
     StudentEligibilityInput,
 )
 from app.services.course_rules import CourseRules, load_course_rules
+from app.services.subject_catalog import load_subject_catalog
 from app.services.prerequisite_parser import (
     expand_held,
     expressions_satisfied,
     normalize_code,
     subject_level_from_code,
 )
-
-SEEDS_DIR = Path(__file__).resolve().parent.parent.parent / "seeds"
-
-
-def _load_subjects_catalog(course: str) -> dict[str, dict]:
-    path = SEEDS_DIR / "scraped" / f"subjects_{course}.json"
-    if not path.exists():
-        return {}
-    return json.loads(path.read_text(encoding="utf-8"))
-
 
 def resolve_major_code(major: str | None, rules: CourseRules) -> str | None:
     if not major or not major.strip():
@@ -169,7 +157,7 @@ def _in_core_or_major(
 
 def get_eligible_subjects(student: StudentEligibilityInput) -> EligibilityResult:
     """Return subjects the student may enrol in for the given session/campus."""
-    catalog = _load_subjects_catalog(student.course)
+    catalog = load_subject_catalog(student.course)
     if not catalog:
         return EligibilityResult(eligible_subjects=[])
 
