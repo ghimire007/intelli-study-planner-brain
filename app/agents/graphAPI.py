@@ -141,6 +141,8 @@ def build_advisor_graph(
         response = await agent_llm.ainvoke(
             [SystemMessage(content=system_content), *state["messages"]]
         )
+        print("system prompt: ", SYSTEM_PROMPT)
+        print("handbook: ", state.get('handbook'))
         print("agent - messages:", [response])
         return {"messages": [response]}
 
