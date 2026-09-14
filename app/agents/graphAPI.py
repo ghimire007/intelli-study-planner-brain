@@ -38,6 +38,7 @@ class AdvisorState(TypedDict):
 
     retry_count: int | None
     stage1_retry_count: int | None
+    planning_requested: bool | None
 
 # input
 
@@ -51,7 +52,7 @@ def apply_confirm_metadata(prior_meta: dict | None, new_meta: dict) -> dict:
     handbook so the next turn re-fetches rules for the new program.
     Major may be stored on meta but does not by itself clear the handbook.
     """
-    updates: dict = {"meta": new_meta, "meta_confirmed": True}
+    updates: dict = {"meta": new_meta, "meta_confirmed": True, "planning_requested": True}
     old = prior_meta or {}
     if (
         old.get("degree_code") != new_meta.get("degree_code")
@@ -123,7 +124,8 @@ def build_advisor_graph(
         data = meta.model_dump()
         # Never auto-confirm: the agent must ask the student (one question) and
         # call confirm_metadata_tool, even if the parser extracted candidate values.
-        return {"meta": data, "meta_confirmed": False}
+        print("parse_input - meta:", meta)
+        return {"meta": data, "meta_confirmed": False, "planning_requested": True}
 
     async def agent(state: AdvisorState) -> dict:
         confirmed = state.get("meta_confirmed", False)
@@ -139,13 +141,14 @@ def build_advisor_graph(
         response = await agent_llm.ainvoke(
             [SystemMessage(content=system_content), *state["messages"]]
         )
+        print("agent - messages:", [response])
         return {"messages": [response]}
 
-    def should_continue(state: AdvisorState) -> str:
-        last = state["messages"][-1]
-        if isinstance(last, AIMessage) and last.tool_calls:
-            return "tools"
-        return END
+    # def should_continue(state: AdvisorState) -> str:
+    #     last = state["messages"][-1]
+    #     if isinstance(last, AIMessage) and last.tool_calls:
+    #         return "tools"
+    #     return END
 
     def capture_tool_results(state: AdvisorState) -> dict:
         """Update AdvisorState with the latest tool results.
@@ -168,7 +171,7 @@ def build_advisor_graph(
             if isinstance(last, AIMessage) and last.tool_calls:
                 return "tools"
             
-            if state.get("meta_confirmed") and not (state.get("electives") and state.get("remaining_subjects")):
+            if state.get("meta_confirmed") and state.get("planning_requested") and not (state.get("electives") and state.get("remaining_subjects")):
                 return ["fetch_elective_list", "stage1_review_must_includes"]
             return END
 
@@ -191,6 +194,7 @@ def build_advisor_graph(
                 HumanMessage(content=prompt)
             ])
             # Return updated list and clear error feedback
+            print("fetch_elective_list:", str(res.content))
             return {"electives": str(res.content), "electives_feedback": None}
 
 
@@ -213,6 +217,7 @@ def build_advisor_graph(
             HumanMessage(content=prompt)
         ])
         # Return updated list and clear error feedback
+        print("stage1_review_must_includes: ", str(res.content))
         return {"remaining_subjects": str(res.content), "remaining_feedback": None}
 
 
@@ -225,23 +230,25 @@ def build_advisor_graph(
             meta_confirmed=state.get("meta_confirmed", False),
             handbook=state.get("handbook"),
             raw_sols=state["raw_sols"],
-        ).replace("{{electives}}", state.get('electives'))\
-        .replace("{{remaining_subjects}}", state.get('remaining_subjects'))
+        ).replace("{{electives}}", state.get('electives') or "")\
+        .replace("{{remaining_subjects}}", state.get('remaining_subjects') or "")
 
         res = await llm("parser").ainvoke([
             SystemMessage(content="You are an academic auditor checking course list accuracy. Return ONLY JSON."),
             HumanMessage(content=eval_prompt)
         ])
+
+        current_retry = state.get("stage1_retry_count") or 0
+
         try:
             data = json.loads(res.content)
-
-            current_retry = state.get("stage1_retry_count", 0)
 
             has_error = (
                 not data.get("electives_valid")
                 or not data.get("remaining_valid")
             )
 
+            print("eval_stage1_lists - data:", data)
             return {
                 "electives_feedback": None if data.get("electives_valid") else data.get("electives_feedback", "Invalid electives found."),
                 "remaining_feedback": None if data.get("remaining_valid") else data.get("remaining_feedback", "Invalid core subjects found."),
@@ -249,43 +256,45 @@ def build_advisor_graph(
             }
         except Exception:
             # Fallback if parsing fails
+            print("eval_stage1_lists - exception:")
             return {
                 "electives_feedback": "Failed to validate electives syntax against handbook.",
                 "remaining_feedback": "Failed to validate core subjects syntax against handbook.",
+                "stage1_retry_count": current_retry + 1
             }
 
     def route_stage1_eval(state: AdvisorState) -> list[str] | str:
         """Routes back to invalid branches (in parallel if both fail) or advances to stage 2."""
 
-        retries = state.get("stage1_retry_count", 0)
+        retries = state.get("stage1_retry_count") or 0
 
         has_electives_error = bool(state.get("electives_feedback"))
         has_remaining_error = bool(state.get("remaining_feedback"))
 
-        # PASSED
-        if not has_electives_error and not has_remaining_error:
+        # PASSED or max limit reached
+        if (not has_electives_error and not has_remaining_error) or retries >= 1:
+            if retries >= 1 and (has_electives_error or has_remaining_error):
+                print("Stage 1 retry limit reached. Continuing to Stage 2.")
             return "stage2_make_plan"
 
-        # STOP AFTER ONE RETRY
-        if retries >= 1:
-            print("Stage 1 retry limit reached. Continuing.")
-            return "stage2_make_plan"
-
-        rerun_branches = []
-        if has_electives_error:
-            rerun_branches.append("fetch_elective_list")
-        if has_remaining_error:
-            rerun_branches.append("stage1_review_must_includes")
-
-        return rerun_branches
+        print("route_stage1_eval - retry stage 1")
+        return ["fetch_elective_list", "stage1_review_must_includes"]
 
 ## evaluator optimiser pattern 
 ### stage 2 make the plan
     async def stage2_make_plan(state: AdvisorState) -> dict:
         """Generates or updates the degree completion plan based on feedback."""
         feedback = state.get("plan_feedback")
+        base_system_prompt = build_system_prompt(
+            prompt=SYSTEM_PROMPT_V1,
+            meta=state["meta"],
+            meta_confirmed=state.get("meta_confirmed", False),
+            handbook=state.get("handbook"),
+            raw_sols=state["raw_sols"],
+        )
+
         if feedback:
-            system_msg += f"\n\nAddress this previous evaluation feedback:\n{feedback}"
+            base_system_prompt += f"\n\nAddress this previous evaluation feedback:\n{feedback}"
 
         content_prompt = (
             f"Must-include core subjects: {state.get('remaining_subjects')}\n"
@@ -294,18 +303,16 @@ def build_advisor_graph(
         )
 
         res = await llm("full").ainvoke(
-            [SystemMessage(content=SYSTEM_PROMPT_V1), HumanMessage(content=content_prompt)]
+            [SystemMessage(content=base_system_prompt), HumanMessage(content=content_prompt)]
         )
+        print("stage2_make_plan:", str(res.content))
         return {"plan": str(res.content)}
 
 ### evaluator of stage 2 - correct session, name, cp total etc - feedback and back to stage 2 if needed
     async def evaluate_stage2(state: AdvisorState) -> dict:
         """Evaluates session correctness, credit point totals, and prerequisite order."""
         retries = state.get("retry_count") or 0
-        if retries >= 1:
-            # Stop looping after 3 attempts; accept the plan or fall back
-            return {"plan_feedback": None, "retry_count": 0}
-    
+            
         eval_prompt = (
             "Evaluate this academic plan for correct session offerings, total credit points, and prerequisites.\n"
             "Respond ONLY in JSON format: {\"valid\": true/false, \"feedback\": \"reasoning if invalid\"}\n\n"
@@ -318,26 +325,50 @@ def build_advisor_graph(
         try:
             data = json.loads(res.content)
             if data.get("valid"):
+                print("evaluate_stage2 - valid")
                 return {"plan_feedback": None, "retry_count": 0}
+            
+            print("evaluate_stage2 - not valid")
             return {
                 "plan_feedback": data.get("feedback", "Invalid plan."),
                 "retry_count": retries + 1
             }
         except Exception:
-            return {"plan_feedback": "Failed to parse evaluation output."}
+            print("evaluate_stage2 - exception:")
+
+            return {"plan_feedback": "Failed to parse evaluation output.", 
+                    "retry_count": retries + 1}
 
     def route_evaluation(state: AdvisorState) -> str:
         print(f"DEBUG: Stage 2 Eval Retry Count: {state.get('retry_count')}, Feedback: {state.get('plan_feedback')}")
         """Routes back to plan generator if invalid, or formats output if valid."""
-        if state.get("plan_feedback") is None:
+    
+        retries = state.get("retry_count") or 0
+        feedback = state.get("plan_feedback")
+
+        print(
+            f"DEBUG: retries={retries}, "
+            f"feedback={feedback}"
+        )
+
+        # success
+        if feedback is None:
             return "format_output"
+
+        # retry limit reached
+        if retries >= 1:
+            print("Stage 2 retry limit reached. Continuing.")
+            return "format_output"
+
         return "stage2_make_plan"
 
 # output
     async def format_output(state: AdvisorState) -> dict:
         """Appends the finalized plan to message state for output display."""
+        print("format_output - plan:", state.get('plan'))
+
         final_msg = AIMessage(content=f"Here is your optimized academic completion plan:\n\n{state.get('plan')}")
-        return {"messages": [final_msg]}
+        return {"messages": [final_msg], "planning_requested": False}
 
 
 

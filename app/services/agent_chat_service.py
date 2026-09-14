@@ -1,5 +1,7 @@
 import uuid
 
+from datetime import datetime, UTC
+
 from app.agents.graphAPI import build_advisor_graph
 from app.agents.history import MessageView, build_history, latest_reply
 from app.core.checkpointer import get_checkpointer
@@ -51,16 +53,45 @@ class AgentChatService:
         # `projected` travels, and an unreadable one raises UnreadableRecord
         # rather than falling back to the raw text. The state key stays
         # `raw_sols` so existing checkpoints keep loading.
-        projected = project(raw_sols)
+        # projected = project(raw_sols)
 
         llm_config = await self._resolver.resolve(self._user, requested_model=model)
+
+        # no SOLS given
+        if not raw_sols or not raw_sols.strip():
+            session = ChatSession(
+                id=session_id,
+                degree_code="UNKNOWN",
+                user_id=self._user.id,
+                provider=llm_config.provider.value,
+                model=llm_config.model,
+                credential_id=llm_config.credential_id,
+            )
+
+            self._db.add(session)
+            await self._db.commit()
+
+            return session, MessageView(
+                id=0,
+                role="assistant",
+                content=(
+                    "Hello! Before I can create your academic plan, please paste your SOLS enrolment record including course, instance and major.\
+                    If you have no enrolment please provide your commencement/enrolment year, campus, degree (course code), and major (or say if you have no major)?"
+                ),
+                model=llm_config.model,
+                provider=llm_config.provider.value,
+                created_at=datetime.now(UTC),
+            )
+        
+        # projected = project(raw_sols)
+
         graph = build_advisor_graph(self._db, get_checkpointer(), llm_config)
         await self._invoke(
             graph,
             llm_config,
             {
-                "messages": [HumanMessage(content=projected)],
-                "raw_sols": projected,
+                "messages": [HumanMessage(content=raw_sols)],
+                "raw_sols": raw_sols,
                 "meta": None,
                 "meta_confirmed": False,
                 "handbook": None,
@@ -71,7 +102,8 @@ class AgentChatService:
                 "plan": None,
                 "plan_feedback": None,
                 "retry_count": None,
-                "stage1_retry_count": None
+                "stage1_retry_count": None,
+                "planning_requested": True,
             },
             {"configurable": {"thread_id": str(session_id)}},
         )
@@ -106,10 +138,39 @@ class AgentChatService:
         graph = build_advisor_graph(self._db, get_checkpointer(), llm_config)
         config = {"configurable": {"thread_id": str(session_id)}}
         state = await graph.aget_state(config)
-        if "raw_sols" not in state.values:
-            raise ValueError(
-                f"Session {session_id} has no conversation state — it may be stale or was never started"
+        print("STATE VALUES:", state.values)
+        print("SESSION ID:", session_id)
+
+
+        if not state.values:
+            print("FIRST MESSAGE:", user_message)
+            # projected = project(user_message)
+
+            # print("PROJECTED:", projected)
+
+            await self._invoke(
+                graph,
+                llm_config,
+                {
+                    "messages": [HumanMessage(content=user_message)],
+                    "raw_sols": user_message,
+                    "meta": None,
+                    "meta_confirmed": False,
+                    "handbook": None,
+                    "electives": None,
+                    "remaining_subjects": None,
+                    "electives_feedback": None,
+                    "remaining_feedback": None,
+                    "plan": None,
+                    "plan_feedback": None,
+                    "retry_count": None,
+                    "stage1_retry_count": None,
+                    "planning_requested": True,
+                },
+                config,
             )
+
+            return await latest_reply(graph, str(session_id), fallback_model=llm_config.model)
 
         # Later turns are free-form prose with nothing to project, so the
         # pattern scrubber is the right tool here — a student may well type
@@ -134,10 +195,9 @@ class AgentChatService:
         # No key needed to read back what was already said.
         graph = build_advisor_graph(self._db, get_checkpointer())
         state = await graph.aget_state({"configurable": {"thread_id": str(session_id)}})
-        if "raw_sols" not in state.values:
-            raise ValueError(
-                f"Session {session_id} has no conversation state — it may be stale or was never started"
-            )
+
+        if not state.values:
+            return session, []
 
         messages = await build_history(graph, str(session_id), fallback_model=session.model)
         return session, messages
