@@ -16,10 +16,16 @@ Values are shape-checked as they are parsed, so no column can carry arbitrary
 text into the prompt. A paste we cannot read raises UnreadableRecord rather
 than falling back to the raw text: an unparseable record is exactly the one
 most likely to hold something unexpected.
+
+Two paste shapes are read. One still has its markdown tables; the other has
+lost them, because copying out of SOLS through a plain-text field can collapse
+the whole record into a single run of words. The allowlist and the shape checks
+are the same either way — see parse_enrolment.
 """
 from __future__ import annotations
 
 import re
+from itertools import pairwise
 
 from pydantic import BaseModel
 
@@ -52,12 +58,88 @@ KNOWN_STATUSES = frozenset(
     }
 )
 
+# Teaching sessions. The table parser does not need these — there the session
+# is a delimited cell — but a paste that has lost its table markup has no
+# column boundaries left, so the session is one of the tokens that pins down
+# where a row starts (see _parse_flat).
+KNOWN_SESSIONS = frozenset({"Annual", "Autumn", "Spring", "Summer", "Winter"})
+
+
+def _alternation(values: frozenset[str]) -> str:
+    """Regex alternation over a known set, longest first.
+
+    Backtracking would reach "PS" over "P" either way; ordering it here means
+    the pattern does not quietly depend on that.
+    """
+    return "|".join(re.escape(value) for value in sorted(values, key=len, reverse=True))
+
+
 _COURSE = re.compile(r"^\*{0,2}Course:?\*{0,2}\s*(\d{3,4})\b", re.IGNORECASE)
 _CAMPUS = re.compile(r"^\*{0,2}Campus:?\*{0,2}\s*([A-Za-z][A-Za-z ]*?)\s*(?:\||$)", re.IGNORECASE)
 _MAJOR = re.compile(r"^\*{0,2}(?:(Second)\s+)?Major:?\*{0,2}\s*(.+?)\s*$", re.IGNORECASE)
 # "AIBD — Artificial Intelligence and Big Data" -> "AIBD"; a major is a short
 # uppercase code, so "Not yet declared" simply yields nothing.
 _MAJOR_CODE = re.compile(r"^([A-Z]{2,6})\b")
+# Some records name the major without its code ("Network Design and
+# Management"). The title is worth keeping — lookup_major recovers the code
+# from it — but it is shape-checked like every other field, and "Not yet
+# declared" is not a major.
+_MAJOR_TITLE = re.compile(r"^[A-Z][A-Za-z]*(?: [A-Za-z&-]+){1,7}$")
+_UNDECLARED = re.compile(r"^(?:not yet declared|undeclared|none|n/?a|tbd)$", re.IGNORECASE)
+
+# One row of a paste that arrived as a single run of text, its table markup and
+# with it its column boundaries gone. Mark and grade are absent rather than
+# blank on an unfinished subject, so everything after the nominal CP is
+# optional and the row is pinned instead by the tokens we know: a teaching
+# session, a subject code, a status. Campus excludes digits so it cannot
+# swallow a number, and the whole shape must match end to end.
+_FLAT_ROW = re.compile(
+    r"(?P<year>(?:19|20)\d{2})\s+"
+    rf"(?P<session>{_alternation(KNOWN_SESSIONS)})\s+"
+    r"(?P<campus>[A-Za-z][A-Za-z/ ]*?)\s+"
+    r"(?P<code>[A-Z]{2,4}\d{3}[A-Z]?)\s+"
+    r"(?P<nom_cp>\d{1,2})"
+    r"(?:\s+(?P<mark>\d{1,3}))?"
+    rf"(?:\s+(?P<grade>{_alternation(KNOWN_GRADES)}))?"
+    # The status must not stop inside a longer word: without this, "Completed"
+    # reads as "Complete" with a stray "d" left behind. The grade needs no such
+    # guard — the whitespace before the status already forces it to give back a
+    # partial word.
+    rf"\s+(?P<status>{_alternation(KNOWN_STATUSES)})(?![A-Za-z])"
+)
+
+# A credit section in flat text, up to the next heading. Its body is scanned
+# only for evidence that it holds rows rather than the word "None".
+_FLAT_CREDIT = re.compile(r"\b(?:Unspecified|Specified)\s+Credit\b(?P<body>[^#]*)", re.IGNORECASE)
+
+# The header labels SOLS prints. In flat text one of these is what tells us the
+# previous value has ended — "Major: Network Design and Management Honours GPA:
+# 3.8" has no other boundary between the major and the next label. Matching a
+# known set rather than any capitalised word matters in both directions: a
+# generic "Word:" terminator stops one word too late and carries "Honours" into
+# the major, while a label we do not know leaves the value with no reachable
+# terminator, so the field is dropped instead of over-captured.
+_FLAT_LABELS = frozenset(
+    {
+        "Student", "Effective Date", "Course", "Instance", "Campus", "Delivery",
+        "Status", "Second Major", "Major", "Note", "Notes", "Supervisor",
+        "Honours GPA", "GPA", "WAM",
+    }
+)
+
+# A header value runs until the next label, until the column headings, or until
+# the first row.
+_FLAT_END = (
+    rf"(?=\s+(?:(?:{_alternation(_FLAT_LABELS)})\s*:|Year\s+Session\b|(?:19|20)\d{{2}}\s)|\s*$)"
+)
+_FLAT_COURSE = re.compile(r"\bCourse\s*:\s*(\d{3,4})\b", re.IGNORECASE)
+_FLAT_CAMPUS = re.compile(
+    rf"\bCampus\s*:\s*(?P<value>[A-Za-z][A-Za-z ]{{0,40}}?){_FLAT_END}", re.IGNORECASE
+)
+_FLAT_MAJOR = re.compile(
+    rf"\b(?:Second\s+)?Major\s*:\s*(?P<value>[A-Za-z][A-Za-z0-9 &—-]{{0,60}}?){_FLAT_END}",
+    re.IGNORECASE,
+)
 
 
 class UnreadableRecord(ValueError):
@@ -174,6 +256,14 @@ def _credit_row(cells: dict[str, str]) -> CreditRow:
     )
 
 
+def _add_major(header: dict, value: str) -> None:
+    """Record a major by its code when it has one, else by its plain title."""
+    if code := _MAJOR_CODE.match(value):
+        header["majors"].append(code.group(1))
+    elif _MAJOR_TITLE.match(value) and not _UNDECLARED.match(value):
+        header["majors"].append(value)
+
+
 def _read_header_line(line: str, header: dict) -> None:
     """Pick the three allowlisted header fields out of a non-table line."""
     if (course := _COURSE.match(line)) and header["course_code"] is None:
@@ -183,16 +273,106 @@ def _read_header_line(line: str, header: dict) -> None:
         header["campus"] = campus.group(1).strip()
         return
     if major := _MAJOR.match(line):
-        if code := _MAJOR_CODE.match(major.group(2).strip()):
-            header["majors"].append(code.group(1))
+        _add_major(header, major.group(2).strip())
+
+
+_NO_HISTORY = (
+    "No enrolment history was found. Paste the enrolment record from SOLS, "
+    "including the table of subjects."
+)
 
 
 def parse_enrolment(raw_sols: str) -> EnrolmentRecord:
     """Parse a SOLS paste into its allowlisted fields.
 
-    Raises UnreadableRecord if the paste has no readable enrolment table, or if
-    any value in one fails its shape check.
+    Copying the record out of SOLS does not always preserve the table: pasted
+    through a plain-text field it can arrive as one unbroken run of words. Both
+    shapes are read, by the same allowlist and the same shape checks.
+
+    Raises UnreadableRecord if the paste has no readable enrolment history, or
+    if any value in one fails its shape check.
     """
+    # A real markdown table spans at least a heading row and a row of its own;
+    # a single line of pipes is a table that lost its line breaks, so it goes
+    # down the relaxed path with everything else that arrived run together.
+    if sum(line.lstrip().startswith("|") for line in raw_sols.splitlines()) > 1:
+        return _parse_table(raw_sols)
+    return _parse_flat(raw_sols)
+
+
+def _parse_flat(raw_sols: str) -> EnrolmentRecord:
+    """Parse a paste whose table markup did not survive the copy.
+
+    With no columns left, rows are recovered by matching the known row shape
+    end to end. Text left over between two rows means a row was only partly
+    understood, and that is a refusal rather than a silent drop: a record
+    quietly missing a subject is worse than no record at all.
+    """
+    # Pipes and bold markers may or may not have survived the copy; neither
+    # carries any allowlisted meaning, so both become whitespace and the one
+    # shape below covers a run-together markdown table, a tab-separated copy
+    # straight out of the browser, and plain text alike.
+    text = " ".join(raw_sols.replace("|", " ").replace("*", " ").split())
+
+    matches = list(_FLAT_ROW.finditer(text))
+    if not matches:
+        if re.search(r"\b[A-Z]{2,4}\d{3}[A-Z]?\b", text):
+            raise UnreadableRecord(
+                "Subject codes were found but no row could be read in full. Each row needs "
+                "its year, session, campus, subject code, nominal CP and status."
+            )
+        raise UnreadableRecord(_NO_HISTORY)
+
+    for previous, current in pairwise(matches):
+        if leftover := text[previous.end() : current.start()].strip():
+            raise UnreadableRecord(f"Could not read the subject row at {leftover!r}.")
+
+    # Advanced standing cannot be read here: a specified-credit row carries a
+    # free-text subject name, and with the columns gone there is nothing to
+    # tell where that name ends. A section reading "None" costs nothing, but
+    # dropping real credit rows would understate the credit the student holds,
+    # so those are a refusal.
+    tail = text[matches[-1].end() :]
+    if any(re.search(r"\d", section.group("body")) for section in _FLAT_CREDIT.finditer(tail)):
+        raise UnreadableRecord(
+            "This record lists advanced standing, which cannot be read once the table "
+            "layout is lost. Paste the record again with each row on its own line."
+        )
+
+    header: dict = {"course_code": None, "campus": None, "majors": []}
+    preamble = text[: matches[0].start()]
+    if course := _FLAT_COURSE.search(preamble):
+        header["course_code"] = course.group(1)
+    if campus := _FLAT_CAMPUS.search(preamble):
+        header["campus"] = campus.group("value").strip()
+    for major in _FLAT_MAJOR.finditer(preamble):
+        _add_major(header, major.group("value").strip())
+
+    return EnrolmentRecord(
+        course_code=header["course_code"],
+        campus=header["campus"],
+        majors=header["majors"],
+        # The mark is captured only so the row shape stays anchored; like the
+        # table parser, this never reads it out.
+        rows=[
+            EnrolmentRow(
+                year=int(row.group("year")),
+                session=row.group("session"),
+                campus=row.group("campus").split("/")[0].strip(),
+                code=row.group("code"),
+                nom_cp=int(row.group("nom_cp")),
+                grade=row.group("grade"),
+                status=row.group("status"),
+            )
+            for row in matches
+        ],
+        specified_credit=[],
+        unspecified_credit=[],
+    )
+
+
+def _parse_table(raw_sols: str) -> EnrolmentRecord:
+    """Parse a paste that still has its markdown tables."""
     header: dict = {"course_code": None, "campus": None, "majors": []}
     rows: list[EnrolmentRow] = []
     specified: list[CreditRow] = []
@@ -234,10 +414,7 @@ def parse_enrolment(raw_sols: str) -> EnrolmentRecord:
             unspecified.append(_credit_row(by_name))
 
     if not rows:
-        raise UnreadableRecord(
-            "No enrolment history was found. Paste the enrolment record from SOLS, "
-            "including the table of subjects."
-        )
+        raise UnreadableRecord(_NO_HISTORY)
 
     return EnrolmentRecord(
         course_code=header["course_code"],
