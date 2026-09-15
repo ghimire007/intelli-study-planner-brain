@@ -20,7 +20,7 @@ from app.prompts.prompts import SYSTEM_PROMPT, ELECTIVE_GENERATION_PROMPT, SUBJE
 ## graph state
 class AdvisorState(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
-    raw_sols: str
+    raw_sols: str | None
     # plain dict (SOLSMeta.model_dump()), not the pydantic model itself — the
     # checkpointer's msgpack serializer only supports plain JSON-ish types and
     # warns (soon: errors) on arbitrary custom classes.
@@ -120,6 +120,13 @@ def build_advisor_graph(
     async def parse_input(state: AdvisorState) -> dict:
         if state.get("meta") is not None:
             return {}
+
+        raw_sols = state.get("raw_sols")
+    
+        if not raw_sols or raw_sols == "no enrolment yet":
+            print("parse_input - No enrolment record provided, skipping parser.")
+            return {"meta": None, "meta_confirmed": False, "planning_requested": False}
+
         meta = await parse_sols(llm("parser"), state["raw_sols"])
         data = meta.model_dump()
         # Never auto-confirm: the agent must ask the student (one question) and
@@ -172,7 +179,8 @@ def build_advisor_graph(
             last = state["messages"][-1]
             if isinstance(last, AIMessage) and last.tool_calls:
                 return "tools"
-            
+
+            # MAYBE WHY ONLY RETURING ONE LIST
             if state.get("meta_confirmed") and state.get("planning_requested") and not (state.get("electives") and state.get("remaining_subjects")):
                 return ["fetch_elective_list", "stage1_review_must_includes"]
             return END

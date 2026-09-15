@@ -28,7 +28,15 @@ def build_system_prompt(*, prompt: str, meta: dict, meta_confirmed: bool, handbo
     meta = meta or {}
     degree_code = meta.get("degree_code")
 
-    if meta and not meta_confirmed:
+    if raw_sols == "no enrolment yet":
+        metadata_note = (
+            "You are an academic course planning assistant. "
+            "The student has not provided any course history or SOLS record yet. "
+            "Politely greet the student and ask them to paste their SOLS transcript or course history to get started."
+        )
+        handbook_placeholder = "(unavailable — missing student details must be asked for first)"
+
+    elif meta and not meta_confirmed:
         extracted_fields = [
             f"- Degree Code: {meta.get('degree_code') or 'Not found'}",
             f"- Enrolment Year: {meta.get('year') or 'Not found'}",

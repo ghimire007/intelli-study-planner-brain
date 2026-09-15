@@ -48,14 +48,16 @@ LIST THE REMAINING SUBJECTS IN ORDER OF RELEVANCE TO THE CHOSEN DEGREE, with mos
 
 ---
 
+Call the 
 You MUST respond strictly with a JSON object matching this schema:
 {
   "subjects": [
     {
       "code": "STRING",
-      "name": "STRING",
-      "valid_sessions": "STRING",
-      "credit_points": NUMBER,
+      "title": "STRING",
+      "cp": NUMBER,
+      "campus": "STRING",
+      "session": "STRING",
       "pre-requisites": "STRING",
       "co-requisites": "STRING"
     }
