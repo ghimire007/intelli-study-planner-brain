@@ -1,7 +1,12 @@
-# CSCI318 â€” Software Engineering Practices & Principles
+# CSCI318 — Software Engineering Practices & Principles
 
 - **Credit Points:** 6
-- **Pre-Requisite:** (CSIT121 and CSIT214) OR (ECTE250 and CSCI291)
+- **Subject Level:** 300-level
+- **Prerequisites:** (CSIT121 and CSIT214) OR (ECTE250 and CSCI291)
+- **Corequisites:** none
+- **Exclusions:** none
+- **Degree Restrictions:** none
+- **Tags / Topic Areas:** none
 - **Availability:**
   - Liverpool: Spring
   - UOW Malaysia Penang: UOWM Tri 2

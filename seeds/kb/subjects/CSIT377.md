@@ -1,8 +1,12 @@
 # CSIT377 — Enterprise Cloud Development
 
 - **Credit Points:** 6
-- **Pre-Requisite:** CSIT128 and 6 credit points at 200 level
-- **Co-Requisite:** 12 credit points at 200 level
+- **Subject Level:** 300-level
+- **Prerequisites:** CSIT128 and 6 credit points at 200 level
+- **Corequisites:** 12 credit points at 200 level
+- **Exclusions:** none
+- **Degree Restrictions:** none
+- **Tags / Topic Areas:** none
 - **Availability:**
   - Liverpool: Spring
   - Wollongong: Spring

@@ -1,7 +1,12 @@
 # ISIT307 — Web Server Programming
 
 - **Credit Points:** 6
-- **Pre-Requisite:** (CSIT110 or CSIT111) and CSIT115 and CSIT128 and 12 credit points at 200 level
+- **Subject Level:** 300-level
+- **Prerequisites:** (CSIT110 or CSIT111) and CSIT115 and CSIT128 and 12 credit points at 200 level
+- **Corequisites:** none
+- **Exclusions:** none
+- **Degree Restrictions:** none
+- **Tags / Topic Areas:** none
 - **Availability:**
   - Singapore Institute of Management: SIM S1, SIM S3
   - Wollongong: Autumn

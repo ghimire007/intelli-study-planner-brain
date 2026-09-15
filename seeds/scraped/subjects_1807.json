@@ -4,6 +4,14 @@
     "title": "Accounting Fundamentals In Society",
     "cp": "6",
     "description": "This subject introduces the role of accounting information in society including its social and ethical aspects relating to both the individual and the organisation. The subject introduces basic accounting language, concepts and techniques to identify, classify, process, record and present accounting and financial information. The subject also considers accounting information that can be used for making decisions about past and future economic events in a variety of business and social settings.",
+    "prerequisites": [],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "100-level",
+    "tags": [
+      "General Schedule"
+    ],
     "rules": [],
     "offerings": [
       {
@@ -20,6 +28,14 @@
     "title": "Accounting In Organisations",
     "cp": "6",
     "description": "The subject advances understanding of accounting in organisations. The subject introduces accounting for complex equity structures, and develops the theoretical and technical aspects of accounting for assets and the protection of assets through internal controls. Accounting for the past and future is examined through the introduction of cost structures and their application in solving fundamental business problems using cost-volume profit analysis. The application of budgets is explored.",
+    "prerequisites": [
+      "ACCY111"
+    ],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "100-level",
+    "tags": [],
     "rules": [
       {
         "type": "Pre-Requisite",
@@ -34,6 +50,14 @@
     "title": "Statistics for Business",
     "cp": "6",
     "description": "The aim of the subject is to introduce students to quantitative techniques and their application to the business world with an emphasis on the decision-making process. The main focus of the subject is business statistics and topics will include descriptive statistics, probability, sampling, confidence intervals, hypothesis testing, elementary correlation, regression analysis and time series forecasting. Students are also introduced to the use of computer programs for estimation and analysis to improve business decision-making.",
+    "prerequisites": [],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "100-level",
+    "tags": [
+      "General Schedule"
+    ],
     "rules": [],
     "offerings": [
       {
@@ -41,6 +65,12 @@
         "session": "Spring",
         "mode": "Distance",
         "display": "UOW Online Wollongong-Spring-Distance"
+      },
+      {
+        "campus": "UOW Online Wollongong",
+        "session": "Summer",
+        "mode": "Distance",
+        "display": "UOW Online Wollongong-Summer-Distance"
       },
       {
         "campus": "Wollongong",
@@ -146,6 +176,16 @@
     "title": "Algorithms and Data Structures",
     "cp": "6",
     "description": "Approaches to analysing algorithm complexity and implementation efficiency will be introduced; and used to motivate the development of appropriate abstract data types. Students will be taught to recognise the role of abstract data types and algorithms in solving real-world problems; and given the opportunity to implement solutions to such problems.",
+    "prerequisites": [
+      "(CSIT110 or CSIT111) AND (CSIT113 or CSIT123)"
+    ],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "200-level",
+    "tags": [
+      "General Schedule"
+    ],
     "rules": [
       {
         "type": "Pre-Requisite",
@@ -158,6 +198,12 @@
         "session": "Spring",
         "mode": "On-Campus",
         "display": "Wollongong-Spring-On-Campus"
+      },
+      {
+        "campus": "Dubai",
+        "session": "DXB UG Autumn",
+        "mode": "On-Campus",
+        "display": "Dubai-DXB UG Autumn-On-Campus"
       },
       {
         "campus": "Dubai",
@@ -197,6 +243,16 @@
     "title": "Database Systems",
     "cp": "6",
     "description": "The subject presents advanced topics in the modern relational database technology and it introduces the new non-relational (NoSQL) database technologies. The relational database technology component of the subject includes database normalization, introduction to indexing in relational database systems, programming of relational database server with stored procedures, functions, and triggers, concurrency control and database recovery techniques, design and programming of distributed database systems. The non-relational (NoSQL) database technology component of the subject includes a review of non-relational data models such as the key-value data model, document-oriented model, column-family stores, and graph data model. The non-relational component of the subject presents the new approaches to database design, data distribution, consistency preserving, and transaction processing in distributed and clustered database systems. Programming of NoSQL database server includes the new data definition and data manipulation languages, a new query language, indexing, design and implementation of replication and sharding.",
+    "prerequisites": [
+      "CSIT115"
+    ],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "200-level",
+    "tags": [
+      "General Schedule"
+    ],
     "rules": [
       {
         "type": "Pre-Requisite",
@@ -266,6 +322,16 @@
     "title": "3D Modelling and Animation",
     "cp": "6",
     "description": "This subject provides students with a hands-on introduction to the use of computers for developing models of three-dimensional objects and viewing them in 3D as still images and animations. Topics covered include basic modelling primitives, from polygons to spline surfaces; tools to modify simple objects; surfacing concepts such as textures and bump maps; basic lighting of scenes; the animation process including key frames, articulated structures, camera movement and morphing; lighting effects such as volumetrics and radiosity. The subject uses the industry standard software package Maya.",
+    "prerequisites": [
+      "36 credit points at 100 level"
+    ],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "200-level",
+    "tags": [
+      "General Schedule"
+    ],
     "rules": [
       {
         "type": "Pre-Requisite",
@@ -280,6 +346,16 @@
     "title": "Advanced Programming",
     "cp": "6",
     "description": "This subject develops a thorough understanding of advanced programming features, and how to implement them in modern C++. It consists of three primary components, namely procedural programming, object-based/object-oriented programming, and generic programming. In addition to the core of each of those components, this subject addresses topics including resource management tied to RAII, in particular the management of dynamic memory; the use of the standard template library; profiling and debugging; programming for efficiency including concepts such as moving; exception handling; C++ RTTI; and recent additions to C++.",
+    "prerequisites": [
+      "CSIT121 or CSIT213"
+    ],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "200-level",
+    "tags": [
+      "General Schedule"
+    ],
     "rules": [
       {
         "type": "Pre-Requisite",
@@ -349,6 +425,16 @@
     "title": "System Security",
     "cp": "6",
     "description": "The subject covers some fundamental computer security technologies in the following aspects: (1) Operating system security such as physical security, file protections, system abuses, attacks and protections; (2) Database security including data integrity, data recover, data encryption/ decryption, access control, and authentication; (3) Mobile code security including malicious logic, host and mobile code protection, mobile agents' security. (4) Intrusion detection; (5) Security policies; (6) Security management and risk analysis.",
+    "prerequisites": [
+      "CSIT121 and CSIT115 and CSIT127"
+    ],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "200-level",
+    "tags": [
+      "General Schedule"
+    ],
     "rules": [
       {
         "type": "Pre-Requisite",
@@ -412,6 +498,16 @@
     "title": "Database Performance Tuning",
     "cp": "6",
     "description": "The subject addresses the problems related to performance tuning of relational database systems. The subject presents the principles and methods of database performance tuning and software tools used for performance evaluation and tuning. \u00a0Three groups of solutions are investigated: structural, operational, and architectural. The structural solutions presented in the subject include data modelling related solutions, denormalizations, indexing, clustering, partitioning, and materializations. The operational solutions include application of specialized SQL statements, transformation of SQL statements, transformations of stored procedures, function and database triggers and improvements in performance through application of appropriate SQL implementation techniques. The architectural solutions consider performance tuning through the appropriate application and configuration of the traditional and the new architectures of database systems based on modern hardware such as main memory database systems, Graphical Processing Unit (GPU) \u00a0database systems, Non-Volatile Memory (NVM) database systems.",
+    "prerequisites": [
+      "CSCI235"
+    ],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "300-level",
+    "tags": [
+      "General Schedule"
+    ],
     "rules": [
       {
         "type": "Pre-Requisite",
@@ -426,6 +522,14 @@
     "title": "Systems Administration",
     "cp": "6",
     "description": "This subject offers a comprehensive examination of systems administration. Students will develop the practical skills and theoretical knowledge to effectively design, deploy, and manage network infrastructures and servers. The curriculum covers configuring essential network services, implementing data management technologies, and securing systems against various threats. Emphasising professional practices and analytical skills, the subject prepares students for systems administration roles adaptable to any platform.",
+    "prerequisites": [
+      "CSIT127 plus 18 credit points at 200 level"
+    ],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "300-level",
+    "tags": [],
     "rules": [
       {
         "type": "Pre-Requisite",
@@ -459,6 +563,16 @@
     "title": "Interactive Computer Graphics",
     "cp": "6",
     "description": "This subject examines concepts and techniques underlying interactive computer graphics. The subject will introduce principles fundamental to understanding components in the graphics pipeline. Students will acquire practical hands-on experience in graphics programming using appropriate application programming interfaces. Among others, topics covered will include graphics programming, shaders, vectors and matrices, transformations, homogeneous coordinate systems, viewing and projection, lighting and shading, clipping, rasterisation, hidden-surface algorithms, discrete techniques, and current trends (e.g. graphics for mobile devices).",
+    "prerequisites": [
+      "CSIT121 and 18 credit points at 200 level"
+    ],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "300-level",
+    "tags": [
+      "General Schedule"
+    ],
     "rules": [
       {
         "type": "Pre-Requisite",
@@ -498,6 +612,18 @@
     "title": "Game Engine Essentials",
     "cp": "6",
     "description": "This subject will introduce fundamental concepts and techniques required in the development of games and game engines. Game engine components that will be examined include rendering, collision and physics, artificial intelligence among others. The design and development of these components will be illustrated using appropriate software and application programming interfaces. Among others, topics covered in this subject will include game loops and time management, handling input, cameras, particles, collision detection, rigid-body dynamics, terrain, path-finding, and state machines.",
+    "prerequisites": [
+      "CSIT121"
+    ],
+    "corequisites": [
+      "CSIT214"
+    ],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "300-level",
+    "tags": [
+      "General Schedule"
+    ],
     "rules": [
       {
         "type": "Co-Requisite",
@@ -535,6 +661,16 @@
     "title": "Cryptography and Secure Applications",
     "cp": "6",
     "description": "This subject develops the skills and knowledge necessary to identify and address security problems in a variety of simple communication models. Topics covered include: Classical cryptology, Modern secret key cryptography including block (DES, AES) and stream ciphers (RC4), security properties (authentication, integrity, confidentiality, availability), public key cryptography (knapsacks, RSA, Rabin, Elgamal), digital signatures (RSA, DSS, Elgamal) , hashing (birthday paradox, Merkle-Damgard construction), MACS's, Key management (PKI, certificates, key establishment/exchange/transport, Diffie-Hellman), Identification protocols, Privacy preserving (mix-nets), Secret sharing. Applications studied include some of: email security, SET, E-payment, E-voting, Fair exchange.",
+    "prerequisites": [
+      "CSIT121 + 12cp 200 level CSCI"
+    ],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "300-level",
+    "tags": [
+      "General Schedule"
+    ],
     "rules": [
       {
         "type": "Pre-Requisite",
@@ -574,6 +710,16 @@
     "title": "Mobile Multimedia",
     "cp": "6",
     "description": "This subject will in general introduce fundamental knowledge regarding the acquisition, representation, processing and manipulation, compression and consumption (i.e. visualization) of multimedia data including audio, images and video. The treatment will focus on mobile devices and mobile development platforms. The subject will include a laboratory component where students design and implement simple multimedia applications on a mobile platform.",
+    "prerequisites": [
+      "CSIT121 + 24cp @ 100 level CSIT"
+    ],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "300-level",
+    "tags": [
+      "General Schedule"
+    ],
     "rules": [
       {
         "type": "Pre-Requisite",
@@ -588,6 +734,16 @@
     "title": "Network Security",
     "cp": "6",
     "description": "This subject provides a survey of network security technologies, and explores them in practice. This includes but is not limited to, network-based threats, security failure in network protocols, authentication servers, certificates and public-key infrastructures, security provisions in communication protocols and standards, and electronic mail security.",
+    "prerequisites": [
+      "CSIT127, CSIT121, and 12cp 200 level CSCI/CSIT"
+    ],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "300-level",
+    "tags": [
+      "General Schedule"
+    ],
     "rules": [
       {
         "type": "Pre-Requisite",
@@ -633,6 +789,16 @@
     "title": "Multicore and GPU Programming",
     "cp": "6",
     "description": "This subject introduces the topic of heterogeneous computing by examining the development of software on modern computing systems that are often equipped with more than one kind of processor. Students will learn to use appropriate programming interfaces to design and implement programs for computing systems incorporating multicore CPU and GPU hardware. Among others, topics covered will include parallel programming, data management, execution and memory models, parallel patterns, performance considerations, and current trends.",
+    "prerequisites": [
+      "CSCI251 + 12cp 200 level CSCI"
+    ],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "300-level",
+    "tags": [
+      "General Schedule"
+    ],
     "rules": [
       {
         "type": "Pre-Requisite",
@@ -647,6 +813,14 @@
     "title": "Fundamental Programming with Python",
     "cp": "6",
     "description": "This subject uses Python language to introduce students with fundamental programming concepts such as procedural programming, variable, data type, array, recursive function, conditional expression, selection statement, repeating instruction. This subject also develops student skills in the design and implementation of well structured algorithms to a range of mathematical problems.",
+    "prerequisites": [],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "100-level",
+    "tags": [
+      "General Schedule"
+    ],
     "rules": [],
     "offerings": [
       {
@@ -705,6 +879,14 @@
     "title": "Programming Fundamentals",
     "cp": "6",
     "description": "The broad aim of this subject is to develop in students an understanding of the fundamental principles of programming. The subject focuses on the object oriented view of problem analysis and solving. It enables students to develop skills in the design and implementation of well structured programs in a range of domains.",
+    "prerequisites": [],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "100-level",
+    "tags": [
+      "General Schedule"
+    ],
     "rules": [],
     "offerings": [],
     "url": "https://courses.uow.edu.au/subjects/2026/CSIT111"
@@ -714,6 +896,14 @@
     "title": "Problem Solving",
     "cp": "6",
     "description": "This subject introduces the analysis of problems and the strategies used to manage them, primarily in the context of computing. Problem classification is introduced, as are formal and informal approaches to problem solving. The importance of method and method classification for problem solving strategies is motivated, and the need to compare and analyse strategies is justified. Introductory tools for the analysis of strategies are covered. Appropriate representations for problem solving are explored.",
+    "prerequisites": [],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "100-level",
+    "tags": [
+      "General Schedule"
+    ],
     "rules": [],
     "offerings": [],
     "url": "https://courses.uow.edu.au/subjects/2026/CSIT113"
@@ -723,6 +913,14 @@
     "title": "System Analysis",
     "cp": "6",
     "description": "This subject provides an introduction to different techniques and technologies for understanding and specifying what a computer based information system should accomplish. It examines the complementary roles of systems analysts, clients and users in a system development life cycle. Students will learn different fact-finding techniques to elicit system requirements and how to develop business models, data and process models, and object models representing a system. Students will also make use of a Computer Aided Software Engineering (CASE) tool to build those models that capture the specifications of a system.",
+    "prerequisites": [],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "100-level",
+    "tags": [
+      "General Schedule"
+    ],
     "rules": [],
     "offerings": [
       {
@@ -769,6 +967,14 @@
     "title": "Database Management Systems",
     "cp": "6",
     "description": "This subject investigates three major areas of modern data management systems: data modelling, data processing, and data integration. The goal is to learn fundamental concepts in data management, including conceptual modelling, relational data model, processing of relational data with Structured Query Language (SQL), and enforcing data availability. Students will develop skills in the design, implementation, processing of relational databases, as well as in user management. Topics covered include data models, object-oriented and relational conceptual modelling, DDL, DML, advanced SQL querying techniques, database server architecture, and discretionary access control (DAC). By the end of the subject, students will be equipped to design, implement, and manage relational database systems.",
+    "prerequisites": [],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "100-level",
+    "tags": [
+      "General Schedule"
+    ],
     "rules": [],
     "offerings": [
       {
@@ -833,6 +1039,16 @@
     "title": "Object Oriented Design and Programming",
     "cp": "6",
     "description": "The aims of this subject are to consolidate and extend student's knowledge and skills in structured programming and to develop their understanding and practice of object oriented programming. To achieve this aim the subject will provide students with an opportunity to develop further programming skills and good coding style; develop skills in using the object oriented concepts of encapsulation, inheritance, polymorphism, access control, overloading and messaging; develop and display competency in the design and implementation of object oriented programs to solve business problems.",
+    "prerequisites": [
+      "CSIT110 OR CSIT111 OR ENGG100"
+    ],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "100-level",
+    "tags": [
+      "General Schedule"
+    ],
     "rules": [
       {
         "type": "Pre-Requisite",
@@ -896,6 +1112,14 @@
     "title": "Computing and Cyber Security Fundamentals",
     "cp": "6",
     "description": "This subject aims to equip students with an understanding of fundamental computing knowledge. In addition, the subject aims to introduce students to key cyber security concepts and principles. To achieve these aims, topics covered in this subject include fundamental computing content such as the history of computing and the evolution of technology; concepts in information processing, computer architecture, and operating systems; and cyber security topics including forms of attack, detection, and prevention, cyber security policy and risk assessment.",
+    "prerequisites": [],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "100-level",
+    "tags": [
+      "General Schedule"
+    ],
     "rules": [],
     "offerings": [
       {
@@ -942,6 +1166,14 @@
     "title": "Networks and Communications",
     "cp": "6",
     "description": "This subject introduces students to the fundamentals of data communications and computer networks. Topics covered include: different types of data and the history of data communications; signals; modulation and multiplexing, switching and routing, network architectures: LANs, WANs and the Internet; Internet services and protocols; and emerging topics. The subject explains computer networking models that interconnect diverse communication systems, including the OSI reference model and the TCP/IP protocol Suite.",
+    "prerequisites": [],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "100-level",
+    "tags": [
+      "General Schedule"
+    ],
     "rules": [],
     "offerings": [
       {
@@ -988,6 +1220,14 @@
     "title": "Introduction to Web Technology",
     "cp": "6",
     "description": "This subject introduces students to fundamental web technologies that underlie the World Wide Web and its commercial applications. Topics include an overview of internet communications, an introduction to the web-browser/web-server client-server systems, HTML5/CSS/XHTML/XML markup languages, web forms and client side scripting. Students will build working web-sites with dynamic content. The subject explains the differences between client-side and server-side Web development, and demonstrates how to build simple applications using scripting and other tools. The subject also covers current Web standards and future W3C recommendations.",
+    "prerequisites": [],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "100-level",
+    "tags": [
+      "General Schedule"
+    ],
     "rules": [],
     "offerings": [
       {
@@ -1064,6 +1304,12 @@
     "title": "Generative AI",
     "cp": "6",
     "description": "In this subject, students delve into the world of Generative AI. They explore the foundational principles and practical applications of this cutting-edge field. Through a blend of theory and hands-on experience, students gain insights into how Generative AI empowers artificial intelligence to create original content - ranging from text and images to video and code - based on user prompts. The curriculum covers essential topics, including AI\u2019s role in code generation, effective prompt engineering techniques, and the development of advanced generative models like GANs and transformers. Moreover, students critically examine the ethical implications of Generative AI and its impact on business strategy. By the end of the subject, students will have a comprehensive understanding of this promising field and the ability to responsibly apply Generative AI in real-world scenarios.",
+    "prerequisites": [],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "200-level",
+    "tags": [],
     "rules": [],
     "offerings": [
       {
@@ -1110,6 +1356,16 @@
     "title": "IT Project Management",
     "cp": "6",
     "description": "The primary aim of this subject is to acquaint students with the methodologies and processes associated with the task of managing information technology and software development projects. Topics include: stakeholder and impact analysis, setting project objectives and conflict resolution, project planning and the selection of appropriate project approaches, software project effort estimation, cost-benefit analysis, activity planning and scheduling, risk management, contract management, quality assurance, professional and ethical responsibilities, and case studies.",
+    "prerequisites": [
+      "CSIT114"
+    ],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "200-level",
+    "tags": [
+      "General Schedule"
+    ],
     "rules": [
       {
         "type": "Pre-Requisite",
@@ -1185,6 +1441,14 @@
     "title": "Human Computer Interaction",
     "cp": "6",
     "description": "The subject provides students with an understanding of Human Computer Interaction (HCI) principles and practices, and how to apply them in the context of developing usable interactive computer applications and systems. The subject also emphasises the importance of taking into account contextual, organisational, and social factors in the design of computer systems. Students will be taken through the analysis, design, development, and evaluation of user interfaces. They will acquire hands-on design skills through an interaction design project. The subject will cover topics including user-centred design, the development process, prototyping, usability testing, measuring and evaluating the user experience and accessibility.",
+    "prerequisites": [],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "200-level",
+    "tags": [
+      "General Schedule"
+    ],
     "rules": [],
     "offerings": [
       {
@@ -1231,6 +1495,18 @@
     "title": "Mobile Application Development",
     "cp": "6",
     "description": "The proposed subject provides students with knowledge for mobile application design, development, implementation and deployment. The students will examine different mobile platforms and learn how to use different tools for mobile application development. The subject includes issues such as mobile interface design and data persistence. Students will develop technical skills necessary to develop applications using several languages, frameworks and tools.",
+    "prerequisites": [
+      "CSIT121"
+    ],
+    "corequisites": [
+      "CSIT213"
+    ],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "200-level",
+    "tags": [
+      "General Schedule"
+    ],
     "rules": [
       {
         "type": "Pre-Requisite",
@@ -1274,6 +1550,16 @@
     "title": "Cybersecurity",
     "cp": "6",
     "description": "Cybersecurity is a global issue that knows no boundaries and affects national security, businesses and individuals alike. Students in this subject will be introduced to the broad area of cybersecurity in conjunction with issues related to cybersecurity. Among others, topics covered in this subject will include cyber threats and attacks, mobile security threats and malware, cloud security, security testing, digital forensics, cybercrime, and trusted computing.",
+    "prerequisites": [
+      "CSIT127 and 12cp at 100-level of CSIT"
+    ],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "300-level",
+    "tags": [
+      "General Schedule"
+    ],
     "rules": [
       {
         "type": "Pre-Requisite",
@@ -1312,10 +1598,10 @@
         "display": "Singapore Institute of Management-SIM S2-On-Campus"
       },
       {
-        "campus": "UOWCHK",
-        "session": "UOWCHK Sem C",
+        "campus": "Singapore Institute of Management",
+        "session": "SIM S4",
         "mode": "On-Campus",
-        "display": "UOW at CCCU HK-UOWCHK Sem C-On-Campus"
+        "display": "Singapore Institute of Management-SIM S4-On-Campus"
       },
       {
         "campus": "UOW Malaysia Penang",
@@ -1324,10 +1610,28 @@
         "display": "UOW Malaysia Penang-UOWM Tri 1-On-Campus"
       },
       {
+        "campus": "UOW Malaysia Penang",
+        "session": "UOWM Tri 3",
+        "mode": "On-Campus",
+        "display": "UOW Malaysia Penang-UOWM Tri 3-On-Campus"
+      },
+      {
         "campus": "UOW Malaysia Selangor",
         "session": "UOWM Tri 1",
         "mode": "On-Campus",
         "display": "UOW Malaysia Selangor-UOWM Tri 1-On-Campus"
+      },
+      {
+        "campus": "UOW Malaysia Selangor",
+        "session": "UOWM Tri 3",
+        "mode": "On-Campus",
+        "display": "UOW Malaysia Selangor-UOWM Tri 3-On-Campus"
+      },
+      {
+        "campus": "UOWCHK",
+        "session": "UOWCHK Sem C",
+        "mode": "On-Campus",
+        "display": "UOWCHK-UOWCHK Sem C-On-Campus"
       }
     ],
     "url": "https://courses.uow.edu.au/subjects/2026/CSIT302"
@@ -1337,6 +1641,12 @@
     "title": "Emerging Information Technologies and their Applications",
     "cp": "6",
     "description": "This subject introduces students to emerging information technologies and their practical applications. Students will have a deep understanding of innovative technologies such as specialised processors, while also delving into modern software development practices (e.g., Agile and DevOps methodologies). It covers advanced networking technologies (e.g., 5G and IoT architectures) and examines contemporary data management and storage solutions (e.g., data warehousing and data lakes), emphasizing security, privacy, and big data applications. This subject will equip students with advanced knowledge of emerging information technologies and enhance their skills to appropriately choose and apply information techniques to resolve practical problems effectively.",
+    "prerequisites": [],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "300-level",
+    "tags": [],
     "rules": [],
     "offerings": [
       {
@@ -1371,6 +1681,16 @@
     "title": "Software Development Methodologies",
     "cp": "6",
     "description": "The subject introduces to students modern methodologies for software development. Topics include software development life cycle activities, the role of software process models, different types of evolutionary models, Unified Process and UML, agile principles of software development, Dynamic Systems Development Method (DSDM), Scrum and extreme programming, test driven software development, the Capability Maturity Model Integration (CMMI), software engineering knowledge management, software architecture, and emerging trends in software development processes.",
+    "prerequisites": [
+      "CSIT214 and 12 credit points at 200 level CSCI/ISIT"
+    ],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "300-level",
+    "tags": [
+      "General Schedule"
+    ],
     "rules": [
       {
         "type": "Pre-Requisite",
@@ -1428,6 +1748,18 @@
     "title": "Project",
     "cp": "12",
     "description": "This subject is the capstone project for undergraduate students in the School of Computing and Information Technology it aims to provide students with: practical experience in complete systems development. The projects connect groups of students with supervisors and clients that are facing an ICT-based problem for which the students are required to find innovative and creative solutions. Working in groups, students design, implement, and document a system. This involves: project planning and scheduling, seminars and individual presentations, group coordination, research of proposed application domain, use of design methodologies, design documentation, coding, module and system integration, testing, verification, and implementation. Teams will meet weekly with supervisors to discuss progress and problems.",
+    "prerequisites": [
+      "CSIT214, and an additional 18cp 200 level CSCI/CSIT/ISIT"
+    ],
+    "corequisites": [
+      "CSIT226 AND CSIT314"
+    ],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "300-level",
+    "tags": [
+      "General Schedule"
+    ],
     "rules": [
       {
         "type": "Co-Requisite",
@@ -1537,6 +1869,16 @@
     "title": "Web Security",
     "cp": "6",
     "description": "The web, also known as World Wide Web (WWW), is now one of the essential Internet services. However, as web services become versatile, the number of web vulnerabilities has increased dramatically. In this subject, students will gain insight into the latest web threats. They will also learn the fundamentals of web security and understand the technical aspects of web defence.",
+    "prerequisites": [
+      "(CSIT110 or CSIT111) and CSIT128"
+    ],
+    "corequisites": [
+      "12 credit points at 200 level"
+    ],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "300-level",
+    "tags": [],
     "rules": [
       {
         "type": "Co-Requisite",
@@ -1568,6 +1910,18 @@
     "title": "Enterprise Cloud Development",
     "cp": "6",
     "description": "Cloud Computing is the on-demand delivery of computational resources like hardware infrastructure, applications, servers, storage, databases, networking, and software over the Internet. This subject aims to provide fundamental knowledge and applicable hands-on skills for enterprise-level Cloud Computing. The subject covers various cloud deployment models (public, private, hybrid) and service models (IaaS, PaaS, SaaS, serverless), enabling a critical understanding of how different cloud solutions are structured and delivered. Students are exposed to ready-to-implement solutions for enterprise IT systems through common cloud computing technologies that enable microservice architecture, Web APIs, mashup software, and similar applications. The subject provides hands-on experience in designing and developing scalable, reliable, and secure cloud solutions using a mainstream cloud computing platform.",
+    "prerequisites": [
+      "CSIT128 and 6 credit points at 200 level"
+    ],
+    "corequisites": [
+      "12 credit points at 200 level"
+    ],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "300-level",
+    "tags": [
+      "Computing and Information Technology"
+    ],
     "rules": [
       {
         "type": "Pre-Requisite",
@@ -1599,6 +1953,14 @@
     "title": "Economic Essentials for Business",
     "cp": "6",
     "description": "This subject introduces students to essential macroeconomic and microeconomic ideas, models and reasoning. This economic knowledge is used to explore important questions such as, is economics a value free science?, do individuals behave rationally?, how and why do market structures vary across different industries and why is this knowledge important?, do markets ever fail, and if so, why?, what are some causes and implications of inflation and unemployment?, how do monetary and financial systems operate?, and how do governments typically respond to domestic macroeconomic volatility? While these questions will not be fully answered in this introductory subject, policy challenges and case studies will be used to demonstrate the importance of basic economic reasoning if sensible answers to economic and social challenges are to be found, and to stimulate greater awareness of economic approaches to the analysis of contemporary social issues.",
+    "prerequisites": [],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "100-level",
+    "tags": [
+      "General Schedule"
+    ],
     "rules": [],
     "offerings": [
       {
@@ -1681,6 +2043,14 @@
     "title": "Industry and Trade in Asia",
     "cp": "6",
     "description": "This subject studies the neo-classical, structuralist and culturalists views on industrialisation in Asia using country specific examples. It examines and applies trade and industry policy, economic integration, investment flows and the international monetary system. It further explores the East Asian Model and its application by other countries in the region. The causes of extraordinary growth and meltdown in Asian countries are analysed. The recent challenges in the region and the strategies to overcome the main challenges are emphasised.",
+    "prerequisites": [
+      "Any 48 credit points"
+    ],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "200-level",
+    "tags": [],
     "rules": [
       {
         "type": "Pre-Requisite",
@@ -1702,6 +2072,16 @@
     "title": "Data Mining and Knowledge Discovery",
     "cp": "6",
     "description": "Introduction to Data Mining, Knowledge Discovery, and Big Data with coverage of Data Structures, role of Data Quality and per-processing, Association Rules, Artificial Neural Networks, Support Vector methods, Tree Based Methods, Clustering and Classification Methods, Regression and Statistical Methods, Overfitting and Inferential issues, Evaluation, Use of Data Mining packages with applications for benchmark and real world situations.",
+    "prerequisites": [
+      "36 cp (Knowledge of mathematical and statistical notation at an introductory level.)"
+    ],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "400-level",
+    "tags": [
+      "General Schedule"
+    ],
     "rules": [
       {
         "type": "Pre-Requisite",
@@ -1729,20 +2109,23 @@
     "title": "Principles of eBusiness",
     "cp": "6",
     "description": "This subject aims to provide students with an understanding of eBusiness fundamentals. Today most businesses compete in a global environment and a sound strategy for online business is essential to facilitate this. This subject covers key areas of eBusiness, including: business-to-consumer, business-to-business and business-to-government electronic commerce (EC); online business models and electronic payment systems (EPS) and EC technology basics. Standards, regulation and policy, security and social and economic issues will also be considered in the contexts of business Intranets, Extranets and the Internet. The subject also provides an introduction to the 'Patterns for eBusiness' approach to eBusiness analysis and design.",
+    "prerequisites": [
+      "24cp @100 level"
+    ],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "200-level",
+    "tags": [
+      "General Schedule"
+    ],
     "rules": [
       {
         "type": "Pre-Requisite",
         "description": "24cp @100 level"
       }
     ],
-    "offerings": [
-      {
-        "campus": "Dubai",
-        "session": "DXB UG Autumn",
-        "mode": "On-Campus",
-        "display": "Dubai-DXB UG Autumn-On-Campus"
-      }
-    ],
+    "offerings": [],
     "url": "https://courses.uow.edu.au/subjects/2026/ISIT204"
   },
   "ISIT207": {
@@ -1750,6 +2133,16 @@
     "title": "Frontend Web Programming",
     "cp": "6",
     "description": "The subject provides students with a practical knowledge of web programming concepts and techniques and user interface design techniques used in the creation of dynamic web sites. The subject will provide students with an opportunity to develop an understanding of the principles of client and server-based scripts as well as user-interface constructs. Students will also be able to apply these principles. The subject provides an in-depth look at the object-oriented features of web programming. Students will have exposure to appropriate software development tools to complete a data cycle of input data store data output data via the web.",
+    "prerequisites": [
+      "(CSIT111 or CSIT110) and CSIT128"
+    ],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "200-level",
+    "tags": [
+      "General Schedule"
+    ],
     "rules": [
       {
         "type": "Pre-Requisite",
@@ -1795,6 +2188,16 @@
     "title": "Corporate Network  Planning and Design",
     "cp": "6",
     "description": "The systematic design of networks includes requirements gathering, requirements analysis, the development of logical design and the conversion of the logical design to a physical design. The use of architectures will provide students with a high level framework that consists of addressing and routing, performance characteristics, security and network management. The subject will teach students to relate this framework to basic data communication techniques developed in previous subjects as well extend their knowledge of addressing and routing and performance characteristics.",
+    "prerequisites": [
+      "ISIT105 or CSIT127"
+    ],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "200-level",
+    "tags": [
+      "General Schedule"
+    ],
     "rules": [
       {
         "type": "Pre-Requisite",
@@ -1834,6 +2237,16 @@
     "title": "Knowledge and Information Engineering",
     "cp": "6",
     "description": "This subject explores issues in using IT to support knowledge sharing and reuse. Challenges in representing and sharing knowledge in the context of deploying knowledge systems are studied. Additional challenges in heterogeneous IT environments are also examined. The subject presents systematic approaches for knowledge engineering via a contemporary Web and modern information modelling approach. The appropriate application environments, acquisition tools and representation schemes for content management are examined along with their relationship to contemporary issues in Web technology.",
+    "prerequisites": [
+      "CSIT128"
+    ],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "200-level",
+    "tags": [
+      "General Schedule"
+    ],
     "rules": [
       {
         "type": "Pre-Requisite",
@@ -1872,10 +2285,22 @@
         "display": "UOW Malaysia Penang-UOWM Tri 1-On-Campus"
       },
       {
+        "campus": "UOW Malaysia Penang",
+        "session": "UOWM Tri 3",
+        "mode": "On-Campus",
+        "display": "UOW Malaysia Penang-UOWM Tri 3-On-Campus"
+      },
+      {
         "campus": "UOW Malaysia Selangor",
         "session": "UOWM Tri 1",
         "mode": "On-Campus",
         "display": "UOW Malaysia Selangor-UOWM Tri 1-On-Campus"
+      },
+      {
+        "campus": "UOW Malaysia Selangor",
+        "session": "UOWM Tri 3",
+        "mode": "On-Campus",
+        "display": "UOW Malaysia Selangor-UOWM Tri 3-On-Campus"
       }
     ],
     "url": "https://courses.uow.edu.au/subjects/2026/ISIT219"
@@ -1885,6 +2310,16 @@
     "title": "Management Information Systems",
     "cp": "6",
     "description": "This subject introduces students to an overview of all the major Information Systems found in a typical business covering systems such as finance, HR, payroll, inventory, sales, CRM, SCM and ERP. Students will be introduced to the processes involved in managing information systems in the contemporary business environment. Students will gain a deep understanding of the issues surrounding the key components of IS (i.e. people, software, hardware, data, and communication technologies), systems and development concepts, technology acquisition, and IT-enabled improvement in quality, speed and agility in modern organisations.",
+    "prerequisites": [
+      "(CSIT113 or CSIT123 or BUS 101) and another 18 credit points at 100 level"
+    ],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "200-level",
+    "tags": [
+      "General Schedule"
+    ],
     "rules": [
       {
         "type": "Pre-Requisite",
@@ -1930,6 +2365,18 @@
     "title": "Corporate Network Management",
     "cp": "6",
     "description": "This subject presents the operational, tactical and strategic issues involved in corporate network management (NM). The subject will introduce a number of NM models e.g. FCAPS, OAM&amp;P etc., and use one of these models to systematically cover the management of: physical components, staff in a network centre, network configuration, user accounts, network performance, security, faults and disasters. The subject also covers concepts such as NM protocols, service level agreements, network integration and the impact of government regulations on NM. These concepts will be reinforced by a series of hands on exercises including using basic network management tools (including scripting).",
+    "prerequisites": [
+      "CSIT127 and 6 credit points at 200 level"
+    ],
+    "corequisites": [
+      "12 credit points at 200 level"
+    ],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "300-level",
+    "tags": [
+      "General Schedule"
+    ],
     "rules": [
       {
         "type": "Co-Requisite",
@@ -1967,6 +2414,16 @@
     "title": "Strategic eBusiness Solutions",
     "cp": "6",
     "description": "This subject aims to provide students with an understanding of how to design integrated solutions for eBusiness using a pattern-oriented approach. Enterprises, both large and small, as well as government institutions, are increasingly becoming reliant upon eBusiness infrastructure. Knowing the strategic business and technology principles and practices related to the design process is becoming increasingly important for a given organisation. This subject will cover business scenarios including electronic data interchange (EDI), supply chain management (SCM), enterprise application integration (EAI), customer relationship management (CRM), sales force automation (SFA); and knowledge management systems (KM).",
+    "prerequisites": [
+      "24cp @200 level ISIT OR CSIT"
+    ],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "300-level",
+    "tags": [
+      "General Schedule"
+    ],
     "rules": [
       {
         "type": "Pre-Requisite",
@@ -1988,6 +2445,16 @@
     "title": "Web Server Programming",
     "cp": "6",
     "description": "The subject aims to integrate the previous knowledge which students have gained through subjects on web technologies, web programming and databases to create real-world web applications like shopping carts or advanced form processing systems etc. It also introduces students to open-source programming languages in web development so that they can inexpensively develop sophisticated web applications. Students will become familiar with the integration of programming, databases, web-applications, and structural and object oriented programming.",
+    "prerequisites": [
+      "(CSIT110 or CSIT111) and CSIT115 and CSIT128 and 12 credit points at 200 level"
+    ],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "300-level",
+    "tags": [
+      "General Schedule"
+    ],
     "rules": [
       {
         "type": "Pre-Requisite",
@@ -2021,6 +2488,16 @@
     "title": "Big Data Management",
     "cp": "6",
     "description": "The subject addresses the problems of managing and processing of extremely large data sets in a single-server centralised computing systems and in multi-server clustered and distributed computing systems. The topics related to processing of large data sets in centralised environments include the techniques based on the classical data warehouse technologies such multidimensional data model, data warehouse architecture, data warehouse design both at conceptual and logical levels, and data warehouse processing with appropriate specialised query operations. The topics related to processing of large data sets in distributed environments include the techniques that can be implemented on the clusters of inexpensive computing nodes using MapReduce programming model. The subject introduces the students to the real time analytical processing of large data sets with analytical cluster-based distributed data processing systems. Discussion and hands on exercises related to these topics will equip students to meet the challenges in Big Data environments and appreciate the added challenges of dealing with unstructured data. Students will be presented with opportunities to do hands-on work with appropriate commercial tools.",
+    "prerequisites": [
+      "CSIT115 and 18 credit points at 200 level"
+    ],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "300-level",
+    "tags": [
+      "General Schedule"
+    ],
     "rules": [
       {
         "type": "Pre-Requisite",
@@ -2071,10 +2548,22 @@
         "display": "UOW Malaysia Penang-UOWM Tri 1-On-Campus"
       },
       {
+        "campus": "UOW Malaysia Penang",
+        "session": "UOWM Tri 3",
+        "mode": "On-Campus",
+        "display": "UOW Malaysia Penang-UOWM Tri 3-On-Campus"
+      },
+      {
         "campus": "UOW Malaysia Selangor",
         "session": "UOWM Tri 1",
         "mode": "On-Campus",
         "display": "UOW Malaysia Selangor-UOWM Tri 1-On-Campus"
+      },
+      {
+        "campus": "UOW Malaysia Selangor",
+        "session": "UOWM Tri 3",
+        "mode": "On-Campus",
+        "display": "UOW Malaysia Selangor-UOWM Tri 3-On-Campus"
       }
     ],
     "url": "https://courses.uow.edu.au/subjects/2026/ISIT312"
@@ -2084,6 +2573,18 @@
     "title": "Business Process Management",
     "cp": "6",
     "description": "Business process management (BPM) combines a process-centric and cross-functional approach to improving how organizations achieve their business goals. A BPM solution makes use of IT to model, automate, manage and optimize business processes to increase productivity. Within this subject students learn important process-centric issues in business system design and implementation. Focus will be placed on both business and technical perspectives of BPM. Topics covered include: Basic business process concepts; Business process modelling; Business process outsourcing; Business process re-engineering; Business process improvement; Workflow and business process automation; Business process management and service-oriented architecture.",
+    "prerequisites": [
+      "CSIT114 and 6 credit points at 200 level"
+    ],
+    "corequisites": [
+      "12 credit points at 200 level"
+    ],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "300-level",
+    "tags": [
+      "General Schedule"
+    ],
     "rules": [
       {
         "type": "Co-Requisite",
@@ -2115,6 +2616,16 @@
     "title": "Marketing Principles",
     "cp": "6",
     "description": "Marketing is a set of activities and processes for creating, communicating and delivering offerings and facilitating satisfying exchange relationships in a way that delivers value for consumers and society. Organisations need to know how to define and segment a market and how to position themselves strongly by identifying marketing opportunities and problems, and developing products, services, experiences and ideas for chosen target markets more effectively than their competitors. Marketing is essential for all organisations including manufacturers, wholesalers, retailers, professional services firms including lawyers, accountants and architects, and non-profit institutions including charities and museums. The subject examines the fundamental concepts underpinning the marketing process and theories relevant to the study and practice of marketing. It serves as a foundation for further studies in business by developing an overview of where marketing fits within organisations and what framework marketing provides for enhancing and enabling the conduct of a business.",
+    "prerequisites": [],
+    "corequisites": [],
+    "exclusions": [
+      "Not to count with MARK213"
+    ],
+    "degree_restrictions": [],
+    "subject_level": "100-level",
+    "tags": [
+      "General Schedule"
+    ],
     "rules": [],
     "offerings": [
       {
@@ -2122,6 +2633,12 @@
         "session": "Spring",
         "mode": "Distance",
         "display": "UOW Online Wollongong-Spring-Distance"
+      },
+      {
+        "campus": "UOW Online Wollongong",
+        "session": "Summer",
+        "mode": "Distance",
+        "display": "UOW Online Wollongong-Summer-Distance"
       },
       {
         "campus": "Wollongong",
@@ -2221,6 +2738,12 @@
     "title": "Mathematics for Information Technology",
     "cp": "6",
     "description": "MATH223 is a core subject for information technology students, providing key mathematical and statistical knowledge. The subject is split into two strands: the Calculus Strand and the Data Analysis Strand. Calculus Strand: This strand begins by reviewing mathematical principles and tools that support analysis in the IT workplace, including algebraic concepts, summation, polynomials, integrals, derivatives, and special functions (exp, log). The material is applied to understand essential concepts in mathematical finance. The strand concludes with project evaluation techniques, such as return-on-investment. Data Analysis Strand: This strand applies the core mathematical concepts to discrete and continuous probability. The strand begins with basic data analysis, including univariate and bivariate data, association, correlation and simple linear regression. Study continues with discrete probability models (binomial and Poisson) and continuous distributions, including normal and uniform. The subject ends with confidence intervals and introductory hypothesis testing, such as the Chi-squared test for association and one-sample t-test.",
+    "prerequisites": [],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "200-level",
+    "tags": [],
     "rules": [],
     "offerings": [],
     "url": "https://courses.uow.edu.au/subjects/2026/MATH223"
@@ -2230,6 +2753,14 @@
     "title": "Professional Communication: Concepts and Practices",
     "cp": "6",
     "description": "MGNT102 introduces the theory and practice of communication in social and professional settings, to develop competencies in a fundamental and important human practice which is also a valuable workplace skill.\nThis subject focuses on culturally sensitive, respectful, ethical, and effective communication, personally and professionally, using a range of modes and environments. It examines and discusses cultural, organisational, and interpersonal communication processes, and incorporates practical professional skills including presentations and writing for focussed purposes such as academia and social media. Other concepts addressed, which assist in building relationships and understanding, are non-verbal communication, active listening, and feedback.",
+    "prerequisites": [],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "100-level",
+    "tags": [
+      "General Schedule"
+    ],
     "rules": [],
     "offerings": [
       {
@@ -2237,6 +2768,12 @@
         "session": "Autumn",
         "mode": "Distance",
         "display": "UOW Online Wollongong-Autumn-Distance"
+      },
+      {
+        "campus": "UOW Online Wollongong",
+        "session": "Summer",
+        "mode": "Distance",
+        "display": "UOW Online Wollongong-Summer-Distance"
       },
       {
         "campus": "Wollongong",

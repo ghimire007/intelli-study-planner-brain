@@ -8,16 +8,65 @@ double as human-reviewable seed data.
 Usage:  python scripts/build_knowledge_base.py 766
 """
 import json
+import re
 import sys
 from pathlib import Path
 
 
+def _fmt_list(values: list[str]) -> str:
+    cleaned = [v.strip() for v in values if v and v.strip()]
+    return "; ".join(cleaned) if cleaned else "none"
+
+
+def _infer_subject_level(code: str) -> str:
+    match = re.search(r"\d", (code or "").replace(" ", ""))
+    return f"{match.group()}00-level" if match else "none"
+
+
+def _subject_attributes(s: dict) -> dict[str, str]:
+    """Normalize subject metadata for card output; fall back to legacy rules."""
+    prerequisites = list(s.get("prerequisites") or [])
+    corequisites = list(s.get("corequisites") or [])
+    exclusions = list(s.get("exclusions") or [])
+    degree_restrictions = list(s.get("degree_restrictions") or [])
+    subject_level = (s.get("subject_level") or "").strip()
+    tags = list(s.get("tags") or [])
+
+    for rule in s.get("rules") or []:
+        desc = (rule.get("description") or "").strip()
+        if not desc:
+            continue
+        label = (rule.get("type") or "").strip().lower()
+        if label in {"pre-requisite", "prerequisite"} and desc not in prerequisites:
+            prerequisites.append(desc)
+        elif label in {"co-requisite", "corequisite"} and desc not in corequisites:
+            corequisites.append(desc)
+        elif label in {"exclusion", "exclusions"} and desc not in exclusions:
+            exclusions.append(desc)
+
+    if not subject_level:
+        subject_level = _infer_subject_level(s.get("code") or "")
+
+    return {
+        "prerequisites": _fmt_list(prerequisites),
+        "corequisites": _fmt_list(corequisites),
+        "exclusions": _fmt_list(exclusions),
+        "degree_restrictions": _fmt_list(degree_restrictions),
+        "subject_level": subject_level or "none",
+        "tags": _fmt_list(tags),
+    }
+
+
 def subject_card(s: dict) -> str:
+    attrs = _subject_attributes(s)
     lines = [f"# {s['code']} — {s['title']}", ""]
     lines.append(f"- **Credit Points:** {s['cp']}")
-    for rule in s["rules"]:
-        if rule["description"]:
-            lines.append(f"- **{rule['type']}:** {rule['description']}")
+    lines.append(f"- **Subject Level:** {attrs['subject_level']}")
+    lines.append(f"- **Prerequisites:** {attrs['prerequisites']}")
+    lines.append(f"- **Corequisites:** {attrs['corequisites']}")
+    lines.append(f"- **Exclusions:** {attrs['exclusions']}")
+    lines.append(f"- **Degree Restrictions:** {attrs['degree_restrictions']}")
+    lines.append(f"- **Tags / Topic Areas:** {attrs['tags']}")
     sessions: dict[str, list[str]] = {}
     for off in s["offerings"]:
         if off["campus"] and off["session"]:

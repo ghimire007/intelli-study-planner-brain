@@ -1,7 +1,12 @@
 # CSIT121 — Object Oriented Design and Programming
 
 - **Credit Points:** 6
-- **Pre-Requisite:** CSIT110 OR CSIT111 OR ENGG100
+- **Subject Level:** 100-level
+- **Prerequisites:** CSIT110 OR CSIT111 OR ENGG100
+- **Corequisites:** none
+- **Exclusions:** none
+- **Degree Restrictions:** none
+- **Tags / Topic Areas:** none
 - **Availability:**
   - Dubai: DXB UG Spring, DXB UG Winter
   - Liverpool: Autumn, Spring

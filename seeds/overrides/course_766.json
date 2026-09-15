@@ -1,0 +1,29 @@
+{
+  "equivalencies": {
+    "CSIT111": "CSIT110",
+    "CSIT113": "CSIT123",
+    "MATH255": "CSIT205",
+    "MATH221": "CSIT205"
+  },
+  "major_aliases": {
+    "ai & big data": "MAJ44204",
+    "aibd": "MAJ44204",
+    "artificial intelligence and big data": "MAJ44204",
+    "cyber security": "MAJ40516",
+    "cybersecurity": "MAJ40516",
+    "cyse": "MAJ40516",
+    "digital systems security": "MAJ40164",
+    "dss": "MAJ40164",
+    "game and mobile development": "MAJ41477",
+    "game & mobile development": "MAJ41477",
+    "gmd": "MAJ41477",
+    "software engineering": "MAJ40277",
+    "software engineering for bcompsc": "MAJ40277",
+    "software engineering for bachelor of computer science": "MAJ40277",
+    "se": "MAJ40277"
+  },
+  "cohort_rules": {
+    "csit314_core_from_year": 2024,
+    "se_isit219_major_from_year": 2024
+  }
+}

@@ -1,8 +1,12 @@
 # CSIT328 — Web Security
 
 - **Credit Points:** 6
-- **Co-Requisite:** 12 credit points at 200 level
-- **Pre-Requisite:** (CSIT110 or CSIT111) and CSIT128
+- **Subject Level:** 300-level
+- **Prerequisites:** (CSIT110 or CSIT111) and CSIT128
+- **Corequisites:** 12 credit points at 200 level
+- **Exclusions:** none
+- **Degree Restrictions:** none
+- **Tags / Topic Areas:** none
 - **Availability:**
   - Singapore Institute of Management: SIM S2
   - Wollongong: Autumn

@@ -1,7 +1,12 @@
 # CSCI322 — Systems Administration
 
 - **Credit Points:** 6
-- **Pre-Requisite:** CSIT127 plus 18 credit points at 200 level
+- **Subject Level:** 300-level
+- **Prerequisites:** CSIT127 plus 18 credit points at 200 level
+- **Corequisites:** none
+- **Exclusions:** none
+- **Degree Restrictions:** none
+- **Tags / Topic Areas:** none
 - **Availability:**
   - Liverpool: Spring
   - Singapore Institute of Management: SIM S4
