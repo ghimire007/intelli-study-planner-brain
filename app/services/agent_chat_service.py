@@ -83,7 +83,7 @@ class AgentChatService:
                 created_at=datetime.now(UTC),
             )
         
-        # projected = project(raw_sols)
+        projected = project(raw_sols)
 
         graph = build_advisor_graph(self._db, get_checkpointer(), llm_config)
         await self._invoke(
@@ -144,9 +144,9 @@ class AgentChatService:
 
         if not state.values:
             print("FIRST MESSAGE:", user_message)
-            # projected = project(user_message)
+            projected = project(user_message)
 
-            # print("PROJECTED:", projected)
+            print("PROJECTED:", projected)
 
             await self._invoke(
                 graph,
