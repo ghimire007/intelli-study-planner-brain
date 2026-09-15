@@ -1,7 +1,12 @@
-# CSCI369 â€” Ethical Hacking
+# CSCI369 — Ethical Hacking
 
 - **Credit Points:** 6
-- **Pre-Requisite:** (CSIT110 or CSIT111) and 18 credit points at 200 level
+- **Subject Level:** 300-level
+- **Prerequisites:** (CSIT110 or CSIT111) and 18 credit points at 200 level
+- **Corequisites:** none
+- **Exclusions:** none
+- **Degree Restrictions:** none
+- **Tags / Topic Areas:** none
 - **Availability:**
   - Dubai: DXB UG Spring, DXB UG Winter
   - Liverpool: Spring

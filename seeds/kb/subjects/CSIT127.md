@@ -1,6 +1,12 @@
 # CSIT127 — Networks and Communications
 
 - **Credit Points:** 6
+- **Subject Level:** 100-level
+- **Prerequisites:** none
+- **Corequisites:** none
+- **Exclusions:** none
+- **Degree Restrictions:** none
+- **Tags / Topic Areas:** none
 - **Availability:**
   - Dubai: DXB UG Spring, DXB UG Winter
   - Liverpool: Spring

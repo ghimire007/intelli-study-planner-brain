@@ -1,7 +1,12 @@
 # CSIT302 — Cybersecurity
 
 - **Credit Points:** 6
-- **Pre-Requisite:** CSIT127 and 12cp at 100-level of CSIT
+- **Subject Level:** 300-level
+- **Prerequisites:** CSIT127 and 12cp at 100-level of CSIT
+- **Corequisites:** none
+- **Exclusions:** none
+- **Degree Restrictions:** none
+- **Tags / Topic Areas:** none
 - **Availability:**
   - Dubai: DXB UG Winter
   - Liverpool: Autumn

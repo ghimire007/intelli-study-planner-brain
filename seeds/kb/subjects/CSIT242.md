@@ -1,8 +1,12 @@
 # CSIT242 — Mobile Application Development
 
 - **Credit Points:** 6
-- **Pre-Requisite:** CSIT121
-- **Co-Requisite:** CSIT213
+- **Subject Level:** 200-level
+- **Prerequisites:** CSIT121
+- **Corequisites:** CSIT213
+- **Exclusions:** none
+- **Degree Restrictions:** none
+- **Tags / Topic Areas:** none
 - **Availability:**
   - Dubai: DXB UG Spring, DXB UG Winter
   - Singapore Institute of Management: SIM S3

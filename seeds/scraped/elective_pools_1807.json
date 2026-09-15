@@ -1,0 +1,64 @@
+{
+  "course": "1807",
+  "year": 2026,
+  "campus": "Wollongong",
+  "pools": [
+    {
+      "id": "major_study_or_elective",
+      "title": "Major Study or Elective",
+      "cp": 30,
+      "description": "Select remaining subjects as one of the following options;  \na) one major (24 credit points) and one elective; \nb) two majors (48 credit points); \nc) select three CSIT, CSCI or ISIT subjects at 300 level, one CSIT, CSCI or ISIT at 200/300 level and one elective subject from CSIT, CSCI, or ISIT or the General Schedule. \nNote that elective subjects are not in the core or chosen major.",
+      "mode": "open",
+      "prefixes": [
+        "CSIT",
+        "CSCI",
+        "ISIT"
+      ],
+      "include_general_schedule": true,
+      "exclude": [
+        "core",
+        "core_selection",
+        "major_core"
+      ],
+      "also_allows_major": true
+    },
+    {
+      "id": "elective",
+      "title": "Elective",
+      "cp": 6,
+      "description": "Select 1 CSIT, CSCI or ISIT coded subject (not in the core) or 1 subject from the General Schedule. Note: If you are planning to obtain two majors, you should pay attention to the requirements for all the degree and double majors.",
+      "mode": "open",
+      "prefixes": [
+        "CSIT",
+        "CSCI",
+        "ISIT"
+      ],
+      "include_general_schedule": true,
+      "exclude": [
+        "core",
+        "core_selection",
+        "major_core"
+      ]
+    },
+    {
+      "id": "major_study_or_elective_2",
+      "title": "Major Study or Elective",
+      "cp": 12,
+      "description": "Select 2 subjects from the majors below OR Select 2 CSIT, CSCI or ISIT coded subjects (not in the core or chosen major) or from the General Schedule.",
+      "mode": "open",
+      "prefixes": [
+        "CSIT",
+        "CSCI",
+        "ISIT"
+      ],
+      "include_general_schedule": true,
+      "exclude": [
+        "core",
+        "core_selection",
+        "major_core"
+      ],
+      "also_allows_major": true
+    }
+  ],
+  "named_lists": {}
+}

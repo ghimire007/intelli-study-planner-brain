@@ -1,8 +1,12 @@
 # ISIT332 — Business Process Management
 
 - **Credit Points:** 6
-- **Co-Requisite:** 12 credit points at 200 level
-- **Pre-Requisite:** CSIT114 and 6 credit points at 200 level
+- **Subject Level:** 300-level
+- **Prerequisites:** CSIT114 and 6 credit points at 200 level
+- **Corequisites:** 12 credit points at 200 level
+- **Exclusions:** none
+- **Degree Restrictions:** none
+- **Tags / Topic Areas:** none
 - **Availability:**
   - Singapore Institute of Management: SIM S1
   - Wollongong: Spring

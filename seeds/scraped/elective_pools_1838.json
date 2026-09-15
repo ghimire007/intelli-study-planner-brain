@@ -1,0 +1,104 @@
+{
+  "course": "1838",
+  "year": 2026,
+  "campus": "Wollongong",
+  "pools": [
+    {
+      "id": "electives",
+      "title": "Electives",
+      "cp": 18,
+      "description": "Select 3 Business subjects as listed in the Business Electives List below",
+      "mode": "named_list",
+      "list_ref": "business_electives_wollongong_liverpool",
+      "codes": [
+        "ECON100",
+        "ACCY121",
+        "MARK101",
+        "ACCY122",
+        "MARK213",
+        "BUS101",
+        "BUS121",
+        "MGNT102",
+        "MGNT201",
+        "MGNT206",
+        "MGNT220",
+        "MGNT311"
+      ]
+    },
+    {
+      "id": "business_electives",
+      "title": "Business Electives",
+      "cp": 6,
+      "description": "Select one subject from the Business Electives List below:",
+      "mode": "named_list",
+      "list_ref": "business_electives_wollongong_liverpool",
+      "codes": [
+        "ECON100",
+        "ACCY121",
+        "MARK101",
+        "ACCY122",
+        "MARK213",
+        "BUS101",
+        "BUS121",
+        "MGNT102",
+        "MGNT201",
+        "MGNT206",
+        "MGNT220",
+        "MGNT311"
+      ]
+    },
+    {
+      "id": "computer_science_and_information_technology_electives",
+      "title": "Computer Science and Information Technology Electives",
+      "cp": 24,
+      "description": "Select one 200/300-level CSCI/CSIT/ISIT subject and three 300-level CSCI/CSIT/ISIT subjects.",
+      "mode": "prefix_level",
+      "prefixes": [
+        "CSIT",
+        "CSCI",
+        "ISIT"
+      ],
+      "level_rules": [
+        {
+          "count": 1,
+          "levels": [
+            200,
+            300
+          ]
+        },
+        {
+          "count": 3,
+          "levels": [
+            300
+          ]
+        }
+      ],
+      "exclude": [
+        "core",
+        "core_selection",
+        "major_core"
+      ]
+    }
+  ],
+  "named_lists": {
+    "business_electives_wollongong_liverpool": {
+      "title": "Business Electives at Wollongong and Liverpool Campuses",
+      "cp": null,
+      "codes": [
+        "ECON100",
+        "ACCY121",
+        "MARK101",
+        "ACCY122",
+        "MARK213",
+        "BUS101",
+        "BUS121",
+        "MGNT102",
+        "MGNT201",
+        "MGNT206",
+        "MGNT220",
+        "MGNT311"
+      ],
+      "description": ""
+    }
+  }
+}

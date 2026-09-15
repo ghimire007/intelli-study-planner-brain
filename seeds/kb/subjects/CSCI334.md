@@ -1,7 +1,12 @@
-# CSCI334 â€” Software Design
+# CSCI334 — Software Design
 
 - **Credit Points:** 6
-- **Pre-Requisite:** CSIT121 and CSIT214
+- **Subject Level:** 300-level
+- **Prerequisites:** CSIT121 and CSIT214
+- **Corequisites:** none
+- **Exclusions:** none
+- **Degree Restrictions:** none
+- **Tags / Topic Areas:** none
 - **Availability:**
   - Liverpool: Autumn
   - UOWCHK: UOWCHK Sem B

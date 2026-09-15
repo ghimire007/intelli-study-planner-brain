@@ -1,7 +1,12 @@
-# CSIT213 â€” Java Programming
+# CSIT213 — Java Programming
 
 - **Credit Points:** 6
-- **Pre-Requisite:** CSIT110 or CSIT111
+- **Subject Level:** 200-level
+- **Prerequisites:** CSIT110 or CSIT111
+- **Corequisites:** none
+- **Exclusions:** none
+- **Degree Restrictions:** none
+- **Tags / Topic Areas:** none
 - **Availability:**
   - Liverpool: Autumn
   - Singapore Institute of Management: SIM S1, SIM S3

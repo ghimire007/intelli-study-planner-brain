@@ -1,8 +1,12 @@
 # CSIT321 — Project
 
 - **Credit Points:** 12
-- **Co-Requisite:** CSIT226 AND CSIT314
-- **Pre-Requisite:** CSIT214, and an additional 18cp 200 level CSCI/CSIT/ISIT
+- **Subject Level:** 300-level
+- **Prerequisites:** CSIT214, and an additional 18cp 200 level CSCI/CSIT/ISIT
+- **Corequisites:** CSIT226 AND CSIT314
+- **Exclusions:** none
+- **Degree Restrictions:** none
+- **Tags / Topic Areas:** none
 - **Availability:**
   - Dubai: DXB Autumn/Winter, DXB Spring/Autumn
   - Liverpool: Annual, Spring/Autumn
