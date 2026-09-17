@@ -111,6 +111,7 @@ class AgentChatService:
                 "retry_count": None,
                 "stage1_retry_count": None,
                 "planning_requested": planning_requested,
+                "current_stage": None,
             },
             {"configurable": {"thread_id": str(session_id)}},
         )

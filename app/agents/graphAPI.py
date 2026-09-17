@@ -71,6 +71,8 @@ class AdvisorState(TypedDict):
     stage1_retry_count: int | None
     planning_requested: bool | None
 
+    current_stage: int | None
+
 # input
 
 # prompt chaining 
@@ -284,6 +286,7 @@ def build_advisor_graph(
             "EVAL INPUT:",
             state.get("electives") is not None,
             state.get("remaining_subjects") is not None,
+            state.get("stage1_retry_count")
         )
 
         eval_prompt = build_system_prompt(
@@ -308,16 +311,11 @@ def build_advisor_graph(
             print(res.content)
             data = extract_and_parse_json(res.content)
 
-            has_error = (
-                not data.get("electives_valid")
-                or not data.get("remaining_valid")
-            )
-
             # print("eval_stage1_lists - data:", data)
             return {
                 "electives_feedback": None if data.get("electives_valid") else data.get("electives_feedback", "Invalid electives found."),
                 "remaining_feedback": None if data.get("remaining_valid") else data.get("remaining_feedback", "Invalid core subjects found."),
-                "stage1_retry_count": (current_retry + 1 if has_error else 0)
+                "stage1_retry_count": current_retry + 1
             }
         except Exception as e:
             print("EVAL EXCEPTION:", type(e).__name__)
@@ -333,34 +331,30 @@ def build_advisor_graph(
                 "stage1_retry_count": current_retry + 1
             }
 
+    def join_stage1(state: AdvisorState) -> dict:
+        """Pass-through barrier node to synchronize parallel branches before evaluation."""
+        return {}
+
     def route_stage1_eval(state: AdvisorState) -> list[str] | str:
-        """Routes back to invalid branches (in parallel if both fail) or advances to stage 2."""
-        print(
-            "stage1 eval:",
-            {
-                "retry": state.get("stage1_retry_count"),
-                "electives_feedback": state.get("electives_feedback"),
-                "remaining_feedback": state.get("remaining_feedback"),
-            }
-        )
-
+        """Routes back to invalid branches in parallel or advances to stage 2."""
         retries = state.get("stage1_retry_count") or 0
-
         has_electives_error = bool(state.get("electives_feedback"))
         has_remaining_error = bool(state.get("remaining_feedback"))
 
-        # PASSED or max limit reached
-        if (not has_electives_error and not has_remaining_error) or retries >= 1:
-            if retries >= 1 and (has_electives_error or has_remaining_error):
-                print("Stage 1 retry limit reached. Continuing to Stage 2.")
+        # Proceed if valid or max retries reached
+        print('route stage 1')
+        if (not has_electives_error and not has_remaining_error):
+            print('go to stage 2')
             return "stage2_make_plan"
 
-        # print("route_stage1_eval - retry stage 1")
-        routes = []
+        if retries > 1:
+            print("Stage 1 retry limit reached. Advancing to Stage 2 with fallback.")
+            return "stage2_make_plan"
 
+        # Dynamic parallel fan-out based on failures
+        routes = []
         if has_electives_error:
             routes.append("fetch_elective_list")
-
         if has_remaining_error:
             routes.append("stage1_review_must_includes")
 
@@ -399,12 +393,11 @@ def build_advisor_graph(
         # Always append the AI response to message history
         updated_messages = messages + [res]
         
-        updated_state = {"messages": updated_messages}
+        updated_state = {"messages": updated_messages, "current_stage": 2}
         
         # ONLY extract and populate plan if the model outputted content (no tool calls)
         if res.content and not res.tool_calls:
-            parsed_plan = extract_and_parse_json(res.content)
-            updated_state["plan"] = parsed_plan
+            updated_state["plan"] = res.content
             
         return updated_state
 
@@ -485,7 +478,7 @@ def build_advisor_graph(
             return "format_output"
 
         # retry limit reached
-        if retries >= 1:
+        if retries > 1:
             # print("Stage 2 retry limit reached. Continuing.")
             return "format_output"
 
@@ -520,18 +513,10 @@ def build_advisor_graph(
     graph.add_node("tools", ToolNode(skills["full"]))
     graph.add_node("capture_tool_results", capture_tool_results)
 
-    graph.add_conditional_edges(
-        "capture_tool_results",
-        route_after_tool_capture,
-        {
-            "agent": "agent",
-            "stage2_make_plan": "stage2_make_plan"
-        }
-    )
-
     # stage 1 Parallel
     graph.add_node("fetch_elective_list", fetch_elective_list)
     graph.add_node("stage1_review_must_includes", stage1_review_must_includes)
+    graph.add_node("join_stage1", join_stage1)
     graph.add_node("eval_stage1_lists", eval_stage1_lists)
 
     # stage 2 Evaluator-Optimizer Nodes
@@ -555,10 +540,19 @@ def build_advisor_graph(
     )
 
     graph.add_edge("tools", "capture_tool_results")
-    graph.add_edge("capture_tool_results", "agent")
+    graph.add_conditional_edges(
+        "capture_tool_results",
+        route_after_tool_capture,
+        {
+            "agent": "agent",
+            "stage2_make_plan": "stage2_make_plan",
+        },
+    )
 
-    graph.add_edge("fetch_elective_list", "eval_stage1_lists")
-    graph.add_edge("stage1_review_must_includes", "eval_stage1_lists")
+    # Stage 1 Parallel Fan-In Barrier
+    graph.add_edge("fetch_elective_list", "join_stage1")
+    graph.add_edge("stage1_review_must_includes", "join_stage1")
+    graph.add_edge("join_stage1", "eval_stage1_lists")
 
     # Gate Evaluation from Stage 1 into Stage 2
     graph.add_conditional_edges(
@@ -572,8 +566,6 @@ def build_advisor_graph(
     )
 
     # Evaluator-Optimizer Loop
-    # graph.add_edge("stage2_make_plan", "evaluate_stage2")
-
     graph.add_conditional_edges(
         "stage2_make_plan",
         route_stage2_tools,
