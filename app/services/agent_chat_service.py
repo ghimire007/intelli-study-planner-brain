@@ -69,7 +69,7 @@ class AgentChatService:
         initial_messages = []
         planning_requested = False
 
-        # 1. Evaluate SOLS input if provided
+        # Evaluate SOLS input if provided
         if cleaned_sols:
             print("sols detected")
             protected_sols = scrub_pii(raw_sols)
@@ -79,7 +79,7 @@ class AgentChatService:
                 initial_messages.append(HumanMessage(content=projected_sols))
                 planning_requested = True
             except UnreadableRecord:
-                # Option A (Strict): Re-raise so API returns 422 if an explicit SOLS paste was invalid
+                # Re-raise so API returns 422 if an explicit SOLS paste was invalid
                 print("this is the error")
                 raise
 
@@ -92,7 +92,7 @@ class AgentChatService:
         llm_config = await self._resolver.resolve(self._user, requested_model=model)
         graph = build_advisor_graph(self._db, get_checkpointer(), llm_config)
 
-        # 2. Invoke the graph with initial state
+        # Invoke the graph with initial state
         await self._invoke(
             graph,
             llm_config,
@@ -118,7 +118,7 @@ class AgentChatService:
         state = await graph.aget_state({"configurable": {"thread_id": str(session_id)}})
         meta = state.values.get("meta") or {}
 
-        # 3. Handle fallback for missing degree_code
+        # Handle fallback for missing degree_code
         degree_code = meta.get("degree_code") or "UNKNOWN"
 
         session = ChatSession(
@@ -151,9 +151,11 @@ class AgentChatService:
 
         try:
             projected = project(protected_message)
-            # If valid SOLS, update the SOLS payload without resetting advisor metadata
+            # If valid SOLS, update the SOLS payload forcing reset of advisor metadata
             payload["raw_sols"] = projected
             payload["messages"] = [HumanMessage(content=projected)]
+            payload["planning_requested"] = True
+            payload["plan"] = None
         except Exception:
             # Standard chat turn — keep the default message payload
             pass
