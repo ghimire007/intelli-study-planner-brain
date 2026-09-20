@@ -164,8 +164,8 @@ class AgentChatService:
         await self._invoke(graph, llm_config, payload, config)
 
         state = await graph.aget_state(config)
-        print("STATE VALUES:", state.values)
-        print("SESSION ID:", session_id)
+        # print("STATE VALUES:", state.values)
+        # print("SESSION ID:", session_id)
 
         # A student may switch models mid-conversation; keep the session in step
         # so the next turn resolves the same way without being asked again.

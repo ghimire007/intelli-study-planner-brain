@@ -26,12 +26,10 @@ def extract_and_parse_json(raw_input):
     """
     if isinstance(raw_input, list) and raw_input:
         # Handle LangChain / Tool result text wrappers
-        if isinstance(raw_input, list) and raw_input:
-            first = raw_input[0]
+        first = raw_input[0]
 
-            if isinstance(first, dict):
-                if "text" in first:
-                    raw_input = first["text"]
+        if isinstance(first, dict) and "text" in first:
+            raw_input = first["text"]
 
     if not isinstance(raw_input, str):
         return raw_input
@@ -45,7 +43,8 @@ def extract_and_parse_json(raw_input):
     try:
         return json.loads(cleaned)
     except json.JSONDecodeError as e:
-        raise ValueError(f"Failed to parse clean JSON from model output: {e}\nRaw: {cleaned}")
+        return cleaned
+        # raise ValueError(f"Failed to parse clean JSON from model output: {e}\nRaw: {cleaned}")
 
 
 ## graph state
@@ -98,6 +97,7 @@ def apply_confirm_metadata(prior_meta: dict | None, new_meta: dict) -> dict:
         "remaining_feedback": None,
         "retry_count": 0,
         "stage1_retry_count": 0,
+        "current_stage": None,
     }
 
     old = prior_meta or {}
@@ -159,7 +159,7 @@ def build_advisor_graph(
 
             models[kind] = model_to_retry.with_retry(
                 wait_exponential_jitter=True, # Calculates exponential delays with jitter
-                stop_after_attempt=2,         # Retry up to 2 times per LLM call
+                stop_after_attempt=1,         # Retry up to 1 times per LLM call
             )
 
         return models[kind]
@@ -187,24 +187,17 @@ def build_advisor_graph(
 
         system_content = build_system_prompt(
             prompt=SYSTEM_PROMPT,
-            meta=state["meta"],
+            meta=state.get("meta"),
             meta_confirmed=confirmed,
             handbook=state.get("handbook"),
-            raw_sols=state["raw_sols"],
+            raw_sols=state.get("raw_sols"),
         )
-        response = await agent_llm.ainvoke(
-            [SystemMessage(content=system_content), *state["messages"]]
-        )
-        # print("system prompt: ", SYSTEM_PROMPT)
-        # print("handbook: ", state.get('handbook'))
-        # print("agent - messages:", [response])
-        return {"messages": [response]}
 
-    # def should_continue(state: AdvisorState) -> str:
-    #     last = state["messages"][-1]
-    #     if isinstance(last, AIMessage) and last.tool_calls:
-    #         return "tools"
-    #     return END
+        messages = [SystemMessage(content=system_content)] + state.get("messages", [])
+        response = await agent_llm.ainvoke(messages)
+        
+        return {"messages": [response], "current_stage": None}
+    
 
     def capture_tool_results(state: AdvisorState) -> dict:
         """Update AdvisorState with the latest tool results.
@@ -214,7 +207,7 @@ def build_advisor_graph(
         in the same turn without the clear wiping the new cache.
         """
         batch: list[ToolMessage] = []
-        for message in reversed(state["messages"]):
+        for message in reversed(state.get("messages")):
             if not isinstance(message, ToolMessage):
                 break  # only the most recent batch of tool results
             batch.append(message)
@@ -223,15 +216,17 @@ def build_advisor_graph(
 
     ## parallelisation
     def route_after_agent(state: AdvisorState) -> str:
-            last = state["messages"][-1]
-            if isinstance(last, AIMessage) and last.tool_calls:
-                return "tools"
+        messages = state.get("messages", [])
+        last = messages[-1] if messages else None
 
-            # Trigger planning flow if metadata is confirmed and planning is requested
-            if state.get("meta_confirmed") and state.get("planning_requested"):
-                return ["fetch_elective_list", "stage1_review_must_includes"]
+        if isinstance(last, AIMessage) and last.tool_calls:
+            return "tools"
 
-            return END
+        # Trigger planning flow if metadata is confirmed and planning is requested
+        if state.get("meta_confirmed") and state.get("planning_requested"):
+            return ["fetch_elective_list", "stage1_review_must_includes"]
+
+        return END
 
     ### elective list
     async def fetch_elective_list(state: AdvisorState) -> dict:
@@ -239,10 +234,10 @@ def build_advisor_graph(
             feedback = state.get("electives_feedback")
             prompt = build_system_prompt(
                 prompt=ELECTIVE_GENERATION_PROMPT,
-                meta=state["meta"],
+                meta=state.get("meta"),
                 meta_confirmed=state.get("meta_confirmed", False),
                 handbook=state.get("handbook"),
-                raw_sols=state["raw_sols"],
+                raw_sols=state.get("raw_sols"),
             )
             if feedback:
                 prompt += f"\nCORRECT THE FOLLOWING ISSUES FROM PREVIOUS PASS:\n{feedback}"
@@ -252,8 +247,9 @@ def build_advisor_graph(
                 HumanMessage(content=prompt)
             ])
             # Return updated list and clear error feedback
-            print("fetch_elective_list:", str(extract_and_parse_json(res.content)))
-            return {"electives": str(extract_and_parse_json(res.content)), "electives_feedback": None}
+            parsed = extract_and_parse_json(res.content)
+            str_content = json.dumps(parsed) if isinstance(parsed, (dict, list)) else str(parsed)
+            return {"electives": str_content, "electives_feedback": None}
 
 
     ### stage 1 review && list of must include subjects
@@ -262,10 +258,10 @@ def build_advisor_graph(
         feedback = state.get("remaining_feedback")
         prompt = build_system_prompt(
             prompt=SUBJECT_GENERATION_PROMPT,
-            meta=state["meta"],
+            meta=state.get("meta"),
             meta_confirmed=state.get("meta_confirmed", False),
             handbook=state.get("handbook"),
-            raw_sols=state["raw_sols"],
+            raw_sols=state.get("raw_sols"),
         )
         if feedback:
             prompt += f"\nCORRECT THE FOLLOWING ISSUES FROM PREVIOUS PASS:\n{feedback}"
@@ -276,8 +272,9 @@ def build_advisor_graph(
         ])
 
         print("stage1_review_must_includes: ", str(extract_and_parse_json(res.content)))
-        return {"remaining_subjects": str(extract_and_parse_json(res.content)), "remaining_feedback": None}
-
+        parsed = extract_and_parse_json(res.content)
+        str_content = json.dumps(parsed) if isinstance(parsed, (dict, list)) else str(parsed)
+        return {"remaining_subjects": str_content, "remaining_feedback": None}
 
 ## eval both lists (musts + electives)
     async def eval_stage1_lists(state: AdvisorState) -> dict:
@@ -291,10 +288,10 @@ def build_advisor_graph(
 
         eval_prompt = build_system_prompt(
             prompt=EVAL_SUBJECTS_ELECTIVES,
-            meta=state["meta"],
+            meta=state.get("meta"),
             meta_confirmed=state.get("meta_confirmed", False),
             handbook=state.get("handbook"),
-            raw_sols=state["raw_sols"],
+            raw_sols=state.get("raw_sols"),
         ).replace("{{electives}}", state.get('electives') or "")\
         .replace("{{remaining_subjects}}", state.get('remaining_subjects') or "")
 
@@ -307,8 +304,8 @@ def build_advisor_graph(
 
         try:
             # data = json.loads(res.content)
-            print("RAW EVAL RESPONSE:") 
-            print(res.content)
+            # print("RAW EVAL RESPONSE:") 
+            # print(res.content)
             data = extract_and_parse_json(res.content)
 
             # print("eval_stage1_lists - data:", data)
@@ -321,10 +318,9 @@ def build_advisor_graph(
             print("EVAL EXCEPTION:", type(e).__name__)
             print("ERROR:", str(e))
             print("CONTENT:", repr(res.content))
-
             
             # Fallback if parsing fails
-            # print("eval_stage1_lists - exception:")
+            print("eval_stage1_lists - exception:")
             return {
                 "electives_feedback": "Failed to validate electives syntax against handbook.",
                 "remaining_feedback": "Failed to validate core subjects syntax against handbook.",
@@ -365,14 +361,14 @@ def build_advisor_graph(
     async def stage2_make_plan(state: AdvisorState) -> dict:
         """Generates or updates the degree completion plan based on feedback."""
         feedback = state.get("plan_feedback")
-        messages = state.get("messages", [])
+        # messages = state.get("messages", [])
 
         base_system_prompt = build_system_prompt(
             prompt=SYSTEM_PROMPT_V1,
-            meta=state["meta"],
+            meta=state.get("meta"),
             meta_confirmed=state.get("meta_confirmed", False),
             handbook=state.get("handbook"),
-            raw_sols=state["raw_sols"],
+            raw_sols=state.get("raw_sols"),
         )
 
         if feedback:
@@ -384,20 +380,30 @@ def build_advisor_graph(
             f"Metadata: {state.get('meta')}"
         )
 
-        messages = state["messages"] + [
-            SystemMessage(content=base_system_prompt),
-            HumanMessage(content=content_prompt)
-        ]
-        res = llm("full").invoke(messages)
+        invoke_messages = (
+            [SystemMessage(content=base_system_prompt)] 
+            + state.get("messages", []) 
+            + [HumanMessage(content=content_prompt)]
+        )
+        res = await llm("full").ainvoke(invoke_messages)
     
         # Always append the AI response to message history
-        updated_messages = messages + [res]
-        
-        updated_state = {"messages": updated_messages, "current_stage": 2}
+        updated_state = {
+            "messages": [res],  # Reducer will append this cleanly
+            "current_stage": 2
+        }
+
+        print("STAGE2 RETRY:", state.get("retry_count"))
+        print("PLAN FEEDBACK:", state.get("plan_feedback"))
         
         # ONLY extract and populate plan if the model outputted content (no tool calls)
         if res.content and not res.tool_calls:
-            updated_state["plan"] = res.content
+            print("PLAN: ", res.content)
+            if isinstance(res.content, list):
+                updated_state["plan"] = res.content[0].get("text", "")
+            else:
+                updated_state["plan"] = res.content
+            # updated_state["plan"] = res.content
             
         return updated_state
 
@@ -429,34 +435,30 @@ def build_advisor_graph(
         """Evaluates session correctness, credit point totals, and prerequisite order."""
         retries = state.get("retry_count") or 0
             
-        eval_prompt = (
-            "Evaluate this academic plan for correct session offerings, total credit points, and prerequisites.\n"
-            "Respond ONLY in JSON format: {\"valid\": true/false, \"feedback\": \"reasoning if invalid\"}\n\n"
-            f"Plan: {state.get('plan')}"
-        )
+        eval_prompt = EVAL_PLAN.replace("{{PLAN}}", state.get('plan') or "")
         res = await llm("parser").ainvoke([
-            SystemMessage(content="You are an academic auditor checking course list accuracy."),
+            SystemMessage(content="You are an auditor checking a generated study plans subject accuracy and ensuring correct placement. You also confirm that a response has all required elements (Audit & Rule Verification section, Study plan table, CP summary and a raw, valid JSON block)."),
             HumanMessage(content=eval_prompt)
         ])
         try:
-            # data = json.loads(res.content)
-            content = res.content.strip()
-            if content.startswith("```"):
-                content = content.split("```")[1]
-                if content.startswith("json"):
-                    content = content[4:]
-            data = json.loads(content.strip())
+            content = res.content[0]["text"] if isinstance(res.content, list) else res.content
+            data = extract_and_parse_json(content.strip())
+
+            # data = content.strip()
+            # data = extract_and_parse_json(data)
+            print("EVALUATE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n", data)
+
             if data.get("valid"):
-                # print("evaluate_stage2 - valid")
+                print("evaluate_stage2 - valid")
                 return {"plan_feedback": None, "retry_count": 0}
             
-            # print("evaluate_stage2 - not valid")
+            print("evaluate_stage2 - not valid")
             return {
                 "plan_feedback": data.get("feedback", "Invalid plan."),
                 "retry_count": retries + 1
             }
-        except Exception:
-            # print("evaluate_stage2 - exception:")
+        except Exception as e:
+            print("evaluate_stage2 - exception:", e)
 
             return {"plan_feedback": "Failed to parse evaluation output.", 
                     "retry_count": retries + 1}
@@ -468,10 +470,10 @@ def build_advisor_graph(
         retries = state.get("retry_count") or 0
         feedback = state.get("plan_feedback")
 
-        print(
-            f"DEBUG: retries={retries}, "
-            f"feedback={feedback}"
-        )
+        # print(
+        #     f"DEBUG: retries={retries}, "
+        #     f"feedback={feedback}"
+        # )
 
         # success
         if feedback is None:
@@ -479,7 +481,7 @@ def build_advisor_graph(
 
         # retry limit reached
         if retries > 1:
-            # print("Stage 2 retry limit reached. Continuing.")
+            print("Stage 2 retry limit reached. Continuing.")
             return "format_output"
 
         return "stage2_make_plan"
@@ -487,15 +489,22 @@ def build_advisor_graph(
 # output
     async def format_output(state: AdvisorState) -> dict:
         """Appends the finalized plan to message state for output display."""
-        print("DEBUG format_output - state keys present:", state.keys())
-        print("DEBUG format_output - raw plan value:", repr(state.get("plan")))
+        # print("DEBUG format_output - state keys present:", state.keys())
+        # print("DEBUG format_output - raw plan value:", repr(state.get("plan")))
         
         plan_content = state.get("plan")
         if not plan_content:
             plan_content = "Unable to complete plan generation. Please review degree metadata."
-            
-        final_msg = AIMessage(content=f"Here is your optimized academic completion plan:\n\n{state.get('plan')}")
-        return {"messages": [final_msg], "planning_requested": False}
+
+        print("hi")
+        plan_clean = (state.get("plan"))
+        print("CLEAN PLAN:", plan_clean)
+        final_msg = AIMessage(content=f"{plan_content}")
+        return {
+            "messages": [final_msg], 
+            "planning_requested": False,
+            "current_stage": None
+        }
 
     def route_after_tool_capture(state: AdvisorState) -> str:
         # If currently in stage 2 execution, loop back to stage 2
