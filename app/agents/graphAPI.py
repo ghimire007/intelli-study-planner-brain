@@ -1,5 +1,5 @@
 import json
-from typing import Annotated, TypedDict
+from typing import Annotated, TypedDict, Optional
 
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import AIMessage, BaseMessage, SystemMessage, HumanMessage, ToolMessage
@@ -21,6 +21,16 @@ from app.services.elective_ranking import get_elective_priorities
 from app.prompts.prompts import SYSTEM_PROMPT, ELECTIVE_GENERATION_PROMPT, SUBJECT_GENERATION_PROMPT, EVAL_SUBJECTS_ELECTIVES, MAKE_PLAN, EVAL_PLAN, SYSTEM_PROMPT_V1
 
 import re
+
+def merge_dict_replace(left: Optional[dict], right: Optional[dict]) -> Optional[dict]:
+    """Reducer that accepts the newest dictionary or retains the existing one if right is None."""
+    if right is None:
+        return left
+    return right
+
+def reduce_stage(left: Optional[int], right: Optional[int]) -> Optional[int]:
+    """Reducer that accepts the latest non-None stage update."""
+    return right if right is not None else left
 
 def extract_and_parse_json(raw_input):
     """
@@ -73,7 +83,7 @@ class AdvisorState(TypedDict):
     stage1_retry_count: int | None
     planning_requested: bool | None
 
-    current_stage: int | None
+    current_stage: Annotated[Optional[int], reduce_stage]
 
 # input
 
@@ -237,6 +247,9 @@ def build_advisor_graph(
 
     ### elective list
     async def fetch_elective_list(state: AdvisorState) -> dict:
+        if state.get("current_stage") == 2:
+            return {}
+    
         prompt = build_system_prompt(
             prompt=ELECTIVE_GENERATION_PROMPT,
             meta=state.get("meta"),
@@ -263,7 +276,13 @@ def build_advisor_graph(
             return {"messages": [res]}
 
         parsed = extract_and_parse_json(res.content)
-        str_content = json.dumps(parsed) if isinstance(parsed, (dict, list)) else str(parsed)
+
+        # Guard against empty pass: if parsed is empty but state already has electives, keep existing
+        if not parsed and state.get("electives"):
+            str_content = state.get("electives")
+        else:
+            str_content = json.dumps(parsed) if isinstance(parsed, (dict, list)) else str(parsed)
+    
         return {"electives": str_content, "electives_feedback": ""}
             
     def route_stage1_tools(state: AdvisorState) -> str:
@@ -275,6 +294,10 @@ def build_advisor_graph(
     ### stage 1 review && list of must include subjects
     async def stage1_review_must_includes(state: AdvisorState) -> dict:
         """Parallel Branch B: Extracts remaining mandatory degree subjects."""
+        # If Stage 1 is already finished or moved to Stage 2, don't execute
+        if state.get("current_stage") == 2:
+            return {}
+    
         feedback = state.get("remaining_feedback")
         prompt = build_system_prompt(
             prompt=SUBJECT_GENERATION_PROMPT,
@@ -293,11 +316,34 @@ def build_advisor_graph(
 
         print("stage1_review_must_includes: ", str(extract_and_parse_json(res.content)))
         parsed = extract_and_parse_json(res.content)
-        str_content = json.dumps(parsed) if isinstance(parsed, (dict, list)) else str(parsed)
+
+        # Guard against empty pass: if parsed is empty but state already has subjects, keep existing
+        if not parsed and state.get("remaining_subjects"):
+            str_content = state.get("remaining_subjects")
+        else:
+            str_content = json.dumps(parsed) if isinstance(parsed, (dict, list)) else str(parsed)
+
         return {"remaining_subjects": str_content, "remaining_feedback": ""}
 
     def join_stage1(state: AdvisorState) -> dict:
+        # Only proceed if both parallel branches have populated data
         return {"current_stage": 1}
+
+    def route_join_barrier(state: AdvisorState) -> str:
+        """Barrier router: only proceed to eval_stage1_lists when BOTH inputs exist."""
+        # Prevent phantom re-execution if Stage 2 is already active
+        if state.get("current_stage") == 2:
+            return "stage2_make_plan"
+
+        electives = state.get("electives")
+        remaining = state.get("remaining_subjects")
+
+        # If one of the parallel branches hasn't populated yet, wait (do not advance)
+        if not electives or not remaining or remaining == "[]":
+            print("DEBUG join_stage1 barrier: Waiting for both branches to complete...")
+            return "wait"
+
+        return "eval_stage1_lists"
 
 ## eval both lists (musts + electives)
     async def eval_stage1_lists(state: AdvisorState) -> dict:
@@ -353,6 +399,9 @@ def build_advisor_graph(
 
     def route_stage1_eval(state: AdvisorState) -> list[str] | str:
         """Routes back to invalid branches in parallel or advances to stage 2."""
+        if state.get("current_stage") == 2:
+            return "stage2_make_plan"
+
         retries = state.get("stage1_retry_count") or 0
         has_electives_error = bool(state.get("electives_feedback"))
         has_remaining_error = bool(state.get("remaining_feedback"))
@@ -416,15 +465,18 @@ def build_advisor_graph(
         print("STAGE2 RETRY:", state.get("retry_count"))
         print("PLAN FEEDBACK:", state.get("plan_feedback"))
         
-        # ONLY extract and populate plan if the model outputted content (no tool calls)
-        if res.content and not res.tool_calls:
-            print("PLAN: ", res.content)
-            if isinstance(res.content, list):
-                updated_state["plan"] = res.content[0].get("text", "")
-            else:
-                updated_state["plan"] = res.content
-            # updated_state["plan"] = res.content
-            
+        text_plan = ""
+        if isinstance(res.content, str):
+            text_plan = res.content
+        elif isinstance(res.content, list):
+            text_plan = "\n".join([
+                block.get("text", "") for block in res.content 
+                if isinstance(block, dict) and block.get("type") == "text"
+            ])
+
+        if text_plan and not res.tool_calls:
+            updated_state["plan"] = text_plan
+                
         return updated_state
 
 
@@ -473,7 +525,7 @@ def build_advisor_graph(
         # )
 
         """Evaluates session correctness, credit point totals, and prerequisite order."""
-        retries = state.get("retry_count") or 0
+        retries = state.get("retry_count", 0) or 0
             
         eval_prompt = EVAL_PLAN.replace("{{PLAN}}", state.get('plan') or "")
         res = await llm("parser").ainvoke([
@@ -492,7 +544,8 @@ def build_advisor_graph(
                 print("evaluate_stage2 - valid")
                 return {"plan_feedback": None, "planning_requested": False, "retry_count": 0}
             
-            print("evaluate_stage2 - not valid")
+            print("\nevaluate_stage2 - not valid")
+            print('retry count:', retries)
             return {
                 "plan_feedback": data.get("feedback", "Invalid plan."),
                 "retry_count": retries + 1
@@ -504,19 +557,19 @@ def build_advisor_graph(
                     "retry_count": retries + 1}
 
     def route_evaluation(state: AdvisorState) -> str:
-        print(f"DEBUG: Stage 2 Eval Retry Count: {state.get('retry_count')}, Feedback: {state.get('plan_feedback')}")
+        # print(f"DEBUG: Stage 2 Eval Retry Count: {state.get('retry_count')}, Feedback: {state.get('plan_feedback')}")
         """Routes back to plan generator if invalid, or formats output if valid."""
     
-        retries = state.get("retry_count") or 0
+        retries = state.get("retry_count", 0) or 0
         feedback = state.get("plan_feedback")
 
-        # print(
-        #     f"DEBUG: retries={retries}, "
-        #     f"feedback={feedback}"
-        # )
+        print(
+            f"DEBUG: retries={retries}, "
+            f"feedback={feedback}"
+        )
 
         # success or retry limit reached
-        if not feedback or retries > 1:
+        if not feedback or retries >= 1:
             print('give the output')
             return "format_output"
 
@@ -611,9 +664,18 @@ def build_advisor_graph(
     graph.add_edge("capture_stage1_tool_results", "fetch_elective_list")
     # graph.add_edge("fetch_elective_list", "join_stage1")
     graph.add_edge("stage1_review_must_includes", "join_stage1")
-    graph.add_edge("join_stage1", "eval_stage1_lists")
 
-    # Gate Evaluation from Stage 1 into Stage 2
+    # Guarded Barrier Routing at join_stage1
+    graph.add_conditional_edges(
+        "join_stage1",
+        route_join_barrier,
+        {
+            "eval_stage1_lists": "eval_stage1_lists",
+            "stage2_make_plan": "stage2_make_plan",
+            "wait": END,  # Ends this branch's step execution until the sibling branch finishes
+        },
+    )
+
     graph.add_conditional_edges(
         "eval_stage1_lists",
         route_stage1_eval,
