@@ -37,20 +37,20 @@ HANDBOOK_766_2026_WOLLONGONG = """# 766 — Bachelor of Computer Science (Wollon
 ---
 
 ## (A) CORE SUBJECTS (96 CP Total)
-- CSIT110 (6 CP) | Aut/Spr | Prereq: None
-- CSIT123 (6 CP) | Aut | Prereq: None
-- CSIT114 (6 CP) | Aut | Prereq: None
-- CSIT115 (6 CP) | Aut/Spr | Prereq: None
-- CSIT121 (6 CP) | Aut/Spr | Prereq: CSIT110 OR CSIT111 OR ENGG100
-- CSIT127 (6 CP) | Spr | Prereq: None
-- CSIT128 (6 CP) | Aut/Spr | Prereq: None
-- CSCI203 (6 CP) | Spr | Prereq: (CSIT110 or CSIT111) AND (CSIT113 or CSIT123)
-- CSIT205 (6 CP) | Aut | Prereq: None (Replaces MATH255)
-- CSIT214 (6 CP) | Aut/Spr | Prereq: CSIT114
-- CSIT226 (6 CP) | Spr | Prereq: None
-- CSCI235 (6 CP) | Aut | Prereq: CSIT115
-- CSIT314 (6 CP) | Aut | Prereq: CSIT214 AND 12 CP at 200-level CSCI/ISIT
-- CSIT321 (12 CP) | Aut/Spr | Prereq: CSIT214 AND 18 CP at 200-level CSCI/CSIT/ISIT | Coreq: CSIT226 AND CSIT314 |
+- CSIT110 (6 CP) | Fundamental Programming with Python | Aut/Spr | Prereq: None
+- CSIT123 (6 CP) | Computing and Cyber Security Fundamentals | Aut | Prereq: None
+- CSIT114 (6 CP) | System Analysis | Aut | Prereq: None
+- CSIT115 (6 CP) | Database Management Systems | Aut/Spr | Prereq: None
+- CSIT121 (6 CP) | Object Oriented Design and Programming | Aut/Spr | Prereq: CSIT110 OR CSIT111 OR ENGG100
+- CSIT127 (6 CP) | Networks and Communications | Spr | Prereq: None
+- CSIT128 (6 CP) | Introduction to Web Technology | Aut/Spr | Prereq: None
+- CSCI203 (6 CP) | Algorithms and Data Structures | Spr | Prereq: (CSIT110 or CSIT111) AND (CSIT113 or CSIT123)
+- CSIT205 (6 CP) | Generative AI | Aut | Prereq: None (Replaces MATH255)
+- CSIT214 (6 CP) | IT Project Management | Aut/Spr | Prereq: CSIT114
+- CSIT226 (6 CP) | Human Computer Interaction | Spr | Prereq: None
+- CSCI235 (6 CP) | Database Systems | Aut | Prereq: CSIT115
+- CSIT314 (6 CP) | Software Development Methodologies | Aut | Prereq: CSIT214 AND 12 CP at 200-level CSCI/ISIT
+- CSIT321 (12 CP) | Project | Aut/Spr | Prereq: CSIT214 AND 18 CP at 200-level CSCI/CSIT/ISIT | Coreq: CSIT226 AND CSIT314 |
 
 ### Specifically for CSIT321:
 - CSIT321 is split into Part 1 and Part 2 both worth 6CP each for the purpose of scheduling. They CANNOT BE TAKEN SIMULTANEOUSLY AND YOU CANNOT COMBINE BOTH PARTS. 
@@ -73,8 +73,8 @@ HANDBOOK_766_2026_WOLLONGONG = """# 766 — Bachelor of Computer Science (Wollon
 
 ## (B) Core Selection — (6 CP required)
 
-- CSCI251 (6 CP) | Spr | Prereq: CSIT121 or CSIT213
-- CSIT213 (6 CP) | Aut | Prereq: CSIT110 OR CSIT111
+- CSCI251 (6 CP) | Advanced Programming | Spr | Prereq: CSIT121 or CSIT213
+- CSIT213 (6 CP) | Java Programming | Aut | Prereq: CSIT110 OR CSIT111
 
 ### Core Selection rules:
 - CSCI251 and CSIT213 can each individually satisfy (B) Core Selection.
@@ -94,38 +94,38 @@ If no major is declared, skip this section and use the **No-Major Path** below.
 For a **double major**, list requirements for BOTH majors. At most **ONE subject** may be cross-counted between the two majors.
 
 ### AI & Big Data (MAJ44204)
-- CSCI218 (6 CP) | Spr | Prereq: (CSIT110 OR CSIT111) AND 18 CP at 100-level 
-- CSCI316 (6 CP) | Aut | Prereq: CSCI203
-- CSCI323 (6 CP) | Aut | Prereq: (CSIT110 OR CSIT111) AND 12 CP of 200-level CSCI/CSIT
-- ISIT312 (6 CP) | Spr | Prereq: CSIT115 AND 18 CP at 200-level
+- CSCI218 (6 CP) | Foundations of Artificial Intelligence | Spr | Prereq: (CSIT110 OR CSIT111) AND 18 CP at 100-level 
+- CSCI316 (6 CP) | Big Data Mining Techniques and Implementation | Aut | Prereq: CSCI203
+- CSCI323 (6 CP) | Modern Artificial Intelligence | Aut | Prereq: (CSIT110 OR CSIT111) AND 12 CP of 200-level CSCI/CSIT
+- ISIT312 (6 CP) | Big Data Management | Spr | Prereq: CSIT115 AND 18 CP at 200-level
 
 
 ### Cybersecurity (MAJ40516)
-- CSCI262 (6 CP) | Spr | Prereq: CSIT121 AND CSIT115 AND CSIT127
-- CSCI369 (6 CP) | Spr | (CSIT110 OR CSIT111) AND 18 CP at 200-level
-- CSIT302 (6 CP) | Aut | CSIT127 AND 12 CP at 100-level CSIT
-- CSIT375 (6 CP) | Aut | CSIT121 AND CSIT127 AND 18 CP at 200-level CSCI/CSIT
+- CSCI262 (6 CP) | System Security | Spr | Prereq: CSIT121 AND CSIT115 AND CSIT127
+- CSCI369 (6 CP) | Ethical Hacking | Spr | (CSIT110 OR CSIT111) AND 18 CP at 200-level
+- CSIT302 (6 CP) | Cybersecurity | Aut | CSIT127 AND 12 CP at 100-level CSIT
+- CSIT375 (6 CP) | Artificial Intelligence and Cybersecurity | Aut | CSIT121 AND CSIT127 AND 18 CP at 200-level CSCI/CSIT
 
 
 ### Digital Systems Security (MAJ40164)
-- CSCI262 (6 CP) | Spr | Prereq: CSIT121 AND CSIT115 AND CSIT127
-- CSCI361 (6 CP) | Aut | Prereq: CSIT121 AND 12 CP of 200-level CSCI
-- CSCI368 (6 CP) | Spr | Prereq: CSIT127 AND CSIT121 AND 12 CP of 200-level CSCI/CSIT
-- CSIT328 (6 CP) | Aut | Prereq: (CSIT110 OR CSIT111) AND CSIT128 | Coreq: 12 CP at 200-level
+- CSCI262 (6 CP) | System Security | Spr | Prereq: CSIT121 AND CSIT115 AND CSIT127
+- CSCI361 (6 CP) | Cryptography and Secure Applications | Aut | Prereq: CSIT121 AND 12 CP of 200-level CSCI
+- CSCI368 (6 CP) | Network Security | Spr | Prereq: CSIT127 AND CSIT121 AND 12 CP of 200-level CSCI/CSIT
+- CSIT328 (6 CP) | Web Security | Aut | Prereq: (CSIT110 OR CSIT111) AND CSIT128 | Coreq: 12 CP at 200-level
 
 
 ### Game and Mobile Development (MAJ41477)
-- CSCI336 (6 CP) | Spr | Prereq: CSIT121 AND 18 CP at 200-level
-- CSCI356 (6 CP) | Spr | Prereq: CSIT121 | Coreq: CSIT214
-- CSCI388 (6 CP) | Aut | Prereq: CSIT121 AND 18 CP at 200-level
-- CSIT242 (6 CP) | Aut | Prereq: CSIT121 | Coreq: CSIT213 |
+- CSCI336 (6 CP) | Interactive Computer Graphics | Spr | Prereq: CSIT121 AND 18 CP at 200-level
+- CSCI356 (6 CP) | Game Engine Essentials | Spr | Prereq: CSIT121 | Coreq: CSIT214
+- CSCI388 (6 CP) | Virtual and Augmented Reality | Aut | Prereq: CSIT121 AND 18 CP at 200-level
+- CSIT242 (6 CP) | Mobile Application Development | Aut | Prereq: CSIT121 | Coreq: CSIT213 |
 
 
 ### Software Engineering (MAJ40277)
-- CSCI318 (6 CP) | Spr | Prereq: (CSIT121 AND CSIT214) OR (ECTE250 AND CSCI291)
-- CSCI334 (6 CP) | Aut | Prereq: CSIT121 AND CSIT214
-- CSIT377 (6 CP) | Spr | Prereq: CSIT128 AND 6 CP at 200-level | Coreq: 12 CP at 200-level |
-- ISIT219 (6 CP) | Aut | Prereq: CSIT128
+- CSCI318 (6 CP) | Software Engineering Practices & Principles | Spr | Prereq: (CSIT121 AND CSIT214) OR (ECTE250 AND CSCI291)
+- CSCI334 (6 CP) | Software Design | Aut | Prereq: CSIT121 AND CSIT214
+- CSIT377 (6 CP) | Enterprise Cloud Development | Spr | Prereq: CSIT128 AND 6 CP at 200-level | Coreq: 12 CP at 200-level |
+- ISIT219 (6 CP) | Knowledge and Information Engineering | Aut | Prereq: CSIT128
 
 #### Specifically for Software Engineering majors:
 - ISIT219 is **NOT** an SE major core for students with commencement year ≤ 2023. 
@@ -176,21 +176,21 @@ HANDBOOK_1807_2026_WOLLONGONG = """# 1807 — Bachelor of Information Technology
 ---
 
 ## (A) CORE SUBJECTS (96 CP Total)
-- CSIT110 (6 CP) | Aut/Spr | Prereq: None
-- CSIT123 (6 CP) | Aut | Prereq: None
-- CSIT114 (6 CP) | Aut | Prereq: None
-- CSIT115 (6 CP) | Aut/Spr | Prereq: None
-- CSIT121 (6 CP) | Aut/Spr | Prereq: CSIT110 OR CSIT111 OR ENGG100
-- CSIT127 (6 CP) | Spr | Prereq: None
-- CSIT128 (6 CP) | Aut/Spr | Prereq: None
-- CSIT205 (6 CP) | Aut | Prereq: None (Replaces MATH255)
-- CSIT214 (6 CP) | Aut/Spr | Prereq: CSIT114
-- CSIT226 (6 CP) | Spr | Prereq: None
-- CSIT305 (6 CP) | Spr | Prereq: None
-- ISIT219 (6 CP) | Aut | Prereq: CSIT128
-- ISIT224 (6 CP) | Spr | Prereq: (CSIT113 OR CSIT123 OR BUS101) AND 18 CP at 100-level
-- CSIT314 (6 CP) | Aut | Prereq: CSIT214 AND 12 CP at 200-level CSCI/ISIT
-- CSIT321 (12 CP) | Aut/Spr | Prereq: CSIT214 AND 18 CP at 200-level CSCI/CSIT/ISIT | Coreq: CSIT226 AND CSIT314 |
+- CSIT110 (6 CP) | Fundamental Programming with Python | Aut/Spr | Prereq: None
+- CSIT123 (6 CP) | Computing and Cyber Security Fundamentals | Aut | Prereq: None
+- CSIT114 (6 CP) | System Analysis | Aut | Prereq: None
+- CSIT115 (6 CP) | Database Management Systems | Aut/Spr | Prereq: None
+- CSIT121 (6 CP) | Object Oriented Design and Programming | Aut/Spr | Prereq: CSIT110 OR CSIT111 OR ENGG100
+- CSIT127 (6 CP) | Networks and Communications | Spr | Prereq: None
+- CSIT128 (6 CP) | Introduction to Web Technology | Aut/Spr | Prereq: None
+- CSIT205 (6 CP) | Generative AI | Aut | Prereq: None (Replaces MATH255)
+- CSIT214 (6 CP) | IT Project Management | Aut/Spr | Prereq: CSIT114
+- CSIT226 (6 CP) | Human Computer Interaction | Spr | Prereq: None
+- CSIT305 (6 CP) | Emerging Information Technologies and their Applications | Spr | Prereq: None
+- ISIT219 (6 CP) | Knowledge and Information Engineering | Aut | Prereq: CSIT128
+- ISIT224 (6 CP) | Management Information Systems | Spr | Prereq: (CSIT113 OR CSIT123 OR BUS101) AND 18 CP at 100-level
+- CSIT314 (6 CP) | Software Development Methodologies | Aut | Prereq: CSIT214 AND 12 CP at 200-level CSCI/ISIT
+- CSIT321 (12 CP) | Project | Aut/Spr | Prereq: CSIT214 AND 18 CP at 200-level CSCI/CSIT/ISIT | Coreq: CSIT226 AND CSIT314 |
 
 ### Specifically for CSIT321:
 - CSIT321 is split into Part 1 and Part 2 both worth 6CP each for the purpose of scheduling. They CANNOT BE TAKEN SIMULTANEOUSLY AND YOU CANNOT COMBINE BOTH PARTS. 
@@ -209,16 +209,16 @@ HANDBOOK_1807_2026_WOLLONGONG = """# 1807 — Bachelor of Information Technology
 ## (B) MAJORS (24 CP Each)
 
 ### Web Design & Development (MAJ40246)
-- ISIT207 (6 CP) | Spr | Prereq: (CSIT110 OR CSIT111) AND CSIT128
-- CSIT377 (6 CP) | Spr | Prereq: CSIT128 AND 6 CP at 200-level | Coreq: 12 CP at 200-level
-- ISIT307 (6 CP) | Aut | Prereq: (CSIT110 OR CSIT111) AND CSIT115 AND CSIT128 AND 12 CP at 200-level
-- CSIT328 (6 CP) | Aut | Prereq: (CSIT110 OR CSIT111) AND CSIT128 | Coreq: 12 CP at 200-level
+- ISIT207 (6 CP) | Frontend Web Programming | Spr | Prereq: (CSIT110 OR CSIT111) AND CSIT128
+- CSIT377 (6 CP) | Enterprise Cloud Development | Spr | Prereq: CSIT128 AND 6 CP at 200-level | Coreq: 12 CP at 200-level
+- ISIT307 (6 CP) | Web Server Programming | Aut | Prereq: (CSIT110 OR CSIT111) AND CSIT115 AND CSIT128 AND 12 CP at 200-level
+- CSIT328 (6 CP) | Web Security | Aut | Prereq: (CSIT110 OR CSIT111) AND CSIT128 | Coreq: 12 CP at 200-level
 
 ### Network Design & Management (MAJ40163)
-- ISIT212 (6 CP) | Aut | Prereq: ISIT105 OR CSIT127
-- CSCI322 (6 CP) | Spr | Prereq: CSIT127 AND 18 CP at 200-level
-- ISIT302 (6 CP) | Aut | Prereq: CSIT127 AND 6 CP at 200-level | Coreq: 12 CP at 200-level
-- CSIT302 (6 CP) | Aut | Prereq: CSIT127 AND 12 CP at 100-level CSIT
+- ISIT212 (6 CP) | Corporate Network Planning and Design | Aut | Prereq: ISIT105 OR CSIT127
+- CSCI322 (6 CP) | Systems Administration | Spr | Prereq: CSIT127 AND 18 CP at 200-level
+- ISIT302 (6 CP) | Corporate Network Management | Aut | Prereq: CSIT127 AND 6 CP at 200-level | Coreq: 12 CP at 200-level
+- CSIT302 (6 CP) | Cybersecurity | Aut | Prereq: CSIT127 AND 12 CP at 100-level CSIT
 
 ---
 
@@ -261,21 +261,21 @@ HANDBOOK_1807_2026_LIVERPOOL = """# 1807 — Bachelor of Information Technology 
 ---
 
 ## (A) CORE SUBJECTS (96 CP Total)
-- CSIT110 (6 CP) | Aut/Spr | Prereq: None
-- CSIT123 (6 CP) | Aut | Prereq: None
-- CSIT114 (6 CP) | Aut | Prereq: None
-- CSIT115 (6 CP) | Aut/Spr | Prereq: None
-- CSIT121 (6 CP) | Aut/Spr | Prereq: CSIT110 OR CSIT111 OR ENGG100
-- CSIT127 (6 CP) | Spr | Prereq: None
-- CSIT128 (6 CP) | Aut/Spr | Prereq: None
-- CSIT205 (6 CP) | Aut | Prereq: None (Replaces MATH255)
-- CSIT214 (6 CP) | Aut/Spr | Prereq: CSIT114
-- CSIT226 (6 CP) | Spr | Prereq: None
-- CSIT305 (6 CP) | Spr | Prereq: None
-- ISIT219 (6 CP) | Aut | Prereq: CSIT128
-- ISIT224 (6 CP) | Spr | Prereq: (CSIT113 OR CSIT123 OR BUS101) AND 18 CP at 100-level
-- CSIT314 (6 CP) | Aut | Prereq: CSIT214 AND 12 CP at 200-level CSCI/ISIT
-- CSIT321 (12 CP) | Aut/Spr | Prereq: CSIT214 AND 18 CP at 200-level CSCI/CSIT/ISIT | Coreq: CSIT226 AND CSIT314 |
+- CSIT110 (6 CP) | Fundamental Programming with Python | Aut/Spr | Prereq: None
+- CSIT123 (6 CP) | Computing and Cyber Security Fundamentals | Aut | Prereq: None
+- CSIT114 (6 CP) | System Analysis | Aut | Prereq: None
+- CSIT115 (6 CP) | Database Management Systems | Aut/Spr | Prereq: None
+- CSIT121 (6 CP) | Object Oriented Design and Programming | Aut/Spr | Prereq: CSIT110 OR CSIT111 OR ENGG100
+- CSIT127 (6 CP) | Networks and Communications | Spr | Prereq: None
+- CSIT128 (6 CP) | Introduction to Web Technology | Aut/Spr | Prereq: None
+- CSIT205 (6 CP) | Generative AI | Aut | Prereq: None (Replaces MATH255)
+- CSIT214 (6 CP) | IT Project Management | Aut/Spr | Prereq: CSIT114
+- CSIT226 (6 CP) | Human Computer Interaction | Spr | Prereq: None
+- CSIT305 (6 CP) | Emerging Information Technologies and their Applications | Spr | Prereq: None
+- ISIT219 (6 CP) | Knowledge and Information Engineering | Aut | Prereq: CSIT128
+- ISIT224 (6 CP) | Management Information Systems | Spr | Prereq: (CSIT113 OR CSIT123 OR BUS101) AND 18 CP at 100-level
+- CSIT314 (6 CP) | Software Development Methodologies | Aut | Prereq: CSIT214 AND 12 CP at 200-level CSCI/ISIT
+- CSIT321 (12 CP) | Project | Aut/Spr | Prereq: CSIT214 AND 18 CP at 200-level CSCI/CSIT/ISIT | Coreq: CSIT226 AND CSIT314 |
 
 ### Specifically for CSIT321:
 - CSIT321 is split into Part 1 and Part 2 both worth 6CP each for the purpose of scheduling. They CANNOT BE TAKEN SIMULTANEOUSLY AND YOU CANNOT COMBINE BOTH PARTS. 
@@ -293,10 +293,10 @@ HANDBOOK_1807_2026_LIVERPOOL = """# 1807 — Bachelor of Information Technology 
 ## (B) MAJOR (24 CP)
 
 ### Network Design & Management (MAJ40163)
-- ISIT212 (6 CP) | Aut | Prereq: ISIT105 OR CSIT127
-- CSCI322 (6 CP) | Spr | Prereq: CSIT127 AND 18 CP at 200-level
-- ISIT302 (6 CP) | Aut | Prereq: CSIT127 AND 6 CP at 200-level | Coreq: 12 CP at 200-level
-- CSIT302 (6 CP) | Aut | Prereq: CSIT127 AND 12 CP at 100-level CSIT
+- ISIT212 (6 CP) | Corporate Network Planning and Design | Aut | Prereq: ISIT105 OR CSIT127
+- CSCI322 (6 CP) | Systems Administration | Spr | Prereq: CSIT127 AND 18 CP at 200-level
+- ISIT302 (6 CP) | Corporate Network Management | Aut | Prereq: CSIT127 AND 6 CP at 200-level | Coreq: 12 CP at 200-level
+- CSIT302 (6 CP) | Cybersecurity | Aut | Prereq: CSIT127 AND 12 CP at 100-level CSIT
 
 ---
 

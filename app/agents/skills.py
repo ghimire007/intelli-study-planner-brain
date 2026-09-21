@@ -109,10 +109,10 @@ def make_lookup_major_tool(db: AsyncSession):
 def get_elective_priorities_tool(
     course: str,
     campus: str,
-    session: str,
-    mode: Literal["major", "interest"],
-    completed_subjects: list[str],
-    planned_subjects: list[str],
+    session: str | None,
+    mode: str = 'major',
+    completed_subjects: list[str] = [],
+    planned_subjects: list[str] = [],
     major: str | None = None,
     interests: str | None = None,
     limit: int = 25,
@@ -125,6 +125,7 @@ def get_elective_priorities_tool(
     planned subject codes from the SOLS record. Prefer higher-ranked codes
     when scheduling electives unless session/prereqs rule them out.
     """
+    print("!!!!!!!!!!!!!!!! EXECUTION STARTED !!!!!!!!!!!!!!!!")
     result = get_elective_priorities(
         ElectivePriorityInput(
             course=course,
@@ -138,6 +139,7 @@ def get_elective_priorities_tool(
             limit=limit,
         )
     )
+    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n", result)
     return json.dumps(result.model_dump(), indent=2)
 
 

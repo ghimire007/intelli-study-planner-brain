@@ -15,6 +15,9 @@ from app.llm.factory import make_chat_model
 from app.prompts.builder import build_system_prompt
 from app.services.sols_parser import parse_sols
 
+from app.schemas.elective_ranking import ElectivePriorityInput
+from app.services.elective_ranking import get_elective_priorities
+
 from app.prompts.prompts import SYSTEM_PROMPT, ELECTIVE_GENERATION_PROMPT, SUBJECT_GENERATION_PROMPT, EVAL_SUBJECTS_ELECTIVES, MAKE_PLAN, EVAL_PLAN, SYSTEM_PROMPT_V1
 
 import re
@@ -230,26 +233,48 @@ def build_advisor_graph(
 
     ### elective list
     async def fetch_elective_list(state: AdvisorState) -> dict:
-            """Parallel Branch A: Determines available/preferred electives."""
-            feedback = state.get("electives_feedback")
-            prompt = build_system_prompt(
-                prompt=ELECTIVE_GENERATION_PROMPT,
-                meta=state.get("meta"),
-                meta_confirmed=state.get("meta_confirmed", False),
-                handbook=state.get("handbook"),
-                raw_sols=state.get("raw_sols"),
+            meta = state.get("meta") or {}
+    
+            # Execute the service directly in Python without LLM tool-calling roundtrips
+            result = get_elective_priorities(
+                ElectivePriorityInput(
+                    course=meta.get("degree_code", "1807"),
+                    campus=meta.get("campus", "Wollongong"),
+                    session=meta.get("session", "Aut, Spr"),
+                    major=meta.get("major"),
+                    completed_subjects=[],
+                    planned_subjects=[],
+                    mode="major",
+                )
             )
-            if feedback:
-                prompt += f"\nCORRECT THE FOLLOWING ISSUES FROM PREVIOUS PASS:\n{feedback}"
 
-            res = await llm("full").ainvoke([
-                SystemMessage(content="You are an academic data processing assistant."),
-                HumanMessage(content=prompt)
-            ])
-            # Return updated list and clear error feedback
-            parsed = extract_and_parse_json(res.content)
-            str_content = json.dumps(parsed) if isinstance(parsed, (dict, list)) else str(parsed)
-            return {"electives": str_content, "electives_feedback": None}
+            print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n', result)
+            return {"electives": json.dumps(result.model_dump()), "electives_feedback": None}
+
+            # """Parallel Branch A: Determines available/preferred electives."""
+            # feedback = state.get("electives_feedback")
+            # prompt = build_system_prompt(
+            #     prompt=ELECTIVE_GENERATION_PROMPT,
+            #     meta=state.get("meta"),
+            #     meta_confirmed=state.get("meta_confirmed", False),
+            #     handbook=state.get("handbook"),
+            #     raw_sols=state.get("raw_sols"),
+            # )
+            # if feedback:
+            #     prompt += f"\nCORRECT THE FOLLOWING ISSUES FROM PREVIOUS PASS:\n{feedback}"
+
+            # print("Finding electives")
+
+            # res = await llm("full").ainvoke([
+            #     SystemMessage(content="You are an academic data processing assistant."),
+            #     HumanMessage(content=prompt)
+            # ])
+            # # Return updated list and clear error feedback
+            # print(res.content)
+            # parsed = extract_and_parse_json(res.content)
+            # print(parsed)
+            # str_content = json.dumps(parsed) if isinstance(parsed, (dict, list)) else str(parsed)
+            # return {"electives": str_content, "electives_feedback": None}
 
 
     ### stage 1 review && list of must include subjects
@@ -281,8 +306,8 @@ def build_advisor_graph(
         """Evaluates both electives and core subjects against handbook accuracy."""
         print(
             "EVAL INPUT:",
-            state.get("electives") is not None,
-            state.get("remaining_subjects") is not None,
+            state.get("electives"),
+            state.get("remaining_subjects"),
             state.get("stage1_retry_count")
         )
 
@@ -308,7 +333,7 @@ def build_advisor_graph(
             # print(res.content)
             data = extract_and_parse_json(res.content)
 
-            # print("eval_stage1_lists - data:", data)
+            print("eval_stage1_lists - data:", data)
             return {
                 "electives_feedback": None if data.get("electives_valid") else data.get("electives_feedback", "Invalid electives found."),
                 "remaining_feedback": None if data.get("remaining_valid") else data.get("remaining_feedback", "Invalid core subjects found."),
@@ -320,7 +345,7 @@ def build_advisor_graph(
             print("CONTENT:", repr(res.content))
             
             # Fallback if parsing fails
-            print("eval_stage1_lists - exception:")
+            print("eval_stage1_lists - exception:", e)
             return {
                 "electives_feedback": "Failed to validate electives syntax against handbook.",
                 "remaining_feedback": "Failed to validate core subjects syntax against handbook.",
@@ -498,7 +523,7 @@ def build_advisor_graph(
 
         print("hi")
         plan_clean = (state.get("plan"))
-        print("CLEAN PLAN:", plan_clean)
+        # print("CLEAN PLAN:", plan_clean)
         final_msg = AIMessage(content=f"{plan_content}")
         return {
             "messages": [final_msg], 
