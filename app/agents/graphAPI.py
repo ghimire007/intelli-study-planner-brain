@@ -227,55 +227,50 @@ def build_advisor_graph(
 
         # Trigger planning flow if metadata is confirmed and planning is requested
         if state.get("meta_confirmed") and state.get("planning_requested"):
-            return ["fetch_elective_list", "stage1_review_must_includes"]
+            return "start_planning"
 
         return END
 
+    async def start_planning(state: AdvisorState) -> dict:
+        """Consume the planning_requested flag so agent doesn't re-trigger Stage 1."""
+        return {"planning_requested": False, "current_stage": 1}
+
     ### elective list
     async def fetch_elective_list(state: AdvisorState) -> dict:
-            meta = state.get("meta") or {}
-    
-            # Execute the service directly in Python without LLM tool-calling roundtrips
-            result = get_elective_priorities(
-                ElectivePriorityInput(
-                    course=meta.get("degree_code", "1807"),
-                    campus=meta.get("campus", "Wollongong"),
-                    session=meta.get("session", "Aut, Spr"),
-                    major=meta.get("major"),
-                    completed_subjects=[],
-                    planned_subjects=[],
-                    mode="major",
-                )
-            )
+        prompt = build_system_prompt(
+            prompt=ELECTIVE_GENERATION_PROMPT,
+            meta=state.get("meta"),
+            meta_confirmed=state.get("meta_confirmed", False),
+            handbook=state.get("handbook"),
+            raw_sols=state.get("raw_sols"),
+        )
+        if state.get("electives_feedback"):
+            prompt += f"\nCORRECT THE FOLLOWING ISSUES FROM PREVIOUS PASS:\n{state.get('electives_feedback')}"
 
-            print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n', result)
-            return {"electives": json.dumps(result.model_dump()), "electives_feedback": None}
+        system_msg = SystemMessage(content="You are an academic data processing assistant. Use tools if necessary to find electives.")
+        
+        # Send system message + prompt + any prior conversation/tool history
+        messages = (
+            [system_msg] 
+            + state.get("messages", []) 
+            + [HumanMessage(content=prompt)]
+        )
 
-            # """Parallel Branch A: Determines available/preferred electives."""
-            # feedback = state.get("electives_feedback")
-            # prompt = build_system_prompt(
-            #     prompt=ELECTIVE_GENERATION_PROMPT,
-            #     meta=state.get("meta"),
-            #     meta_confirmed=state.get("meta_confirmed", False),
-            #     handbook=state.get("handbook"),
-            #     raw_sols=state.get("raw_sols"),
-            # )
-            # if feedback:
-            #     prompt += f"\nCORRECT THE FOLLOWING ISSUES FROM PREVIOUS PASS:\n{feedback}"
+        res = await llm("full").ainvoke(messages)
 
-            # print("Finding electives")
+        # If the model requests a tool call, yield the AIMessage so the graph routes to `tools`
+        if res.tool_calls:
+            return {"messages": [res]}
 
-            # res = await llm("full").ainvoke([
-            #     SystemMessage(content="You are an academic data processing assistant."),
-            #     HumanMessage(content=prompt)
-            # ])
-            # # Return updated list and clear error feedback
-            # print(res.content)
-            # parsed = extract_and_parse_json(res.content)
-            # print(parsed)
-            # str_content = json.dumps(parsed) if isinstance(parsed, (dict, list)) else str(parsed)
-            # return {"electives": str_content, "electives_feedback": None}
-
+        parsed = extract_and_parse_json(res.content)
+        str_content = json.dumps(parsed) if isinstance(parsed, (dict, list)) else str(parsed)
+        return {"electives": str_content, "electives_feedback": ""}
+            
+    def route_stage1_tools(state: AdvisorState) -> str:
+        messages = state.get("messages", [])
+        if messages and isinstance(messages[-1], AIMessage) and messages[-1].tool_calls:
+            return "stage1_tools"
+        return "join_stage1"
 
     ### stage 1 review && list of must include subjects
     async def stage1_review_must_includes(state: AdvisorState) -> dict:
@@ -299,7 +294,10 @@ def build_advisor_graph(
         print("stage1_review_must_includes: ", str(extract_and_parse_json(res.content)))
         parsed = extract_and_parse_json(res.content)
         str_content = json.dumps(parsed) if isinstance(parsed, (dict, list)) else str(parsed)
-        return {"remaining_subjects": str_content, "remaining_feedback": None}
+        return {"remaining_subjects": str_content, "remaining_feedback": ""}
+
+    def join_stage1(state: AdvisorState) -> dict:
+        return {"current_stage": 1}
 
 ## eval both lists (musts + electives)
     async def eval_stage1_lists(state: AdvisorState) -> dict:
@@ -328,33 +326,30 @@ def build_advisor_graph(
         current_retry = state.get("stage1_retry_count") or 0
 
         try:
-            # data = json.loads(res.content)
-            # print("RAW EVAL RESPONSE:") 
-            # print(res.content)
             data = extract_and_parse_json(res.content)
 
-            print("eval_stage1_lists - data:", data)
+            electives_valid = data.get("electives_valid", False) if isinstance(data, dict) else False
+            remaining_valid = data.get("remaining_valid", False) if isinstance(data, dict) else False
+
             return {
-                "electives_feedback": None if data.get("electives_valid") else data.get("electives_feedback", "Invalid electives found."),
-                "remaining_feedback": None if data.get("remaining_valid") else data.get("remaining_feedback", "Invalid core subjects found."),
+                "electives_feedback": "" if electives_valid else data.get("electives_feedback", "Invalid electives."),
+                "remaining_feedback": "" if remaining_valid else data.get("remaining_feedback", "Invalid core subjects."),
                 "stage1_retry_count": current_retry + 1
             }
         except Exception as e:
-            print("EVAL EXCEPTION:", type(e).__name__)
-            print("ERROR:", str(e))
-            print("CONTENT:", repr(res.content))
+            # print("EVAL EXCEPTION:", type(e).__name__)
+            # print("ERROR:", str(e))
+            # print("CONTENT:", repr(res.content))
             
             # Fallback if parsing fails
             print("eval_stage1_lists - exception:", e)
             return {
-                "electives_feedback": "Failed to validate electives syntax against handbook.",
-                "remaining_feedback": "Failed to validate core subjects syntax against handbook.",
+                "electives_feedback": "Failed to parse validation output.",
+                "remaining_feedback": "Failed to parse validation output.",
                 "stage1_retry_count": current_retry + 1
             }
 
-    def join_stage1(state: AdvisorState) -> dict:
-        """Pass-through barrier node to synchronize parallel branches before evaluation."""
-        return {}
+    
 
     def route_stage1_eval(state: AdvisorState) -> list[str] | str:
         """Routes back to invalid branches in parallel or advances to stage 2."""
@@ -364,12 +359,8 @@ def build_advisor_graph(
 
         # Proceed if valid or max retries reached
         print('route stage 1')
-        if (not has_electives_error and not has_remaining_error):
-            print('go to stage 2')
-            return "stage2_make_plan"
-
-        if retries > 1:
-            print("Stage 1 retry limit reached. Advancing to Stage 2 with fallback.")
+        if (not has_electives_error and not has_remaining_error) or retries >= 2:
+            print("Stage 1 retry limit reached or valid. Advancing to Stage 2 with fallback.")
             return "stage2_make_plan"
 
         # Dynamic parallel fan-out based on failures
@@ -379,7 +370,7 @@ def build_advisor_graph(
         if has_remaining_error:
             routes.append("stage1_review_must_includes")
 
-        return routes
+        return routes if routes else "stage2_make_plan"
     
 ## evaluator optimiser pattern 
 ### stage 2 make the plan
@@ -410,6 +401,10 @@ def build_advisor_graph(
             + state.get("messages", []) 
             + [HumanMessage(content=content_prompt)]
         )
+        # invoke_messages = [
+        #     SystemMessage(content=base_system_prompt),
+        #     HumanMessage(content=content_prompt),
+        # ]
         res = await llm("full").ainvoke(invoke_messages)
     
         # Always append the AI response to message history
@@ -432,15 +427,6 @@ def build_advisor_graph(
             
         return updated_state
 
-        # res = await llm("full").ainvoke(
-        #     [SystemMessage(content=base_system_prompt), HumanMessage(content=content_prompt)]
-        # )
-        # print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n", res)
-        # print("stage2_make_plan:", str(res.content))
-        # print("DEBUG res.response_metadata:", res.response_metadata)
-        # print("DEBUG res.additional_kwargs:", res.additional_kwargs)
-        # return {"plan": str(res.content)}
-
 
     def route_stage2_tools(state: AdvisorState) -> str:
         """Routes stage2_make_plan to 'tools' if tool calls exist, else to 'evaluate_stage2'."""
@@ -451,12 +437,41 @@ def build_advisor_graph(
         last_message = messages[-1]
         # Check if the AI message contains tool calls
         if isinstance(last_message, AIMessage) and last_message.tool_calls:
-            return "tools"
+            return "stage2_tools"
         
         return "evaluate_stage2"
 
 ### evaluator of stage 2 - correct session, name, cp total etc - feedback and back to stage 2 if needed
     async def evaluate_stage2(state: AdvisorState) -> dict:
+        # evaluate_stage2
+        # print(
+        #     "EVAL",
+        #     "retry=", retries,
+        #     "feedback=", data.get("feedback"),
+        #     "valid=", data.get("valid")
+        # )
+
+        # # route_evaluation
+        # print(
+        #     "ROUTE",
+        #     "retry=", state.get("retry_count"),
+        #     "feedback=", state.get("plan_feedback")
+        # )
+
+        # # stage2_make_plan
+        # print(
+        #     "MAKE_PLAN",
+        #     "retry=", state.get("retry_count"),
+        #     "feedback=", state.get("plan_feedback")
+        # )
+
+        # # route_after_tool_capture
+        # print(
+        #     "TOOL_CAPTURE",
+        #     "stage=", state.get("current_stage"),
+        #     "retry=", state.get("retry_count")
+        # )
+
         """Evaluates session correctness, credit point totals, and prerequisite order."""
         retries = state.get("retry_count") or 0
             
@@ -475,7 +490,7 @@ def build_advisor_graph(
 
             if data.get("valid"):
                 print("evaluate_stage2 - valid")
-                return {"plan_feedback": None, "retry_count": 0}
+                return {"plan_feedback": None, "planning_requested": False, "retry_count": 0}
             
             print("evaluate_stage2 - not valid")
             return {
@@ -489,7 +504,7 @@ def build_advisor_graph(
                     "retry_count": retries + 1}
 
     def route_evaluation(state: AdvisorState) -> str:
-        # print(f"DEBUG: Stage 2 Eval Retry Count: {state.get('retry_count')}, Feedback: {state.get('plan_feedback')}")
+        print(f"DEBUG: Stage 2 Eval Retry Count: {state.get('retry_count')}, Feedback: {state.get('plan_feedback')}")
         """Routes back to plan generator if invalid, or formats output if valid."""
     
         retries = state.get("retry_count") or 0
@@ -500,13 +515,9 @@ def build_advisor_graph(
         #     f"feedback={feedback}"
         # )
 
-        # success
-        if feedback is None:
-            return "format_output"
-
-        # retry limit reached
-        if retries > 1:
-            print("Stage 2 retry limit reached. Continuing.")
+        # success or retry limit reached
+        if not feedback or retries > 1:
+            print('give the output')
             return "format_output"
 
         return "stage2_make_plan"
@@ -521,8 +532,8 @@ def build_advisor_graph(
         if not plan_content:
             plan_content = "Unable to complete plan generation. Please review degree metadata."
 
-        print("hi")
-        plan_clean = (state.get("plan"))
+        # print("hi")
+        # plan_clean = (state.get("plan"))
         # print("CLEAN PLAN:", plan_clean)
         final_msg = AIMessage(content=f"{plan_content}")
         return {
@@ -531,11 +542,12 @@ def build_advisor_graph(
             "current_stage": None
         }
 
-    def route_after_tool_capture(state: AdvisorState) -> str:
-        # If currently in stage 2 execution, loop back to stage 2
-        if state.get("current_stage") == 2:
-            return "stage2_make_plan"
-        return "agent"
+    # def route_after_tool_capture(state: AdvisorState) -> str:
+    #     # If currently in stage 2 execution, loop back to stage 2
+    #     stage = state.get("current_stage")
+    #     if stage == 2:
+    #         return "stage2_make_plan"
+    #     return "agent"
 
 
     # build workflow
@@ -547,6 +559,10 @@ def build_advisor_graph(
     graph.add_node("tools", ToolNode(skills["full"]))
     graph.add_node("capture_tool_results", capture_tool_results)
 
+    graph.add_node("start_planning", start_planning)
+    graph.add_node("stage1_tools", ToolNode(skills["electives"]))
+    graph.add_node("capture_stage1_tool_results", capture_tool_results)
+
     # stage 1 Parallel
     graph.add_node("fetch_elective_list", fetch_elective_list)
     graph.add_node("stage1_review_must_includes", stage1_review_must_includes)
@@ -555,6 +571,8 @@ def build_advisor_graph(
 
     # stage 2 Evaluator-Optimizer Nodes
     graph.add_node("stage2_make_plan", stage2_make_plan)
+    graph.add_node("stage2_tools", ToolNode(skills["full"]))
+    graph.add_node("capture_stage2_tool_results", capture_tool_results)
     graph.add_node("evaluate_stage2", evaluate_stage2)
     graph.add_node("format_output", format_output)
 
@@ -567,24 +585,31 @@ def build_advisor_graph(
         route_after_agent,
         {
             "tools": "tools",
-            "fetch_elective_list": "fetch_elective_list",
-            "stage1_review_must_includes": "stage1_review_must_includes",
+            "start_planning": "start_planning",
             END: END,
         },
     )
 
     graph.add_edge("tools", "capture_tool_results")
-    graph.add_conditional_edges(
-        "capture_tool_results",
-        route_after_tool_capture,
-        {
-            "agent": "agent",
-            "stage2_make_plan": "stage2_make_plan",
-        },
-    )
+    graph.add_edge("capture_tool_results", "agent")
+
+    # Parallel Fan-Out from start_planning
+    graph.add_edge("start_planning", "fetch_elective_list")
+    graph.add_edge("start_planning", "stage1_review_must_includes")
 
     # Stage 1 Parallel Fan-In Barrier
-    graph.add_edge("fetch_elective_list", "join_stage1")
+    graph.add_conditional_edges(
+        "fetch_elective_list",
+        route_stage1_tools,
+        {
+            "stage1_tools": "stage1_tools",
+            "join_stage1": "join_stage1"
+        }
+    )
+    # graph.add_edge("fetch_elective_list", "join_stage1")
+    graph.add_edge("stage1_tools", "capture_stage1_tool_results")
+    graph.add_edge("capture_stage1_tool_results", "fetch_elective_list")
+    # graph.add_edge("fetch_elective_list", "join_stage1")
     graph.add_edge("stage1_review_must_includes", "join_stage1")
     graph.add_edge("join_stage1", "eval_stage1_lists")
 
@@ -604,10 +629,12 @@ def build_advisor_graph(
         "stage2_make_plan",
         route_stage2_tools,
         {
-            "tools": "tools",                  # Executing tools requested in Stage 2
+            "stage2_tools": "stage2_tools",                  # Executing tools requested in Stage 2
             "evaluate_stage2": "evaluate_stage2" # Proceeding to eval when finished
         },
     )
+    graph.add_edge("stage2_tools", "capture_stage2_tool_results")
+    graph.add_edge("capture_stage2_tool_results", "stage2_make_plan")
 
     graph.add_conditional_edges(
         "evaluate_stage2",

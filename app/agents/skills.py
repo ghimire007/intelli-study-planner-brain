@@ -183,4 +183,8 @@ def build_skills(db: AsyncSession):
             make_lookup_major_tool(db),
             get_elective_priorities_tool,
         ],
+        "electives": [
+            make_lookup_subjects_tool(db),
+            get_elective_priorities_tool,
+        ],
     }
