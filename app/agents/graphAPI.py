@@ -16,7 +16,8 @@ from app.prompts.builder import build_system_prompt
 from app.services.sols_parser import parse_sols
 
 from app.schemas.elective_ranking import ElectivePriorityInput
-from app.services.elective_ranking import get_elective_priorities
+from app.services.elective_ranking import flatten_ranked_electives, get_elective_priorities
+from app.services.enrolment import UnreadableRecord, parse_enrolment
 
 from app.prompts.prompts import SYSTEM_PROMPT, ELECTIVE_GENERATION_PROMPT, SUBJECT_GENERATION_PROMPT, EVAL_SUBJECTS_ELECTIVES, MAKE_PLAN, EVAL_PLAN, SYSTEM_PROMPT_V1
 
@@ -58,6 +59,69 @@ def extract_and_parse_json(raw_input):
     except json.JSONDecodeError as e:
         return cleaned
         # raise ValueError(f"Failed to parse clean JSON from model output: {e}\nRaw: {cleaned}")
+
+
+def _major_for_ranking(raw: str | None) -> str | None:
+    if not raw or not str(raw).strip():
+        return None
+    text = str(raw).strip()
+    if text.upper().startswith("MAJ"):
+        return text
+    return re.split(r"\s+[—–-]\s+", text, maxsplit=1)[0].strip() or text
+
+
+def sols_codes_for_ranking(raw_sols: str | None) -> tuple[list[str], list[str]]:
+    """Split a SOLS paste into completed vs currently enrolled codes."""
+    if not raw_sols or raw_sols == "no enrolment yet":
+        return [], []
+    try:
+        record = parse_enrolment(raw_sols)
+    except UnreadableRecord:
+        return [], []
+    completed: list[str] = []
+    planned: list[str] = []
+    for row in record.rows:
+        if row.status == "Complete":
+            completed.append(row.code)
+        elif row.status == "Enrolled":
+            planned.append(row.code)
+    for credit in record.specified_credit:
+        if credit.code:
+            completed.append(credit.code)
+    return completed, planned
+
+
+def stage1_electives_from_advisor_state(state: dict) -> str:
+    """Deterministic Stage-1 electives JSON for graphAPI state['electives']."""
+    meta = state.get("meta") or {}
+    completed, planned = sols_codes_for_ranking(state.get("raw_sols"))
+    major = _major_for_ranking(meta.get("major"))
+    mode = "major" if major else "interest"
+    student = ElectivePriorityInput(
+        course=str(meta.get("degree_code") or "766"),
+        campus=str(meta.get("campus") or "Wollongong"),
+        session=str(meta.get("session") or "Spring"),
+        major=major,
+        completed_subjects=completed,
+        planned_subjects=planned,
+        mode=mode,
+        interests=None if mode == "major" else (meta.get("interests") or "computer science"),
+        limit=int(meta.get("elective_limit") or 25),
+    )
+    ranking = get_elective_priorities(student)
+    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    print("completed:", completed)
+    print("planned:", planned)
+    print("ranking:", ranking)
+    result = flatten_ranked_electives(
+        ranking,
+        campus=student.campus,
+        session=student.session,
+        course=student.course,
+    )
+    payload = json.dumps(result.model_dump(by_alias=True), indent=2)
+    print("stage1 electives:", payload)
+    return json.dumps(result.model_dump(by_alias=True))
 
 
 ## graph state
@@ -249,40 +313,8 @@ def build_advisor_graph(
     async def fetch_elective_list(state: AdvisorState) -> dict:
         if state.get("current_stage") == 2:
             return {}
-    
-        prompt = build_system_prompt(
-            prompt=ELECTIVE_GENERATION_PROMPT,
-            meta=state.get("meta"),
-            meta_confirmed=state.get("meta_confirmed", False),
-            handbook=state.get("handbook"),
-            raw_sols=state.get("raw_sols"),
-        )
-        if state.get("electives_feedback"):
-            prompt += f"\nCORRECT THE FOLLOWING ISSUES FROM PREVIOUS PASS:\n{state.get('electives_feedback')}"
 
-        system_msg = SystemMessage(content="You are an academic data processing assistant. Use tools if necessary to find electives.")
-        
-        # Send system message + prompt + any prior conversation/tool history
-        messages = (
-            [system_msg] 
-            + state.get("messages", []) 
-            + [HumanMessage(content=prompt)]
-        )
-
-        res = await llm("full").ainvoke(messages)
-
-        # If the model requests a tool call, yield the AIMessage so the graph routes to `tools`
-        if res.tool_calls:
-            return {"messages": [res]}
-
-        parsed = extract_and_parse_json(res.content)
-
-        # Guard against empty pass: if parsed is empty but state already has electives, keep existing
-        if not parsed and state.get("electives"):
-            str_content = state.get("electives")
-        else:
-            str_content = json.dumps(parsed) if isinstance(parsed, (dict, list)) else str(parsed)
-    
+        str_content = stage1_electives_from_advisor_state(state)
         return {"electives": str_content, "electives_feedback": ""}
             
     def route_stage1_tools(state: AdvisorState) -> str:
