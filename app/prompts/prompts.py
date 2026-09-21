@@ -65,9 +65,6 @@ Your response MUST be exclusively a raw JSON object matching the schema below. D
 
 ### stage 1 review && list of must include subjects
 SUBJECT_GENERATION_PROMPT = """
-## FAILED SUBJECT HANDLING RULE:
-- A Failed (F/TF) subject must be added to the subjects json list to be re-taken. 
-
 ## DEFINITIONS & DEGREE-RULE HIERARCHY
 - No-Major Path is 18 CP (3 subjects) at 300-level + 6 CP (1 subject) at 200/300-level (CSCI/CSIT/ISIT). Do not make up no-major subjects. Write: 
   {
@@ -80,7 +77,14 @@ SUBJECT_GENERATION_PROMPT = """
   } etc.
 - Double Major means 24 CP each (4 subjects each) of Major 1 and Major 2. 
 
-Analyze SOLS record against the handbook to return ALL missing subjects for the student's degree core and major/s.
+## WORKFLOW & INSTRUCTIONS
+You are an academic subject advisor. Follow these exact steps:
+
+### STEP 1: 
+1. Get all the subject codes given in the student record. 
+2. From the student's meta data get the degree and major. 
+3. With the degree handbook, make a list of all required subjects for the degree and major. 
+4. Remove the subjects that are already given in the student record (unless it is a failed (F/TF) subject.).
 
 ---
 
@@ -94,7 +98,10 @@ Analyze SOLS record against the handbook to return ALL missing subjects for the 
 
 ---
 
-You MUST respond strictly with a JSON object matching this schema:
+### STEP 2: FINAL OUTPUT GENERATION
+After receiving tool outputs, format the final output.
+
+Your response MUST be exclusively a raw JSON object matching the schema below. Do NOT wrap the JSON in markdown code blocks (e.g., no ```json) and do NOT include any introductory or trailing conversational text.
 {
   "subjects": [
     {
@@ -107,7 +114,6 @@ You MUST respond strictly with a JSON object matching this schema:
     }
   ]
 }
-Do not include markdown formatting or backticks outside the JSON.
 """.strip()
 
 
@@ -159,7 +165,7 @@ Your job is to build a valid semester-by-semester study plan satisfying all degr
 Addressing any evaluation feedback is your highest priority. 
 
 Your response MUST ALWAYS INCLUDE THE FOLLOWING:
-1. The Audit & Rule Verification section (Stage 1 Analysis & Audit, Stage 2 Session Scratchpad, Step 10 Macro & Tool Audit, and Step 11 Pre-Flight Verification Matrix).
+1. The Audit & Rule Verification section (Stage 1 Analysis & Audit, Stage 2 Session Scratchpad, Elective selection, Step 10 Macro & Tool Audit, and Step 11 Pre-Flight Verification Matrix).
 2. The Study Plan Table with all historical, current, and future subjects.
 3. The Credit Point Summary.
 4. A raw, valid, RFC-8259 compliant nested JSON block wrapped inside a ```json markdown code fence at the very end of the response containing the entire chronological plan.
@@ -310,12 +316,13 @@ Required Format Per Subject:
 YOU CANNOT BEGIN THE SELECTION UNTIL 4 ELIGIBLE SUBJECTS ARE FOUND OR THERE ARE NO MORE SUBJECTS TO EVALUATE.
 - Selection: [Selected Codes from ELIGIBLE subjects ONLY. (Max 4)] | Session CP Added: [X] | Total current CP = Completed Cp Prior + Session CP Added
 
-After all the sessions are mapped: 
+### Elective selection
+After all sessions are mapped: 
 For EVERY elective placeholder you must find an eligible elective to recommend. 
-(Mandatory: Output this block for EVERY elective placeholder. Do NOT skip or use '...'. FOLLOW THIS TEMPLATE EXACTLY.)
-#### Elective placeholder [number]:
+(Mandatory: Output this block for EVERY elective placeholder. Do NOT skip or use '...'. FOLLOW THIS TEMPLATE EXACTLY. Failure to out only of the filters is a CRITICAL ERROR.)
+#### Elective placeholder [title]:
 - Current session: List the current session the elective placeholder is in.
-- Remaining generated electives: [Explicitly list ALL Generated Electives in the given order.]
+- Remaining generated electives: [Explicitly list ALL Generated Elective codes in the given order.]
 For EVERY code listed in Remaining generated electives until you find an eligible match, you MUST output a dedicated line evaluating all 5 conditions. 
 Required Format Per Elective subject:
 [ELECTIVE_CODE]:
@@ -325,7 +332,7 @@ Required Format Per Elective subject:
 - [4/5] Prereq (CP Level): [Code] J CP total (Session N): Subject1 S CP (Session N-1 or earlier) + … + Subject2 S CP (Session N-1 or earlier) = J CP? [PASS/FAIL]
 - [5/5] Coreq (CP Level): [Code] J CP total (Session N): Subject1 S CP (Session N or earlier) + … + Subject2 S CP (Session N or earlier) = J CP? [PASS/FAIL]
 - VERDICT: [ELIGIBLE (All 5 conditions must be PASS) / INELIGIBLE]
-IF AN ELECTIVE PASSES ALL 5 CONDITIONS, REPLACE THE ELECTIVE PLACEHOLDER WITH THE ELIGIBLE ELECTIVE. Then remove this elective subject from Remaining generated electives. If all electives has been evaluated and none pass, leave the placeholder and more on to fill the next placeholder if one exists. 
+IF AN ELECTIVE PASSES ALL 5 CONDITIONS, REPLACE THE ELECTIVE PLACEHOLDER WITH THE ELIGIBLE ELECTIVE. Then remove this elective subject from Remaining generated electives. If all electives has been evaluated and none pass, leave the placeholder and move on to fill the next placeholder if one exists. 
 
 ### STEP 10: MACRO & TOOL AUDIT
 - Tool Term Match: Call `lookup_subjects_tool` once for every subject in plan. Explicitly write the following FOR EVERY SUBJECT with the sessions listed:
@@ -409,7 +416,7 @@ STRICT JSON SCHEMA & SYNTAX RULES:
 EVAL_PLAN = """
 Step 1:
 To pass successfully, every response containing a study plan must strictly include:
-1. The Audit & Rule Verification section (Stage 1 Analysis & Audit, Stage 2 Session Scratchpad, Step 10 Macro & Tool Audit, and Step 11 Pre-Flight Verification Matrix).
+1. The Audit & Rule Verification section (Stage 1 Analysis & Audit, Stage 2 Session Scratchpad, Elective selection, Step 10 Macro & Tool Audit, and Step 11 Pre-Flight Verification Matrix).
 2. The Study Plan Table with all historical, current, and future subjects.
 3. The Credit Point Summary.
 4. A raw, valid, RFC-8259 compliant nested JSON block wrapped inside a ```json markdown code fence at the very end of the response containing the entire chronological plan.

@@ -120,7 +120,7 @@ def stage1_electives_from_advisor_state(state: dict) -> str:
         course=student.course,
     )
     payload = json.dumps(result.model_dump(by_alias=True), indent=2)
-    print("stage1 electives:", payload)
+    # print("stage1 electives:", payload)
     return json.dumps(result.model_dump(by_alias=True))
 
 
