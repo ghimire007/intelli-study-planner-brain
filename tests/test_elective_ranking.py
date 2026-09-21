@@ -15,7 +15,9 @@ from app.schemas.elective_ranking import (
 )
 from app.services.elective_pools import resolve_pool_candidates
 from app.services.elective_ranking import (
+    flatten_ranked_electives,
     get_elective_priorities,
+    get_stage1_elective_list,
     keyword_overlap_score,
     rank_subjects_by_keywords,
 )
@@ -182,6 +184,92 @@ async def test_lookup_ranked_electives_tool_includes_subject_cards() -> None:
     assert payload["mode"] == "interest"
     assert payload["pools"][0]["priorities"][0]["code"] == "CSCI323"
     assert "CSCI323" in payload["subject_cards"]
+    assert payload["subjects"][0]["code"] == "CSCI323"
+    assert "pre-requisites" in payload["subjects"][0]
+
+
+def test_flatten_ranked_electives_unique_catalog_fields() -> None:
+    ranking = ElectivePriorityResult(
+        mode="interest",
+        pools=[
+            ElectivePoolPriorities(
+                pool_id="elective",
+                title="Elective",
+                cp=24,
+                priorities=[
+                    RankedElectiveOut(code="CSCI323", title="AI", score=0.4),
+                    RankedElectiveOut(code="MISSING99", title="Unknown", score=0.1),
+                ],
+            ),
+            ElectivePoolPriorities(
+                pool_id="elective_2",
+                title="More",
+                cp=6,
+                priorities=[
+                    RankedElectiveOut(code="CSCI323", title="AI", score=0.9),
+                ],
+            ),
+        ],
+    )
+    catalog = {
+        "CSCI323": {
+            "code": "CSCI323",
+            "title": "Modern Artificial Intelligence",
+            "cp": "6",
+            "prerequisites": ["CSCI203", "12cp at 200-level"],
+            "corequisites": [],
+            "offerings": [
+                {"campus": "Wollongong", "session": "Autumn"},
+                {"campus": "Wollongong", "session": "Spring"},
+                {"campus": "Liverpool", "session": "Autumn"},
+            ],
+        }
+    }
+    result = flatten_ranked_electives(
+        ranking,
+        campus="Wollongong",
+        session="Autumn",
+        course="766",
+        catalog=catalog,
+    )
+    dumped = result.model_dump(by_alias=True)
+    codes = [row["code"] for row in dumped["subjects"]]
+    assert codes == ["CSCI323", "MISSING99"]
+    first = dumped["subjects"][0]
+    assert first["title"] == "Modern Artificial Intelligence"
+    assert first["name"] == first["title"]
+    assert first["cp"] == 6
+    assert first["credit_points"] == 6
+    assert first["session"] == "Autumn"
+    assert first["valid_sessions"] == "Autumn, Spring"
+    assert first["pool_id"] == "elective"
+    assert first["score"] == 0.9
+    assert first["pre-requisites"] == "CSCI203; 12cp at 200-level"
+    assert first["co-requisites"] == "None"
+    missing = dumped["subjects"][1]
+    assert missing["cp"] == 6
+    assert missing["valid_sessions"] == "None"
+
+
+def test_get_stage1_elective_list_shape_for_766() -> None:
+    result = get_stage1_elective_list(
+        ElectivePriorityInput(
+            completed_subjects=[],
+            planned_subjects=[],
+            course="766",
+            major="MAJ44204",
+            session="Autumn",
+            campus="Wollongong",
+            mode="interest",
+            interests="artificial intelligence",
+            limit=5,
+        )
+    )
+    payload = result.model_dump(by_alias=True)
+    assert "subjects" in payload
+    for row in payload["subjects"]:
+        assert {"code", "title", "name", "cp", "credit_points", "campus", "session",
+                "valid_sessions", "pool_id", "score", "pre-requisites", "co-requisites"} <= set(row)
 
 
 def test_interest_mode_requires_interests_text() -> None:

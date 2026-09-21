@@ -11,6 +11,8 @@ from app.schemas.elective_ranking import (
     ElectivePriorityInput,
     ElectivePriorityResult,
     RankedElectiveOut,
+    Stage1ElectiveList,
+    Stage1ElectiveSubject,
 )
 from app.schemas.eligibility import StudentEligibilityInput
 from app.services.course_rules import load_course_rules
@@ -173,3 +175,94 @@ def get_elective_priorities(student: ElectivePriorityInput) -> ElectivePriorityR
         )
 
     return ElectivePriorityResult(mode=student.mode, pools=pool_results)
+
+
+def _join_requirement_list(values: list | None) -> str:
+    parts = [str(item).strip() for item in (values or []) if str(item).strip()]
+    return "; ".join(parts) if parts else "None"
+
+
+def _cp_value(subject: dict) -> int:
+    raw = subject.get("cp") if subject else None
+    try:
+        return int(raw)
+    except (TypeError, ValueError):
+        return 6
+
+
+def _valid_sessions(subject: dict, campus: str) -> str:
+    campus_l = campus.strip().lower()
+    sessions: list[str] = []
+    for offering in subject.get("offerings") or []:
+        off_campus = (offering.get("campus") or "").strip().lower()
+        if off_campus and off_campus != campus_l:
+            continue
+        session = (offering.get("session") or "").strip()
+        if session and session not in sessions:
+            sessions.append(session)
+    return ", ".join(sessions) if sessions else "None"
+
+
+def flatten_ranked_electives(
+    ranking: ElectivePriorityResult,
+    *,
+    campus: str,
+    session: str,
+    course: str,
+    catalog: dict[str, dict] | None = None,
+) -> Stage1ElectiveList:
+    """Collapse pool shortlists into the Stage-1 ``subjects`` list graphAPI evals.
+
+    Unique by code (first pool / best score wins). Handbook fields come from
+    the subject catalog, not from ranking scores or markdown cards.
+    """
+    catalog = catalog if catalog is not None else load_subject_catalog(course)
+    best: dict[str, tuple[float, str, str]] = {}
+    order: list[str] = []
+    for pool in ranking.pools:
+        pool_id = pool.pool_id
+        for item in pool.priorities:
+            code = normalize_code(item.code)
+            if code not in best:
+                best[code] = (item.score, item.title, pool_id)
+                order.append(code)
+            elif item.score > best[code][0]:
+                _, title, prior_pool = best[code]
+                best[code] = (item.score, item.title or title, prior_pool)
+
+    subjects: list[Stage1ElectiveSubject] = []
+    for code in order:
+        score, ranked_title, pool_id = best[code]
+        record = _lookup_subject(catalog, code) or {}
+        title = (record.get("title") or ranked_title or code).strip()
+        cp = _cp_value(record)
+        subjects.append(
+            Stage1ElectiveSubject(
+                code=record.get("code") or code,
+                title=title,
+                name=title,
+                cp=cp,
+                credit_points=cp,
+                campus=campus,
+                session=session,
+                valid_sessions=_valid_sessions(record, campus),
+                pool_id=pool_id,
+                score=round(score, 4),
+                **{
+                    "pre-requisites": _join_requirement_list(record.get("prerequisites")),
+                    "co-requisites": _join_requirement_list(record.get("corequisites")),
+                },
+            )
+        )
+    return Stage1ElectiveList(subjects=subjects)
+
+
+def get_stage1_elective_list(student: ElectivePriorityInput) -> Stage1ElectiveList:
+    """Rank electives then flatten to the Stage-1 list graphAPI stores."""
+    ranking = get_elective_priorities(student)
+    return flatten_ranked_electives(
+        ranking,
+        campus=student.campus,
+        session=student.session,
+        course=student.course,
+    )

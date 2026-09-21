@@ -17,7 +17,7 @@ from app.schemas.elective_ranking import (
     ElectivePriorityResult,
     RankedElectivesWithSubjects,
 )
-from app.services.elective_ranking import get_elective_priorities
+from app.services.elective_ranking import flatten_ranked_electives, get_elective_priorities
 from app.services.handbook_service import fetch_handbook
 from app.services.kb_service import fetch_major, fetch_subjects
 from app.services.knowledge_service import TOPIC_SLUGS, TOPICS, load_topic
@@ -174,11 +174,7 @@ def make_lookup_ranked_electives_tool(db: AsyncSession):
     ) -> str:
         """Rank elective shortlists and return official handbook cards for those codes.
 
-        Call this instead of calling get_elective_priorities_tool and
-        lookup_subjects_tool separately when filling elective slots. Same
-        arguments as get_elective_priorities_tool. Still call
-        lookup_subjects_tool once for every other draft-plan code (core,
-        major, already enrolled) that is not in this shortlist.
+
 
         Returns JSON: mode, pools (ranked code/title/score per handbook pool),
         and subject_cards (markdown cards: CP, prereqs, sessions, handbook URL).
@@ -198,15 +194,22 @@ def make_lookup_ranked_electives_tool(db: AsyncSession):
             )
         )
         codes = ranked_elective_codes(ranking)
+        stage1 = flatten_ranked_electives(
+            ranking,
+            campus=campus,
+            session=session,
+            course=course,
+        )
         subject_cards = (
             await fetch_subjects(db, codes, _LATEST_HANDBOOK_YEAR) if codes else ""
         )
         combined = RankedElectivesWithSubjects(
             mode=ranking.mode,
             pools=ranking.pools,
+            subjects=stage1.subjects,
             subject_cards=subject_cards,
         )
-        return json.dumps(combined.model_dump(), indent=2)
+        return json.dumps(combined.model_dump(by_alias=True), indent=2)
 
     return lookup_ranked_electives_tool
 
