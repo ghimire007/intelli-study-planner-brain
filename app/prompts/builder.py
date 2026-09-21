@@ -23,11 +23,40 @@ def _course_handbook_link(degree_code: str | None) -> str:
     return f'<a href="{url}" target="_blank">course handbook</a>'
 
 
-def build_system_prompt(*, meta: dict, meta_confirmed: bool, handbook: str | None, raw_sols: str) -> str:
+def build_system_prompt(*, prompt: str, meta: dict, meta_confirmed: bool, handbook: str | None, raw_sols: str) -> str:
     """Assemble the system prompt for this turn from handbook, SOLS, and meta state."""
-    degree_code = (meta or {}).get("degree_code")
+    meta = meta or {}
+    degree_code = meta.get("degree_code")
 
-    if meta_confirmed:
+    if raw_sols == "no enrolment yet":
+        metadata_note = (
+            "You are an academic course planning assistant. "
+            "The student has not provided any course history or SOLS record yet. "
+            "Politely greet the student and ask them to paste their SOLS transcript or course history to get started."
+        )
+        handbook_placeholder = "(unavailable — missing student details must be asked for first)"
+
+    elif meta and not meta_confirmed:
+        extracted_fields = [
+            f"- Degree Code: {meta.get('degree_code') or 'Not found'}",
+            f"- Enrolment Year: {meta.get('year') or 'Not found'}",
+            f"- Campus: {meta.get('campus') or 'Not found'}",
+            f"- Major: {meta.get('major') or 'None/Not stated'}",
+        ]
+        extracted_str = "\n".join(extracted_fields)
+
+        metadata_note = (
+            "\n\n--- UNCONFIRMED STUDENT METADATA ---\n"
+            "The student's record was parsed, but details are not yet confirmed:\n"
+            f"{extracted_str}\n\n"
+            "INSTRUCTIONS:\n"
+            "1. Do NOT ask the student to re-paste their SOLS record.\n"
+            "2. If the student has already replied confirming or updating these details, call `confirm_metadata_tool` IMMEDIATELY.\n"
+            "3. If asking for confirmation, state the extracted details clearly and ask ONE concise question verifying if they are correct."
+        )
+        handbook_placeholder = "(unavailable — student metadata must be confirmed first)"
+
+    elif meta_confirmed:
         major = meta.get("major")
         major_bit = f", major={major}" if major else ", major=(not stated)"
         metadata_note = (
@@ -58,7 +87,7 @@ def build_system_prompt(*, meta: dict, meta_confirmed: bool, handbook: str | Non
         handbook_placeholder = "(unavailable — missing student details must be confirmed first)"
 
     return (
-        SYSTEM_PROMPT
+        prompt
         .replace("{{handbook}}", handbook or handbook_placeholder)
         .replace("{{sols}}", raw_sols)
         .replace(

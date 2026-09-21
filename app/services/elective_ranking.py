@@ -115,22 +115,27 @@ def get_elective_priorities(student: ElectivePriorityInput) -> ElectivePriorityR
     """Return ranked elective shortlists per pool for the planner."""
     pools_data = load_elective_pools(student.course)
     pools = pools_data.get("pools") or []
+    print('finding electives')
     if not pools:
+        print('no pools')
         return ElectivePriorityResult(mode=student.mode, pools=[])
 
     try:
         rules = load_course_rules(student.course, student.campus)
     except (FileNotFoundError, ValueError):
+        print("no course or campus found")
         return ElectivePriorityResult(mode=student.mode, pools=[])
 
     year = int(pools_data.get("year") or 2026)
     catalog = load_subject_catalog(student.course, year=year)
     if not catalog:
+        print('not catalog found from year and course')
         return ElectivePriorityResult(mode=student.mode, pools=[])
 
     major_code = resolve_major_code(student.major, rules)
     query = _build_query(student, major_code)
     if not query.strip():
+        print('no input or major code')
         return ElectivePriorityResult(mode=student.mode, pools=[])
 
     completed = {normalize_code(c) for c in student.completed_subjects}
