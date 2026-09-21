@@ -27,3 +27,11 @@ class ElectivePoolPriorities(BaseModel):
 class ElectivePriorityResult(BaseModel):
     mode: str
     pools: list[ElectivePoolPriorities]
+
+
+class RankedElectivesWithSubjects(BaseModel):
+    """Ranking shortlist plus official subject cards for those codes."""
+
+    mode: str
+    pools: list[ElectivePoolPriorities]
+    subject_cards: str

@@ -12,7 +12,11 @@ from langchain_core.tools import StructuredTool, tool
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.schemas.elective_ranking import ElectivePriorityInput
+from app.schemas.elective_ranking import (
+    ElectivePriorityInput,
+    ElectivePriorityResult,
+    RankedElectivesWithSubjects,
+)
 from app.services.elective_ranking import get_elective_priorities
 from app.services.handbook_service import fetch_handbook
 from app.services.kb_service import fetch_major, fetch_subjects
@@ -141,6 +145,72 @@ def get_elective_priorities_tool(
     return json.dumps(result.model_dump(), indent=2)
 
 
+def ranked_elective_codes(result: ElectivePriorityResult) -> list[str]:
+    """Unique ranked codes in pool order, first occurrence wins."""
+    codes: list[str] = []
+    seen: set[str] = set()
+    for pool in result.pools:
+        for item in pool.priorities:
+            if item.code not in seen:
+                seen.add(item.code)
+                codes.append(item.code)
+    return codes
+
+
+def make_lookup_ranked_electives_tool(db: AsyncSession):
+    """Rank electives then look up official subject cards in one tool call."""
+
+    @tool
+    async def lookup_ranked_electives_tool(
+        course: str,
+        campus: str,
+        session: str,
+        mode: Literal["major", "interest"],
+        completed_subjects: list[str],
+        planned_subjects: list[str],
+        major: str | None = None,
+        interests: str | None = None,
+        limit: int = 25,
+    ) -> str:
+        """Rank elective shortlists and return official handbook cards for those codes.
+
+        Call this instead of calling get_elective_priorities_tool and
+        lookup_subjects_tool separately when filling elective slots. Same
+        arguments as get_elective_priorities_tool. Still call
+        lookup_subjects_tool once for every other draft-plan code (core,
+        major, already enrolled) that is not in this shortlist.
+
+        Returns JSON: mode, pools (ranked code/title/score per handbook pool),
+        and subject_cards (markdown cards: CP, prereqs, sessions, handbook URL).
+        Codes missing from the subject table are marked — do not invent details.
+        """
+        ranking = get_elective_priorities(
+            ElectivePriorityInput(
+                course=course,
+                campus=campus,
+                session=session,
+                major=major,
+                completed_subjects=completed_subjects,
+                planned_subjects=planned_subjects,
+                mode=mode,
+                interests=interests,
+                limit=limit,
+            )
+        )
+        codes = ranked_elective_codes(ranking)
+        subject_cards = (
+            await fetch_subjects(db, codes, _LATEST_HANDBOOK_YEAR) if codes else ""
+        )
+        combined = RankedElectivesWithSubjects(
+            mode=ranking.mode,
+            pools=ranking.pools,
+            subject_cards=subject_cards,
+        )
+        return json.dumps(combined.model_dump(), indent=2)
+
+    return lookup_ranked_electives_tool
+
+
 _topic_list = "\n".join(f"- {t.slug}: {t.description}" for t in TOPICS)
 
 
@@ -180,5 +250,6 @@ def build_skills(db: AsyncSession):
             make_lookup_subjects_tool(db),
             make_lookup_major_tool(db),
             get_elective_priorities_tool,
+            make_lookup_ranked_electives_tool(db),
         ],
     }

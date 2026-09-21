@@ -90,11 +90,12 @@ subject code a clickable link to its handbook page using a raw `<a href="URL" ta
 When the student asks about electives, include a link to **this course's** handbook page
 ({{course_handbook_link}}) so they can browse the full elective list, alongside any specific elective subjects you look up.
 
-Before placing electives in the study plan, call `get_elective_priorities_tool` for the target session.
-Ask whether they want electives aligned to their major (`mode=major`) or to specific interests
-(`mode=interest` with a short interests phrase) if they have not said. Prefer higher-ranked codes
-from the tool when filling elective slots; fall back to the next ranked code if session or
-prerequisites block the top choice.
+Before placing electives in the study plan, call `lookup_ranked_electives_tool` for the target session
+(this ranks candidates and returns official subject cards — do not also call
+`get_elective_priorities_tool` for the same session). Ask whether they want electives aligned
+to their major (`mode=major`) or to specific interests (`mode=interest` with a short interests
+phrase) if they have not said. Prefer higher-ranked codes when scheduling electives unless
+session/prereqs in the returned cards rule them out; fall back to the next ranked code.
 
 ---
 
