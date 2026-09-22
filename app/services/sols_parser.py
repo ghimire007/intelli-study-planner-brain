@@ -29,7 +29,7 @@ Rules:
     "UOWHK", "Hong Kong"                  → "Hong Kong"
     "KDU", "Malaysia"                     → "Malaysia"
   If the Campus column contains multiple distinct values, use the most recent (latest year) campus.
-  If campus cannot be determined, default to "Wollongong" (do not return null for campus).
+  If campus cannot be determined, return null. Never assume a campus.
 """.strip()
 
 
@@ -39,7 +39,7 @@ class SOLSMeta(BaseModel):
     agent asks the student directly instead of guessing."""
     degree_code: str | None  # e.g. "766"
     year: int | None         # commencement year — used for handbook DB lookup
-    campus: str              # canonical campus name e.g. "Wollongong", "Liverpool", "Singapore"
+    campus: str | None       # canonical campus name e.g. "Wollongong", "Liverpool", "Singapore"
 
 
 def _strip_code_block(text: str) -> str:
