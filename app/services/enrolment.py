@@ -122,7 +122,7 @@ _FLAT_CREDIT = re.compile(r"\b(?:Unspecified|Specified)\s+Credit\b(?P<body>[^#]*
 _FLAT_LABELS = frozenset(
     {
         "Student", "Effective Date", "Course", "Instance", "Campus", "Delivery",
-        "Status", "Second Major", "Major", "Note", "Notes", "Supervisor",
+        "Status", "Second Major", "Note", "Notes", "Supervisor",
         "Honours GPA", "GPA", "WAM",
     }
 )
@@ -261,6 +261,13 @@ def _add_major(header: dict, value: str) -> None:
     if code := _MAJOR_CODE.match(value):
         header["majors"].append(code.group(1))
     elif _MAJOR_TITLE.match(value) and not _UNDECLARED.match(value):
+        value = re.sub(
+            r"\s+Honours?$",
+            "",
+            value,
+            flags=re.IGNORECASE,
+        ).strip()
+
         header["majors"].append(value)
 
 
@@ -305,42 +312,54 @@ def _parse_flat(raw_sols: str) -> EnrolmentRecord:
 
     With no columns left, rows are recovered by matching the known row shape
     end to end. Text left over between two rows means a row was only partly
-    understood, and that is a refusal rather than a silent drop: a record
-    quietly missing a subject is worse than no record at all.
+    understood, and that is a refusal rather than a silent drop.
     """
-    # Pipes and bold markers may or may not have survived the copy; neither
-    # carries any allowlisted meaning, so both become whitespace and the one
-    # shape below covers a run-together markdown table, a tab-separated copy
-    # straight out of the browser, and plain text alike.
+
+    # Pipes and markdown markers do not carry allowlisted meaning.
     text = " ".join(raw_sols.replace("|", " ").replace("*", " ").split())
 
     matches = list(_FLAT_ROW.finditer(text))
+
     if not matches:
         if re.search(r"\b[A-Z]{2,4}\d{3}[A-Z]?\b", text):
             raise UnreadableRecord(
-                "Subject codes were found but no row could be read in full. Each row needs "
-                "its year, session, campus, subject code, nominal CP and status."
+                "Subject codes were found but no row could be read in full. "
+                "Each row needs its year, session, campus, subject code, "
+                "nominal CP and status."
             )
+
         raise UnreadableRecord(_NO_HISTORY)
 
+    # Nothing meaningful should exist between recognised rows.
     for previous, current in pairwise(matches):
-        if leftover := text[previous.end() : current.start()].strip():
-            raise UnreadableRecord(f"Could not read the subject row at {leftover!r}.")
+        if leftover := text[previous.end():current.start()].strip():
+            raise UnreadableRecord(
+                f"Could not read the subject row at {leftover!r}."
+            )
 
-    # Advanced standing cannot be read here: a specified-credit row carries a
-    # free-text subject name, and with the columns gone there is nothing to
-    # tell where that name ends. A section reading "None" costs nothing, but
-    # dropping real credit rows would understate the credit the student holds,
-    # so those are a refusal.
-    tail = text[matches[-1].end() :]
-    if any(re.search(r"\d", section.group("body")) for section in _FLAT_CREDIT.finditer(tail)):
+    # Advanced standing cannot be safely recovered without table boundaries.
+    tail = text[matches[-1].end():]
+
+    if any(
+        re.search(r"\d", section.group("body"))
+        for section in _FLAT_CREDIT.finditer(tail)
+    ):
         raise UnreadableRecord(
-            "This record lists advanced standing, which cannot be read once the table "
-            "layout is lost. Paste the record again with each row on its own line."
+            "This record lists advanced standing, which cannot be read once "
+            "the table layout is lost. Paste the record again with each row "
+            "on its own line."
         )
 
-    header: dict = {"course_code": None, "campus": None, "majors": []}
+    # Parse header fields from the complete flattened text.
+    # The regexes themselves are bounded, so this does not leak row values.
+    header: dict = {
+        "course_code": None,
+        "campus": None,
+        "majors": [],
+    }
+
     preamble = text
+
     if course := _FLAT_COURSE.search(preamble):
         header["course_code"] = course.group(1)
 
@@ -350,37 +369,42 @@ def _parse_flat(raw_sols: str) -> EnrolmentRecord:
     for major in _FLAT_MAJOR.finditer(preamble):
         _add_major(header, major.group("value").strip())
 
+    # Rebuild rows with the same validation rules as the table parser.
+    rows: list[EnrolmentRow] = []
+
+    for row in matches:
+        code = row.group("code").upper()
+
+        if not _SUBJECT_CODE.match(code):
+            raise UnreadableRecord(
+                f"{code!r} is not a subject code."
+            )
+
+        grade = row.group("grade")
+        if grade is not None:
+            grade = grade.upper()
+            if grade not in KNOWN_GRADES:
+                raise UnreadableRecord(
+                    f"{grade!r} is not a known grade."
+                )
+
+        rows.append(
+            EnrolmentRow(
+                year=int(row.group("year")),
+                session=row.group("session"),
+                campus=row.group("campus").split("/")[0].strip(),
+                code=code,
+                nom_cp=int(row.group("nom_cp")),
+                grade=grade,
+                status=row.group("status"),
+            )
+        )
+
     return EnrolmentRecord(
         course_code=header["course_code"],
         campus=header["campus"],
         majors=header["majors"],
-        # The mark is captured only so the row shape stays anchored; like the
-        # table parser, this never reads it out.
-        rows=[]
-
-        for row in matches:
-            campus = row.group("campus").split("/")[0].strip()
-            code = row.group("code").upper()
-            grade = row.group("grade")
-
-            if not _SUBJECT_CODE.match(code):
-                raise UnreadableRecord(f"{code!r} is not a subject code.")
-
-            if grade and grade not in KNOWN_GRADES:
-                raise UnreadableRecord(f"{grade!r} is not a known grade.")
-
-            rows.append(
-                EnrolmentRow(
-                    year=int(row.group("year")),
-                    session=row.group("session"),
-                    campus=campus,
-                    code=code,
-                    nom_cp=int(row.group("nom_cp")),
-                    grade=grade,
-                    status=row.group("status"),
-                )
-            )
-
+        rows=rows,
         specified_credit=[],
         unspecified_credit=[],
     )
