@@ -29,7 +29,7 @@ from pathlib import Path
 
 # Sibling import: scrape_courseloop lives next to this script.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from scrape_courseloop import scrape_subject  # noqa: E402
+from scrape_courseloop import scrape_subject
 
 BASE = "https://courses.uow.edu.au"
 SEARCH_URL = f"{BASE}/api/search/search-academic-items"
