@@ -10,12 +10,28 @@ from app.llm.factory import make_chat_model
 from app.llm.registry import PROVIDER_LABELS
 from app.models.auth import User
 from app.models.session import ChatSession
+from app.schemas.chat import ChatContext
+from app.services.chat_context import SessionNotFound, intake_context, safe_record
 from app.services.credential_resolver import CredentialResolver
-from app.services.enrolment import UnreadableRecord, project
 from app.services.pii import scrub_pii
 from app.services.vault_service import VaultService
 from langchain_core.messages import HumanMessage, SystemMessage
 from sqlalchemy.ext.asyncio import AsyncSession
+
+
+def prepare_first_message(message: str, input_type: str = "enrolment") -> tuple[str, bool]:
+    """Route ordinary prose to the LLM; never send a detected raw record unprojected."""
+    if not message.strip():
+        raise ValueError("Enter a message before sending.")
+    looks_like_record = bool(re.search(
+        r"(?im)subject\s*code\s*nom(?:inal)?\s*cp|^\s*enrolment history(?:\s*:|[ \t]*$|\s+year\b)|subject\s*code\s*[|\t]|nom(?:inal)?\s*cp\s*[|\t]|"
+        r"^\s*(?:\|?\s*year\s*[|\t]|(?:19|20)\d{2}\s+(?:Autumn|Spring|Summer)\s+)",
+        message,
+    )) or bool(re.search(r"(?im)^\s*student(?: name| number| id)?\s*:", message)
+               and ("|" in message or "\t" in message))
+    if input_type == "enrolment" or looks_like_record:
+        return safe_record(message), True
+    return scrub_pii(message), False
 
 
 class CredentialRejected(Exception):
@@ -45,75 +61,13 @@ class AgentChatService:
         self._resolver = CredentialResolver(db)
 
     async def start_session(
-        self, raw_sols: str, *, model: str | None = None
+        self, raw_sols: str, *, model: str | None = None, input_type: str = "enrolment",
+        context: ChatContext | None = None,
     ) -> tuple[ChatSession, MessageView]:
         session_id = uuid.uuid4()
+        prepared, is_record = prepare_first_message(raw_sols, input_type)
 
-        # Project the paste onto its allowlisted fields before anything is
-        # persisted or sent to a provider. The paste itself stops here: only
-        # `projected` travels, and an unreadable one raises UnreadableRecord
-        # rather than falling back to the raw text. The state key stays
-        # `raw_sols` so existing checkpoints keep loading.
-        # projected = project(raw_sols)
-
-        cleaned_sols = raw_sols.strip() if raw_sols else ""
-
-        print("start session beginning, cleaned_sols:", cleaned_sols, ".")
-
-        projected_sols: str | None = None
-        initial_messages = []
-        planning_requested = False
-
-        if not cleaned_sols:
-            # No initial input.
-            print("NO SOLS")
-
-            projected_sols = "no enrolment yet"
-            initial_messages.append(HumanMessage(content="Hello"))
-
-        # Evaluate SOLS input if provided
-        else:
-            protected_sols = scrub_pii(raw_sols)
-
-            looks_like_sols = bool(
-                re.search(
-                    r"\b(?:Student|Course|Campus|Major|Effective Date|"
-                    r"Year\s+Session|Subject Code|Status|Enrolment History)\b",
-                    protected_sols,
-                    re.IGNORECASE,
-                )
-                or re.search(
-                    r"\b(?:19|20)\d{2}\s+"
-                    r"(?:Annual|Autumn|Spring)\b",
-                    protected_sols,
-                    re.IGNORECASE,
-                )
-                or re.search(
-                    r"\b[A-Z]{2,4}\d{3}[A-Z]?\b",
-                    protected_sols,
-                )
-            )
-
-            if looks_like_sols:
-                print("SOLS detected")
-
-                try:
-                    projected_sols = project(protected_sols)
-
-                except UnreadableRecord as exc:
-                    # input looks like SOLS but was malformed/unreadable
-                    print(repr(exc))
-                    raise
-
-                initial_messages.append(HumanMessage(content=projected_sols))
-                planning_requested = True
-
-            else:
-                # conversational text
-                projected_sols = "no enrolment yet"
-                initial_messages.append(HumanMessage(content=protected_sols))
-                planning_requested = False
-
+        intake = intake_context(self._user, context, {}, prepared if is_record else None)
         llm_config = await self._resolver.resolve(self._user, requested_model=model)
         graph = build_advisor_graph(self._db, get_checkpointer(), llm_config)
 
@@ -122,14 +76,8 @@ class AgentChatService:
             graph,
             llm_config,
             {
-                "messages": initial_messages,
-                "raw_sols": projected_sols,
-
-                "meta": None,
-                "meta_confirmed": False,
-
-                "conversation_mode": "collecting",
-
+                "messages": [HumanMessage(content=prepared)],
+                **intake,
                 "handbook": None,
 
                 "electives": None,
@@ -146,7 +94,8 @@ class AgentChatService:
                 "stage2_retry_count": 0,
                 "stage2_tool_loop_count": 0,
 
-                "planning_requested": planning_requested,
+                "planning_requested": bool(intake.get("raw_sols")),
+                "conversation_mode": "collecting",
                 "current_stage": None,
             },
             {"configurable": {"thread_id": str(session_id)}},
@@ -155,12 +104,9 @@ class AgentChatService:
         state = await graph.aget_state({"configurable": {"thread_id": str(session_id)}})
         meta = state.values.get("meta") or {}
 
-        # Handle fallback for missing degree_code
-        degree_code = meta.get("degree_code") or "UNKNOWN"
-
         session = ChatSession(
             id=session_id,
-            degree_code=degree_code,
+            degree_code=meta.get("degree_code") or "UNKNOWN",
             user_id=self._user.id,
             provider=llm_config.provider.value,
             model=llm_config.model,
@@ -173,7 +119,8 @@ class AgentChatService:
         return session, reply
 
     async def continue_session(
-        self, session_id: uuid.UUID, user_message: str, *, model: str | None = None
+        self, session_id: uuid.UUID, user_message: str, *, model: str | None = None,
+        context: ChatContext | None = None,
     ) -> MessageView:
         session = await self._owned_session(session_id)
 
@@ -182,33 +129,19 @@ class AgentChatService:
         )
         graph = build_advisor_graph(self._db, get_checkpointer(), llm_config)
         config = {"configurable": {"thread_id": str(session_id)}}
+        state = await graph.aget_state(config)
+        if "raw_sols" not in state.values:
+            raise SessionNotFound(
+                f"Session {session_id} has no conversation state — it may be stale or was never started"
+            )
 
-        protected_message = scrub_pii(user_message)
-        payload = {"messages": [HumanMessage(content=protected_message)]}
-
-        # Only treat the message as a new SOLS/enrolment record if # project() successfully recognises it as one.
-        try:
-            projected = project(protected_message)
-
-        except UnreadableRecord:
-            # Not a valid SOLS record. Keep it as a normal chat message.
-            projected = None
-
-        except Exception as e:
-            print( "continue_session: unexpected project() error:", repr(e), )
-            projected = None
-
-        if projected:
-            print("continue_session: SOLS record detected")
-            payload = {
-                "messages": [ HumanMessage(content=projected) ],
-                "raw_sols": projected,
-                "planning_requested": True,
-                "plan": None,
-            }
-        else:
-            print("continue_session: standard chat message")
-
+        prepared, is_record = prepare_first_message(user_message, "question")
+        payload = {
+            **intake_context(self._user, context, state.values, prepared if is_record else None),
+            "messages": [HumanMessage(content=prepared)],
+        }
+        if is_record or (context and context.enrolment_record is not None):
+            payload.update(planning_requested=True, plan=None)
         await self._invoke(graph, llm_config, payload, config)
 
         # A student may switch models mid-conversation; keep the session in step
@@ -227,9 +160,10 @@ class AgentChatService:
         # No key needed to read back what was already said.
         graph = build_advisor_graph(self._db, get_checkpointer())
         state = await graph.aget_state({"configurable": {"thread_id": str(session_id)}})
-
-        if not state.values:
-            return session, []
+        if "raw_sols" not in state.values:
+            raise SessionNotFound(
+                f"Session {session_id} has no conversation state — it may be stale or was never started"
+            )
 
         messages = await build_history(graph, str(session_id), fallback_model=session.model)
         return session, messages
@@ -240,7 +174,7 @@ class AgentChatService:
         # cannot prove whose they are. Same 404 either way — holding a session
         # UUID must not confirm that it exists.
         if session is None or session.user_id != self._user.id:
-            raise ValueError(f"Session {session_id} not found")
+            raise SessionNotFound(f"Session {session_id} not found")
         return session
 
     async def _invoke(self, graph, llm_config: LLMConfig, payload: dict, config: dict) -> None:

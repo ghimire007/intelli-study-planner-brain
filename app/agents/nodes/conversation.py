@@ -20,6 +20,8 @@ from app.agents.state import (
 )
 from app.prompts.builder import build_system_prompt
 from app.prompts.prompts import SYSTEM_PROMPT
+from app.services.chat_context import merge_academic
+from app.services.course_catalog import COURSE_TITLES
 from app.services.sols_parser import parse_sols
 
 
@@ -38,6 +40,8 @@ class ConversationNodes:
             return {}
 
         raw_sols = state.get("raw_sols")
+        if not raw_sols:
+            return {"meta": {}, "meta_confirmed": False, "planning_requested": False}
         print("raw_sols chars =", len(raw_sols or ""))
 
         start = time.perf_counter()
@@ -48,11 +52,10 @@ class ConversationNodes:
             raise
         print(f"parse_sols took {time.perf_counter() - start:.2f}s")
 
-        return {
-            "meta": meta.model_dump(),
-            "meta_confirmed": False,
-            "planning_requested": False,
-        }
+        data = meta.model_dump()
+        merged = merge_academic(state, data, "enrolment_record")
+        merged["meta"]["majors"] = data["majors"]
+        return {**merged, "planning_requested": False}
 
     async def agent(self, state: AdvisorState) -> dict:
         """Conversational LLM: confirmation-oriented model before metadata is
@@ -71,6 +74,9 @@ class ConversationNodes:
             meta_confirmed=confirmed,
             handbook=state.get("handbook"),
             raw_sols=state.get("raw_sols"),
+            field_sources=state.get("field_sources"),
+            conflicts=state.get("context_conflicts"),
+            degree_name=COURSE_TITLES.get((state.get("meta") or {}).get("degree_code")),
         )
         system_content += f"""
             PLAN CHANGE RULES:
@@ -118,6 +124,8 @@ class ConversationNodes:
         updates: dict = {}
 
         for message in batch:
+            if getattr(message, "status", None) == "error":
+                continue
             if message.name not in {"confirm_metadata_tool", "request_plan_change_tool"}:
                 continue
 
@@ -135,6 +143,20 @@ class ConversationNodes:
                         state=state,
                     )
                     updates.update(apply_confirm_metadata(prior_meta, sanitized))
+                    sources = dict(updates.get("field_sources", state.get("field_sources", {})))
+                    conflicts = dict(updates.get("context_conflicts", state.get("context_conflicts", {})))
+                    for key, value in parsed.items():
+                        if value is not None and sanitized.get(key) == value:
+                            sources[key] = {"source": "conversation", "confirmed": True}
+                            conflicts.pop(key, None)
+                    updates.update(meta=sanitized, field_sources=sources, context_conflicts=conflicts)
+                    updates["meta_confirmed"] = not conflicts and all(
+                        sources.get(key, {}).get("confirmed", state.get("meta_confirmed", False))
+                        and sanitized.get(key) is not None
+                        for key in ("degree_code", "year", "campus")
+                    )
+                    if not updates["meta_confirmed"]:
+                        updates.update(planning_requested=False, conversation_mode="collecting")
                     print("CONFIRMED METADATA RAW:", parsed)
                     print("CONFIRMED METADATA SANITIZED:", sanitized)
                 else:

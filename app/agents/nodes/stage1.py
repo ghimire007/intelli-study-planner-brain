@@ -32,6 +32,7 @@ from app.agents.state import (
 )
 from app.prompts.builder import build_system_prompt
 from app.prompts.prompts import EVAL_SUBJECTS_ELECTIVES, SUBJECT_GENERATION_PROMPT
+from app.services.course_catalog import COURSE_TITLES
 
 
 class Stage1Nodes:
@@ -90,6 +91,9 @@ class Stage1Nodes:
             meta_confirmed=state.get("meta_confirmed", False),
             handbook=state.get("handbook"),
             raw_sols=state.get("raw_sols"),
+            field_sources=state.get("field_sources"),
+            conflicts=state.get("context_conflicts"),
+            degree_name=COURSE_TITLES.get((state.get("meta") or {}).get("degree_code")),
         )
         feedback = state.get("remaining_feedback")
         if feedback:
@@ -142,6 +146,9 @@ class Stage1Nodes:
             meta_confirmed=state.get("meta_confirmed", False),
             handbook=state.get("handbook"),
             raw_sols=state.get("raw_sols"),
+            field_sources=state.get("field_sources"),
+            conflicts=state.get("context_conflicts"),
+            degree_name=COURSE_TITLES.get((state.get("meta") or {}).get("degree_code")),
         )
         eval_prompt = (
             eval_prompt

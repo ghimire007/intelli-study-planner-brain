@@ -7,13 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class HandbookUnavailable(ValueError):
-    """No handbook exists for this course/year/campus.
-
-    Subclasses ValueError so the existing broad handlers around
-    fetch_handbook keep catching it; the chat API maps it to 503 ahead of
-    its generic ValueError branch, so it can never read as "session not
-    found".
-    """
+    """Rules are unavailable, not a missing conversation."""
 
 
 async def find_handbook(

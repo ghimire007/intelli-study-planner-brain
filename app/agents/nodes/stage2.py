@@ -15,6 +15,7 @@ from app.agents.state import (
 )
 from app.prompts.builder import build_system_prompt
 from app.prompts.prompts import EVAL_PLAN, SYSTEM_PROMPT_V1
+from app.services.course_catalog import COURSE_TITLES
 
 
 class Stage2Nodes:
@@ -38,6 +39,9 @@ class Stage2Nodes:
             meta_confirmed=state.get("meta_confirmed", False),
             handbook=state.get("handbook"),
             raw_sols=state.get("raw_sols"),
+            field_sources=state.get("field_sources"),
+            conflicts=state.get("context_conflicts"),
+            degree_name=COURSE_TITLES.get((state.get("meta") or {}).get("degree_code")),
         )
         feedback = state.get("plan_feedback")
         if feedback:

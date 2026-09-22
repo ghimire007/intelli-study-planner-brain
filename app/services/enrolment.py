@@ -187,7 +187,8 @@ class EnrolmentRecord(BaseModel):
 
 def _norm(cell: str) -> str:
     """Normalise a header cell for matching: lowercase, unbolded, despaced."""
-    return re.sub(r"\s+", " ", cell.replace("*", "").strip()).lower()
+    name = re.sub(r"\s+", " ", cell.replace("*", "").strip()).lower()
+    return "nom cp" if name in {"nomcp", "nominal cp"} else name
 
 
 def _split_row(line: str) -> list[str]:

@@ -152,7 +152,9 @@ def stage1_electives_from_advisor_state(
 
     completed, planned = sols_codes_for_ranking(state.get("raw_sols"))
 
-    raw_majors = meta.get("majors") or []
+    raw_majors = meta.get("majors")
+    if raw_majors is None:
+        raw_majors = meta.get("major") or []
 
     if isinstance(raw_majors, str):
         raw_majors = [raw_majors]
@@ -277,6 +279,9 @@ class AdvisorState(TypedDict):
     # Metadata
     meta: dict | None
     meta_confirmed: bool
+    field_sources: dict
+    context_conflicts: dict
+    context_observations: dict
     planning_requested: bool
     elective_preference: str | None
 
@@ -670,6 +675,11 @@ def sanitize_confirmed_metadata(
         else:
             sanitized[field] = value
 
+    if isinstance(candidate.get("major"), str) and _value_explicitly_stated_by_student(
+        candidate["major"], student_text
+    ):
+        sanitized["major"] = candidate["major"]
+
     candidate_majors = candidate.get("majors")
 
     # Backward compatibility with the old singular field.
@@ -706,7 +716,8 @@ def sanitize_confirmed_metadata(
 
         if sanitized_majors:
             sanitized["majors"] = list(dict.fromkeys(sanitized_majors))
-            sanitized.pop("major", None)
+            if "majors" in candidate:
+                sanitized.pop("major", None)
         else:
             # Do not erase previously confirmed majors merely because
             # the confirmation response omitted or changed them.
