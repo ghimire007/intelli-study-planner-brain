@@ -340,11 +340,13 @@ def _parse_flat(raw_sols: str) -> EnrolmentRecord:
         )
 
     header: dict = {"course_code": None, "campus": None, "majors": []}
-    preamble = text[: matches[0].start()]
+    preamble = text
     if course := _FLAT_COURSE.search(preamble):
         header["course_code"] = course.group(1)
+
     if campus := _FLAT_CAMPUS.search(preamble):
         header["campus"] = campus.group("value").strip()
+
     for major in _FLAT_MAJOR.finditer(preamble):
         _add_major(header, major.group("value").strip())
 
@@ -354,18 +356,31 @@ def _parse_flat(raw_sols: str) -> EnrolmentRecord:
         majors=header["majors"],
         # The mark is captured only so the row shape stays anchored; like the
         # table parser, this never reads it out.
-        rows=[
-            EnrolmentRow(
-                year=int(row.group("year")),
-                session=row.group("session"),
-                campus=row.group("campus").split("/")[0].strip(),
-                code=row.group("code"),
-                nom_cp=int(row.group("nom_cp")),
-                grade=row.group("grade"),
-                status=row.group("status"),
+        rows=[]
+
+        for row in matches:
+            campus = row.group("campus").split("/")[0].strip()
+            code = row.group("code").upper()
+            grade = row.group("grade")
+
+            if not _SUBJECT_CODE.match(code):
+                raise UnreadableRecord(f"{code!r} is not a subject code.")
+
+            if grade and grade not in KNOWN_GRADES:
+                raise UnreadableRecord(f"{grade!r} is not a known grade.")
+
+            rows.append(
+                EnrolmentRow(
+                    year=int(row.group("year")),
+                    session=row.group("session"),
+                    campus=campus,
+                    code=code,
+                    nom_cp=int(row.group("nom_cp")),
+                    grade=grade,
+                    status=row.group("status"),
+                )
             )
-            for row in matches
-        ],
+
         specified_credit=[],
         unspecified_credit=[],
     )
