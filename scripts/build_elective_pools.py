@@ -135,7 +135,6 @@ def _classify_pool(node: dict, named_lists: dict[str, dict]) -> dict:
     codes = _item_codes(node)
     cp = _parse_cp(node.get("cp"))
     lower_title = title.lower()
-    lower_desc = desc.lower()
 
     pool: dict = {
         "id": re.sub(r"[^a-z0-9]+", "_", lower_title).strip("_") or "elective",

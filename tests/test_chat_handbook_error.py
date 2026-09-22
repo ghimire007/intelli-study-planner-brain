@@ -1,9 +1,8 @@
-from unittest.mock import AsyncMock
 import uuid
+from unittest.mock import AsyncMock
 
 import httpx
 import pytest
-
 from app.api.v1.chat import _get_agent_service
 from app.main import app
 from app.services.handbook_service import HandbookUnavailable

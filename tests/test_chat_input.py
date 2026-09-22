@@ -1,5 +1,4 @@
 import pytest
-
 from app.schemas.chat import ChatRequest
 from app.services.agent_chat_service import prepare_first_message
 from app.services.enrolment import UnreadableRecord

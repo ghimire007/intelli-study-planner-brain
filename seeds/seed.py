@@ -12,12 +12,11 @@ import asyncio
 import json
 from pathlib import Path
 
-from sqlalchemy import select
-
 from app.core.database import AsyncSessionLocal
 from app.models.handbook import Handbook
 from app.models.major import Major
 from app.models.subject import Subject
+from sqlalchemy import select
 
 SEEDS_DIR = Path(__file__).resolve().parent
 KB_COURSES = ("766", "1807", "1838")
@@ -26,7 +25,7 @@ KB_YEAR = 2026
 HANDBOOK_766_2026_WOLLONGONG = """# 766 — Bachelor of Computer Science (Wollongong Campus, 2026 Handbook)
 
 ## CORE DEGREE RULES (Total: 144 CP)
-- **Core (96 CP):** Complete all Section A subjects. 
+- **Core (96 CP):** Complete all Section A subjects.
 - **Major (24 CP):** Complete Section B declared major list.
 - **No-Major Path (24 CP):** 18 CP at 300-level + 6 CP at 200/300-level (CSCI/CSIT/ISIT). Do not make up no-major subjects. Write no-major 1 (200/300 lv) etc.
 - **Double Major:** Satisfy both majors (15 core + 8 major subjects). No electives.
@@ -53,11 +52,11 @@ HANDBOOK_766_2026_WOLLONGONG = """# 766 — Bachelor of Computer Science (Wollon
 - CSIT321 (12 CP) | Aut/Spr | Prereq: CSIT214 AND 18 CP at 200-level CSCI/CSIT/ISIT | Coreq: CSIT226 AND CSIT314 |
 
 ### Specifically for CSIT321:
-- CSIT321 is split into Part 1 and Part 2 both worth 6CP each for the purpose of scheduling. They CANNOT BE TAKEN SIMULTANEOUSLY AND YOU CANNOT COMBINE BOTH PARTS. 
-- CSIT321 Part 1 has ALL the prequisites and corequisites of CSIT321. CSIT321 Part 2 only has CSIT321 Part 1 as a prerequisite. 
+- CSIT321 is split into Part 1 and Part 2 both worth 6CP each for the purpose of scheduling. They CANNOT BE TAKEN SIMULTANEOUSLY AND YOU CANNOT COMBINE BOTH PARTS.
+- CSIT321 Part 1 has ALL the prequisites and corequisites of CSIT321. CSIT321 Part 2 only has CSIT321 Part 1 as a prerequisite.
 - Part 2 MUST be in the **immediately following** session from Part 1 (Session N then Session N + 1).
 - If the student was already enrolled in Part 1 last session, Part 2 must appear in next current session.
-- Prioritise starting CSIT321 in the same session as CSIT314 if possible. 
+- Prioritise starting CSIT321 in the same session as CSIT314 if possible.
 - CSIT321 Part 1 is 6 CP. CSIT321 Part 2 is 6 CP.
 
 ### Specifically for CSIT314:
@@ -94,7 +93,7 @@ If no major is declared, skip this section and use the **No-Major Path** below.
 For a **double major**, list requirements for BOTH majors. At most **ONE subject** may be cross-counted between the two majors.
 
 ### AI & Big Data (MAJ44204)
-- CSCI218 (6 CP) | Spr | Prereq: (CSIT110 OR CSIT111) AND 18 CP at 100-level 
+- CSCI218 (6 CP) | Spr | Prereq: (CSIT110 OR CSIT111) AND 18 CP at 100-level
 - CSCI316 (6 CP) | Aut | Prereq: CSCI203
 - CSCI323 (6 CP) | Aut | Prereq: (CSIT110 OR CSIT111) AND 12 CP of 200-level CSCI/CSIT
 - ISIT312 (6 CP) | Spr | Prereq: CSIT115 AND 18 CP at 200-level
@@ -128,7 +127,7 @@ For a **double major**, list requirements for BOTH majors. At most **ONE subject
 - ISIT219 (6 CP) | Aut | Prereq: CSIT128
 
 #### Specifically for Software Engineering majors:
-- ISIT219 is **NOT** an SE major core for students with commencement year ≤ 2023. 
+- ISIT219 is **NOT** an SE major core for students with commencement year ≤ 2023.
 - CSIT314 **IS** an SE major core for students with commencement year ≤ 2023.
 
 
@@ -160,7 +159,7 @@ Grades TF, F, N, NH, W, WF, AF, or any blank Grade do **NOT** count as complete 
 Specified Credits table format: `Course | Subject Code | Name | Level | NomCP`
 Unspecified Credits table format: `Course | Level | NomCP`
 
-–-
+--
 
 ## EXECUTION STEPS & AUDIT PROTOCOL
 
@@ -190,7 +189,7 @@ Unspecified Credits table format: `Course | Level | NomCP`
 HANDBOOK_1807_2026_WOLLONGONG = """# 1807 — Bachelor of Information Technology (Wollongong, 2026)
 
 ## CORE DEGREE RULES (Total: 144 CP)
-- **Core (96 CP):** Complete all Section A subjects. 
+- **Core (96 CP):** Complete all Section A subjects.
 - **Major (24 CP):** Complete Section B declared major list.
 - **No-Major Path (24 CP):** 18 CP at 300-level + 6 CP at 200/300-level (CSCI/CSIT/ISIT). Do not make up no-major subjects. Write no-major 1 (200/300 lv) etc.
 - **Double Major:** Satisfy both majors (15 core + 8 major subjects). No electives.
@@ -218,11 +217,11 @@ HANDBOOK_1807_2026_WOLLONGONG = """# 1807 — Bachelor of Information Technology
 - CSIT321 (12 CP) | Aut/Spr | Prereq: CSIT214 AND 18 CP at 200-level CSCI/CSIT/ISIT | Coreq: CSIT226 AND CSIT314 |
 
 ### Specifically for CSIT321:
-- CSIT321 is split into Part 1 and Part 2 both worth 6CP each for the purpose of scheduling. They CANNOT BE TAKEN SIMULTANEOUSLY AND YOU CANNOT COMBINE BOTH PARTS. 
-- CSIT321 Part 1 has ALL the prequisites and corequisites of CSIT321. CSIT321 Part 2 only has CSIT321 Part 1 as a prerequisite. 
+- CSIT321 is split into Part 1 and Part 2 both worth 6CP each for the purpose of scheduling. They CANNOT BE TAKEN SIMULTANEOUSLY AND YOU CANNOT COMBINE BOTH PARTS.
+- CSIT321 Part 1 has ALL the prequisites and corequisites of CSIT321. CSIT321 Part 2 only has CSIT321 Part 1 as a prerequisite.
 - Part 2 MUST be in the **immediately following** session from Part 1 (Session N then Session N + 1).
 - If the student was already enrolled in Part 1 last session, Part 2 must appear in next current session.
-- Prioritise starting CSIT321 in the same session as CSIT314 if possible. 
+- Prioritise starting CSIT321 in the same session as CSIT314 if possible.
 - CSIT321 Part 1 is 6 CP. CSIT321 Part 2 is 6 CP.
 
 ### Core Replacements & Alternates
@@ -269,7 +268,7 @@ Grades TF, F, N, NH, W, WF, AF, or any blank Grade do **NOT** count as complete 
 Specified Credits table format: `Course | Subject Code | Name | Level | NomCP`
 Unspecified Credits table format: `Course | Level | NomCP`
 
-–-
+--
 
 ## EXECUTION STEPS & AUDIT PROTOCOL
 
@@ -299,7 +298,7 @@ Unspecified Credits table format: `Course | Level | NomCP`
 HANDBOOK_1807_2026_LIVERPOOL = """# 1807 — Bachelor of Information Technology (Liverpool, 2026)
 
 ## CORE DEGREE RULES (Total: 144 CP)
-- **Core (96 CP):** Complete all Section A subjects. 
+- **Core (96 CP):** Complete all Section A subjects.
 - **Major (24 CP):** Complete Section B declared major list.
 - **No-Major Path (24 CP):** 18 CP at 300-level + 6 CP at 200/300-level (CSCI/CSIT/ISIT). Do not make up no-major subjects. Write no-major 1 (200/300 lv) etc.
 - **Double Major:** Satisfy both majors (15 core + 8 major subjects). No electives.
@@ -327,10 +326,10 @@ HANDBOOK_1807_2026_LIVERPOOL = """# 1807 — Bachelor of Information Technology 
 - CSIT321 (12 CP) | Aut/Spr | Prereq: CSIT214 AND 18 CP at 200-level CSCI/CSIT/ISIT | Coreq: CSIT226 AND CSIT314 |
 
 ### Specifically for CSIT321:
-- CSIT321 is split into Part 1 and Part 2 both worth 6CP each for the purpose of scheduling. They CANNOT BE TAKEN SIMULTANEOUSLY AND YOU CANNOT COMBINE BOTH PARTS. 
+- CSIT321 is split into Part 1 and Part 2 both worth 6CP each for the purpose of scheduling. They CANNOT BE TAKEN SIMULTANEOUSLY AND YOU CANNOT COMBINE BOTH PARTS.
 - Part 2 MUST be in the **immediately following** session from Part 1 (Session N then Session N + 1).
 - If the student was already enrolled in Part 1 last session, Part 2 must appear in next current session.
-- Prioritise starting CSIT321 in the same session as CSIT314 if possible. 
+- Prioritise starting CSIT321 in the same session as CSIT314 if possible.
 - CSIT321 Part 1 is 6 CP. CSIT321 Part 2 is 6 CP.
 
 ### Core Replacements & Alternates
@@ -371,7 +370,7 @@ Grades TF, F, N, NH, W, WF, AF, or any blank Grade do **NOT** count as complete 
 Specified Credits table format: `Course | Subject Code | Name | Level | NomCP`
 Unspecified Credits table format: `Course | Level | NomCP`
 
-–-
+--
 
 ## EXECUTION STEPS & AUDIT PROTOCOL
 
@@ -477,7 +476,7 @@ To qualify for the award of Bachelor of Business Information Systems, complete *
 
 ## (B) Business Electives List (Wollongong)
 
-Used for **Year 2** (3 × 6 CP = 18 CP) and **Year 3** (1 × 6 CP). Subjects must **not** already be counted as Core.
+Used for **Year 2** (3 x 6 CP = 18 CP) and **Year 3** (1 x 6 CP). Subjects must **not** already be counted as Core.
 
 | Subject Code | Title |
 |-------------|-------|
@@ -556,7 +555,7 @@ List every subject that is Complete. Categorise each as exactly one of:
 | Core | Appears in Section A (**including CSIT321** at 12 CP toward the 96 CP core) |
 | Y2 Business Elective | One of the 3 business electives taken in Year 2 (from Section B, not Core) |
 | Y3 Business Elective | The 1 business elective in Year 3 (from Section B, not Core) |
-| Y3 CSIT Elective | The 4 CSIT/CSCI/ISIT electives in Year 3 (1×200/300 + 3×300 per Section C) |
+| Y3 CSIT Elective | The 4 CSIT/CSCI/ISIT electives in Year 3 (1x200/300 + 3x300 per Section C) |
 
 Never put CSIT321 in an elective category.
 
@@ -603,7 +602,7 @@ All prerequisites must be **Complete** or planned in a **strictly earlier** sess
 Each session must contain at most **4 subjects**.
 
 **Step 2.6 — Calculate Required Remaining CP:**
-Required CP = 144 − Total Complete CP (from Stage 1.5)
+Required CP = 144 - Total Complete CP (from Stage 1.5)
 
 **Step 2.7 — Fill structured elective buckets:**
 Allocate business and CSIT electives until structured elective CP and total CP reach 144. Do not invent subject codes.
@@ -718,7 +717,7 @@ async def seed() -> None:
                 )
             )
             row = result.scalar_one_or_none()
-            
+
             if row:
                 # Update existing record values
                 for key, value in entry.items():
