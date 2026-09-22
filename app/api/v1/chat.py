@@ -16,7 +16,9 @@ from app.schemas.chat import (
     StartSessionOut,
 )
 from app.services.agent_chat_service import AgentChatService, CredentialRejected
+from app.services.chat_context import SessionNotFound
 from app.services.credential_resolver import CredentialUnreadable, NoCredentialError
+from app.services.handbook_service import HandbookUnavailable
 
 router = APIRouter()
 
@@ -55,13 +57,15 @@ async def start_session(
     service: AgentChatService = Depends(_get_agent_service),
 ):
     try:
-        session, reply = await service.start_session(body.message, model=body.model)
+        session, reply = await service.start_session(body.message, model=body.model, input_type=body.input_type, context=body.context)
     except (NoCredentialError, CredentialUnreadable) as e:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e)) from e
     except CredentialRejected as e:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e)) from e
     except ProviderNotInstalled as e:
         raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail=str(e)) from e
+    except HandbookUnavailable as e:
+        raise HTTPException(status_code=503, detail="The course handbook is unavailable. Please try again later.") from e
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e)) from e
     except Exception as e:
@@ -76,15 +80,19 @@ async def continue_session(
     service: AgentChatService = Depends(_get_agent_service),
 ):
     try:
-        reply = await service.continue_session(session_id, body.message, model=body.model)
+        reply = await service.continue_session(session_id, body.message, model=body.model, context=body.context)
     except (NoCredentialError, CredentialUnreadable) as e:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e)) from e
     except CredentialRejected as e:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e)) from e
     except ProviderNotInstalled as e:
         raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail=str(e)) from e
-    except ValueError as e:
+    except SessionNotFound as e:
         raise HTTPException(status_code=404, detail=str(e)) from e
+    except HandbookUnavailable as e:
+        raise HTTPException(status_code=503, detail="The course handbook is unavailable. Please try again later.") from e
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e)) from e
     except Exception as e:
         _raise_llm_http_error(e)
     return ContinueSessionOut(session_id=str(session_id), reply=MessageOut.model_validate(reply))
@@ -97,8 +105,12 @@ async def get_history(
 ):
     try:
         session, messages = await service.get_history(session_id)
-    except ValueError as e:
+    except SessionNotFound as e:
         raise HTTPException(status_code=404, detail=str(e)) from e
+    except HandbookUnavailable as e:
+        raise HTTPException(status_code=503, detail="The course handbook is unavailable. Please try again later.") from e
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e)) from e
     return HistoryOut(
         session_id=str(session_id),
         degree_code=session.degree_code,

@@ -76,7 +76,7 @@ def _alternation(values: frozenset[str]) -> str:
 
 _COURSE = re.compile(r"^\*{0,2}Course:?\*{0,2}\s*(\d{3,4})\b", re.IGNORECASE)
 _CAMPUS = re.compile(r"^\*{0,2}Campus:?\*{0,2}\s*([A-Za-z][A-Za-z ]*?)\s*(?:\||$)", re.IGNORECASE)
-_MAJOR = re.compile(r"^\*{0,2}(?:(Second)\s+)?Major:?\*{0,2}\s*(.+?)\s*$", re.IGNORECASE)
+_MAJOR = re.compile(r"^\*{0,2}(?:(Second)\s+)?Major(?:\s+\d+)?:?\*{0,2}\s*(.+?)\s*$", re.IGNORECASE)
 # "AIBD — Artificial Intelligence and Big Data" -> "AIBD"; a major is a short
 # uppercase code, so "Not yet declared" simply yields nothing.
 _MAJOR_CODE = re.compile(r"^([A-Z]{2,6})\b")
@@ -184,7 +184,8 @@ class EnrolmentRecord(BaseModel):
 
 def _norm(cell: str) -> str:
     """Normalise a header cell for matching: lowercase, unbolded, despaced."""
-    return re.sub(r"\s+", " ", cell.replace("*", "").strip()).lower()
+    name = re.sub(r"\s+", " ", cell.replace("*", "").strip()).lower()
+    return "nom cp" if name in {"nomcp", "nominal cp"} else name
 
 
 def _split_row(line: str) -> list[str]:

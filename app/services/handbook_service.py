@@ -6,6 +6,10 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
+class HandbookUnavailable(ValueError):
+    """Rules are unavailable, not a missing conversation."""
+
+
 async def fetch_handbook(db: AsyncSession, degree_code: str, year: int, campus: str) -> str:
     """Fetch the handbook markdown for a degree, preferring an exact campus match."""
     for campus_filter in [campus, None]:
@@ -20,4 +24,4 @@ async def fetch_handbook(db: AsyncSession, degree_code: str, year: int, campus: 
         handbook = result.scalar_one_or_none()
         if handbook:
             return handbook.information
-    raise ValueError(f"No handbook found for course {degree_code}")
+    raise HandbookUnavailable(f"No handbook found for course {degree_code}")
