@@ -5,6 +5,7 @@ functions (handbook lookup, metadata confirmation) as tools the advisor agent
 can choose to invoke, and binds whatever runtime context (e.g. a DB session)
 those services need.
 """
+from typing import TypedDict
 import json
 from typing import Literal
 
@@ -27,17 +28,67 @@ from app.services.knowledge_service import TOPIC_SLUGS, TOPICS, load_topic
 _LATEST_HANDBOOK_YEAR = 9999
 
 
+class HandbookFetchResult(TypedDict):
+    ok: bool
+    degree_code: str
+    year: int
+    campus: str
+    content: str | None
+    error: str | None
+
+
 def make_fetch_handbook_tool(db: AsyncSession):
-    """Bind a DB session to a `fetch_handbook` LangChain tool the agent can call."""
 
     @tool
-    async def fetch_handbook_tool(degree_code: str, year: int, campus: str) -> str:
-        """Fetch the official UOW course handbook markdown for a degree code/year/campus.
-
-        Call this when you need the degree's rules, subject prerequisites, or
-        session availability and don't already have the handbook content in context.
+    async def fetch_handbook_tool(
+        degree_code: str,
+        year: int,
+        campus: str,
+    ) -> dict:
         """
-        return await fetch_handbook(db, degree_code, year, campus)
+        Fetch the official UOW course handbook.
+
+        Returns structured success/failure information so the graph can
+        deterministically decide whether planning is allowed to continue.
+        """
+
+        try:
+            content = await fetch_handbook(
+                db,
+                degree_code,
+                year,
+                campus,
+            )
+
+            # Do not treat an empty/placeholder response as a successful fetch.
+            if not content or not content.strip():
+                return {
+                    "ok": False,
+                    "degree_code": degree_code,
+                    "year": year,
+                    "campus": campus,
+                    "content": None,
+                    "error": "Handbook was not found or returned empty content.",
+                }
+
+            return {
+                "ok": True,
+                "degree_code": degree_code,
+                "year": year,
+                "campus": campus,
+                "content": content,
+                "error": None,
+            }
+
+        except Exception as exc:
+            return {
+                "ok": False,
+                "degree_code": degree_code,
+                "year": year,
+                "campus": campus,
+                "content": None,
+                "error": str(exc),
+            }
 
     return fetch_handbook_tool
 
@@ -238,6 +289,41 @@ lookup_uow_policy_tool = StructuredTool.from_function(
     args_schema=_LookupPolicyArgs,
 )
 
+@tool
+def request_plan_change_tool(
+    change_type: Literal[
+        "major",
+        "elective_preference",
+        "course",
+        "campus",
+        "commencement_year",
+        "session",
+        "general_revision",
+    ],
+    major: str | None = None,
+    elective_preference: str | None = None,
+    course: str | None = None,
+    campus: str | None = None,
+    commencement_year: int | None = None,
+    session: str | None = None,
+) -> str:
+    """
+    Signal that the student's latest request requires a new or revised
+    study plan.
+
+    Only pass values explicitly stated by the student or clearly
+    established in the immediately preceding conversation.
+    """
+    return json.dumps({
+        "change_type": change_type,
+        "major": major,
+        "elective_preference": elective_preference,
+        "course": course,
+        "campus": campus,
+        "commencement_year": commencement_year,
+        "session": session,
+    })
+
 
 def build_skills(db: AsyncSession):
     """Return the tools ("skills") available to the advisor agent, split by whether
@@ -247,7 +333,7 @@ def build_skills(db: AsyncSession):
     depend on having confirmed the student's degree/year/campus.
     """
     return {
-        "confirm": [confirm_metadata_tool, lookup_uow_policy_tool],
+        "confirm": [confirm_metadata_tool, lookup_uow_policy_tool, request_plan_change_tool],
         "full": [
             confirm_metadata_tool,
             lookup_uow_policy_tool,
@@ -256,6 +342,7 @@ def build_skills(db: AsyncSession):
             make_lookup_major_tool(db),
             get_elective_priorities_tool,
             make_lookup_ranked_electives_tool(db),
+            request_plan_change_tool,
         ],
         "electives": [
             make_lookup_subjects_tool(db),

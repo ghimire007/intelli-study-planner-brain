@@ -54,17 +54,29 @@ def _strip_code_block(text: str) -> str:
 
 def meta_is_complete(meta: dict) -> bool:
     """True if enough was confidently extracted to proceed without asking the student."""
-    return meta.get("degree_code") is not None and meta.get("year") is not None and meta.get("camups") is not None
+    return meta.get("degree_code") is not None and meta.get("year") is not None and meta.get("campus") is not None
 
 
 async def parse_sols(llm, protected_sols: str) -> SOLSMeta:
     """Extract degree_code/year/campus from a raw SOLS paste via the LLM parser."""
 
+    import time
+
+    start = time.perf_counter()
+
+    # structured_llm = llm.with_structured_output(SOLSMeta)
+    print("parse_sols: sending request")
     response = await llm.ainvoke(
         [
             ("system", _PARSER_MODEL_PROMPT),
             ("user", protected_sols),
         ]
+    )
+    print("parse_sols: response received")
+
+    print(
+        f"parse_sols LLM took "
+        f"{time.perf_counter() - start:.2f}s"
     )
     data = json.loads(_strip_code_block(as_text(response.content)))
     return SOLSMeta(**data)

@@ -2,6 +2,7 @@ import uuid
 
 from datetime import datetime, UTC
 
+import re
 import json
 
 from app.agents.graphAPI import build_advisor_graph
@@ -69,25 +70,55 @@ class AgentChatService:
         initial_messages = []
         planning_requested = False
 
-        # Evaluate SOLS input if provided
-        if cleaned_sols:
-            print("sols detected")
-            protected_sols = scrub_pii(raw_sols)
-            try:
-                # Parse and format into clean allowlisted Markdown
-                projected_sols = project(protected_sols)
-                initial_messages.append(HumanMessage(content=projected_sols))
-                planning_requested = True
-            except UnreadableRecord:
-                # Re-raise so API returns 422 if an explicit SOLS paste was invalid
-                print("this is the error")
-                raise
-
-        else:
+        if not cleaned_sols:
+            # No initial input.
             print("NO SOLS")
+
             projected_sols = "no enrolment yet"
             initial_messages.append(HumanMessage(content="Hello"))
-            planning_requested = False
+
+        # Evaluate SOLS input if provided
+        else:
+            protected_sols = scrub_pii(raw_sols)
+
+            looks_like_sols = bool(
+                re.search(
+                    r"\b(?:Student|Course|Campus|Major|Effective Date|"
+                    r"Year\s+Session|Subject Code|Status|Enrolment History)\b",
+                    protected_sols,
+                    re.IGNORECASE,
+                )
+                or re.search(
+                    r"\b(?:19|20)\d{2}\s+"
+                    r"(?:Annual|Autumn|Spring)\b",
+                    protected_sols,
+                    re.IGNORECASE,
+                )
+                or re.search(
+                    r"\b[A-Z]{2,4}\d{3}[A-Z]?\b",
+                    protected_sols,
+                )
+            )
+
+            if looks_like_sols:
+                print("SOLS detected")
+
+                try:
+                    projected_sols = project(protected_sols)
+
+                except UnreadableRecord as exc:
+                    # input looks like SOLS but was malformed/unreadable
+                    print(repr(exc))
+                    raise
+
+                initial_messages.append(HumanMessage(content=projected_sols))
+                planning_requested = True
+
+            else:
+                # conversational text
+                projected_sols = "no enrolment yet"
+                initial_messages.append(HumanMessage(content=protected_sols))
+                planning_requested = False
 
         llm_config = await self._resolver.resolve(self._user, requested_model=model)
         graph = build_advisor_graph(self._db, get_checkpointer(), llm_config)
@@ -99,17 +130,26 @@ class AgentChatService:
             {
                 "messages": initial_messages,
                 "raw_sols": projected_sols,
+
                 "meta": None,
                 "meta_confirmed": False,
+
                 "handbook": None,
+
                 "electives": None,
                 "remaining_subjects": None,
+
                 "electives_feedback": None,
                 "remaining_feedback": None,
+
                 "plan": None,
                 "plan_feedback": None,
-                "retry_count": None,
-                "stage1_retry_count": None,
+
+                "retry_count": 0,
+                "stage1_retry_count": 0,
+                "stage2_retry_count": 0,
+                "stage2_tool_loop_count": 0,
+
                 "planning_requested": planning_requested,
                 "current_stage": None,
             },
@@ -150,16 +190,27 @@ class AgentChatService:
         protected_message = scrub_pii(user_message)
         payload = {"messages": [HumanMessage(content=protected_message)]}
 
-        try:
-            projected = project(protected_message)
-            # If valid SOLS, update the SOLS payload forcing reset of advisor metadata
-            payload["raw_sols"] = projected
-            payload["messages"] = [HumanMessage(content=projected)]
-            payload["planning_requested"] = True
-            payload["plan"] = None
-        except Exception:
-            # Standard chat turn — keep the default message payload
-            pass
+        # Only treat the message as a new SOLS/enrolment record if # project() successfully recognises it as one. 
+        try: 
+            projected = project(protected_message) 
+
+        except UnreadableRecord: 
+            # Not a valid SOLS record. Keep it as a normal chat message. 
+            projected = None 
+
+        except Exception as e: 
+            print( "continue_session: unexpected project() error:", repr(e), ) 
+            projected = None 
+
+        if projected: 
+            print("continue_session: SOLS record detected") 
+            payload = { 
+                "messages": [ HumanMessage(content=projected) ], 
+                "raw_sols": projected, 
+                "planning_requested": True, 
+                "plan": None, 
+            } 
+        else: print("continue_session: standard chat message")
 
         await self._invoke(graph, llm_config, payload, config)
 

@@ -38,10 +38,48 @@ def _tokenize(text: str) -> set[str]:
     return {word for word in words if len(word) > 2 and word not in _STOPWORDS}
 
 
+def _subject_tokens(subject: dict) -> set[str]:
+    """
+    Build ranking tokens from the subject title, description, and
+    subject-code prefix.
+
+    A request such as ``CHEM electives`` tokenizes to ``{"chem"}``.
+    A subject such as ``CHEM101`` therefore contributes ``{"chem"}``
+    even when the title/description uses ``Chemistry`` instead of
+    the literal word ``CHEM``.
+    """
+
+    subject_text = (
+        f"{subject.get('title') or ''} "
+        f"{subject.get('description') or ''}"
+    )
+
+    tokens = _tokenize(subject_text)
+
+    code = str(subject.get("code") or "").strip()
+
+    # UOW-style subject codes such as CHEM101, CSIT305, CSCI235.
+    # Keep the full code and add its alphabetic prefix separately.
+    code_match = re.fullmatch(
+        r"([A-Za-z]{2,8})([0-9]{2,4})",
+        code,
+    )
+
+    if code_match:
+        prefix = code_match.group(1).lower()
+
+        if len(prefix) > 2:
+            tokens.add(prefix)
+
+        tokens.add(code.lower())
+
+    return tokens
+
+
 def keyword_overlap_score(subject: dict, query: str) -> float:
     """Fraction of query tokens found in the subject title + description."""
-    subject_text = f"{subject.get('title') or ''} {subject.get('description') or ''}"
-    subject_tokens = _tokenize(subject_text)
+    # subject_text = f"{subject.get('title') or ''} {subject.get('description') or ''}"
+    subject_tokens = _subject_tokens(subject)
     query_tokens = _tokenize(query)
     if not subject_tokens or not query_tokens:
         return 0.0
@@ -113,34 +151,103 @@ def _lookup_subject(catalog: dict[str, dict], code: str) -> dict | None:
 
 def get_elective_priorities(student: ElectivePriorityInput) -> ElectivePriorityResult:
     """Return ranked elective shortlists per pool for the planner."""
+    print("=== ELECTIVE DEBUG ===")
+    print("student:", student)
+
     pools_data = load_elective_pools(student.course)
+    print("pools_data:", pools_data)
+
     pools = pools_data.get("pools") or []
-    print('finding electives')
+    print("pool count:", len(pools))
+
     if not pools:
-        print('no pools')
-        return ElectivePriorityResult(mode=student.mode, pools=[])
+        print("STOP: no pools")
+        return ElectivePriorityResult(
+            mode=student.mode,
+            pools=[],
+        )
 
     try:
-        rules = load_course_rules(student.course, student.campus)
-    except (FileNotFoundError, ValueError):
-        print("no course or campus found")
-        return ElectivePriorityResult(mode=student.mode, pools=[])
+        rules = load_course_rules(
+            student.course,
+            student.campus,
+        )
+        print("rules loaded:", bool(rules))
+    except (FileNotFoundError, ValueError) as exc:
+        print("STOP: course/campus rules failed:", repr(exc))
+        return ElectivePriorityResult(
+            mode=student.mode,
+            pools=[],
+        )
 
-    year = int(pools_data.get("year") or 2026)
-    catalog = load_subject_catalog(student.course, year=year)
+    year_value = pools_data.get("year")
+    print("pool year:", year_value)
+
+    if not year_value:
+        print("STOP: pool year missing")
+        return ElectivePriorityResult(
+            mode=student.mode,
+            pools=[],
+        )
+
+    year = int(year_value)
+
+    catalog = load_subject_catalog(
+        student.course,
+        year=year,
+    )
+
+    print("catalog size:", len(catalog) if catalog else 0)
+
     if not catalog:
-        print('not catalog found from year and course')
-        return ElectivePriorityResult(mode=student.mode, pools=[])
+        print("STOP: catalog empty")
+        return ElectivePriorityResult(
+            mode=student.mode,
+            pools=[],
+        )
 
-    major_code = resolve_major_code(student.major, rules)
-    query = _build_query(student, major_code)
+    major_code = resolve_major_code(
+        student.major,
+        rules,
+    )
+
+    print("student.major:", repr(student.major))
+    print("resolved major_code:", repr(major_code))
+
+    query = _build_query(
+        student,
+        major_code,
+    )
+
+    print("query:", repr(query))
+
     if not query.strip():
-        print('no input or major code')
-        return ElectivePriorityResult(mode=student.mode, pools=[])
+        print("STOP: empty query")
+        return ElectivePriorityResult(
+            mode=student.mode,
+            pools=[],
+        )
 
-    completed = {normalize_code(c) for c in student.completed_subjects}
-    planned = {normalize_code(c) for c in student.planned_subjects}
-    forbidden = _forbidden_codes(rules, major_code, completed, planned)
+    completed = {
+        normalize_code(c)
+        for c in student.completed_subjects
+    }
+
+    planned = {
+        normalize_code(c)
+        for c in student.planned_subjects
+    }
+
+    forbidden = _forbidden_codes(
+        rules,
+        major_code,
+        completed,
+        planned,
+    )
+
+    print("completed:", completed)
+    print("planned:", planned)
+    print("forbidden count:", len(forbidden))
 
     eligibility = get_eligible_subjects(
         StudentEligibilityInput(
@@ -152,17 +259,54 @@ def get_elective_priorities(student: ElectivePriorityInput) -> ElectivePriorityR
             campus=student.campus,
         )
     )
+
+    print(
+        "eligible subject count:",
+        len(eligibility.eligible_subjects),
+    )
+
     eligible_electives = {
         normalize_code(item.code)
         for item in eligibility.eligible_subjects
         if not item.in_core and not item.in_major
     }
 
+    print(
+        "eligible_electives count:",
+        len(eligible_electives),
+    )
+
     pool_results: list[ElectivePoolPriorities] = []
+
     for pool in pools:
-        allowed = resolve_pool_candidates(pool, catalog, forbidden)
+        allowed = resolve_pool_candidates(
+            pool,
+            catalog,
+            forbidden,
+        )
+
         candidates = allowed & eligible_electives
-        ranked = rank_subjects_by_keywords(catalog, candidates, query, student.limit)
+
+        print(
+            "POOL:",
+            pool.get("id"),
+            "allowed:",
+            len(allowed),
+            "eligible:",
+            len(eligible_electives),
+            "intersection:",
+            len(candidates),
+        )
+
+        ranked = rank_subjects_by_keywords(
+            catalog,
+            candidates,
+            query,
+            student.limit,
+        )
+
+        print("ranked:", ranked)
+
         pool_results.append(
             ElectivePoolPriorities(
                 pool_id=pool.get("id") or "elective",
@@ -171,7 +315,12 @@ def get_elective_priorities(student: ElectivePriorityInput) -> ElectivePriorityR
                 priorities=[
                     RankedElectiveOut(
                         code=code,
-                        title=(_lookup_subject(catalog, code) or {}).get("title") or "",
+                        title=(
+                            _lookup_subject(
+                                catalog,
+                                code,
+                            ) or {}
+                        ).get("title") or "",
                         score=round(score, 4),
                     )
                     for code, score in ranked
@@ -179,7 +328,13 @@ def get_elective_priorities(student: ElectivePriorityInput) -> ElectivePriorityR
             )
         )
 
-    return ElectivePriorityResult(mode=student.mode, pools=pool_results)
+    print("POOL RESULTS:", pool_results)
+
+    return ElectivePriorityResult(
+        mode=student.mode,
+        pools=pool_results,
+    )
+
 
 
 def _join_requirement_list(values: list | None) -> str:
