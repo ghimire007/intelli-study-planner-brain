@@ -1,4 +1,6 @@
 from fastapi import APIRouter, Cookie, Depends, HTTPException, Response, status
+from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user
@@ -8,6 +10,7 @@ from app.models.auth import User
 from app.schemas.auth import (
     ForgotPasswordRequest,
     LoginRequest,
+    ProfileUpdate,
     RegisterRequest,
     ResetPasswordRequest,
     UserOut,
@@ -85,6 +88,34 @@ async def logout(
 
 @router.get("/me", response_model=UserOut)
 async def me(user: User = Depends(get_current_user)):
+    return user
+
+
+@router.patch("/me", response_model=UserOut)
+async def update_me(
+    body: ProfileUpdate,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    changes = body.model_dump(exclude_unset=True, exclude={"current_password"})
+    if "email" in changes and changes["email"] != user.email:
+        if not body.current_password or not AuthService._verify_password(
+            user.password_hash, body.current_password
+        ):
+            raise HTTPException(status_code=400, detail="Current password is required and must be correct")
+        existing = await db.scalar(select(User.id).where(User.email == changes["email"]))
+        if existing:
+            raise HTTPException(status_code=409, detail="An account with this email already exists")
+
+    for field, value in changes.items():
+        setattr(user, field, value)
+    try:
+        await db.commit()
+    except IntegrityError as exc:
+        # The unique index also protects against concurrent email updates.
+        await db.rollback()
+        raise HTTPException(status_code=409, detail="Profile conflicts with an existing account") from exc
+    await db.refresh(user)
     return user
 
 
