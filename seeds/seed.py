@@ -620,12 +620,165 @@ Allocate business and CSIT electives until structured elective CP and total CP r
 Correct any errors and repeat until all checks pass.
 """
 
+HANDBOOK_766_2026_LIVERPOOL = """# 766 — Bachelor of Computer Science (Liverpool Campus, 2026 Handbook)
+
+## CORE DEGREE RULES (Total: 144 CP)
+- **Core (96 CP):** Complete all Section A subjects. 
+- **Major (24 CP):** Complete Section B declared major list.
+- **No-Major Path (24 CP):** 18 CP at 300-level + 6 CP at 200/300-level (CSCI/CSIT/ISIT). Do not make up no-major subjects. Write no-major 1 (200/300 lv) etc.
+- **Double Major:** Satisfy both majors (15 core + 8 major subjects). No electives.
+- **Electives:** Max 24 CP (4 subjects). NON-IT SUBJECTS ARE VALID ELECTIVES. ANY MAJOR CORE SUBJECT THAT IS NOT A PART OF THE CHOSEN MAJOR IS AN ELECTIVE.
+- **Excess:** Not counted towards the total CP. Excess is any subject that would be an elective but there are already 24 CP (4 subjects) of electives.
+- **Level Cap:** Max 60 CP at 100-level overall.
+
+---
+
+## (A) CORE SUBJECTS (96 CP Total)
+- CSIT110 (6 CP) | Aut/Spr | Prereq: None
+- CSIT123 (6 CP) | Aut | Prereq: None
+- CSIT114 (6 CP) | Aut | Prereq: None
+- CSIT115 (6 CP) | Aut/Spr | Prereq: None
+- CSIT121 (6 CP) | Aut/Spr | Prereq: CSIT110 OR CSIT111 OR ENGG100
+- CSIT127 (6 CP) | Spr | Prereq: None
+- CSIT128 (6 CP) | Aut/Spr | Prereq: None
+- CSCI203 (6 CP) | Spr | Prereq: (CSIT110 or CSIT111) AND (CSIT113 or CSIT123)
+- CSIT205 (6 CP) | Aut | Prereq: None (Replaces MATH255)
+- CSIT214 (6 CP) | Aut/Spr | Prereq: CSIT114
+- CSIT226 (6 CP) | Spr | Prereq: None
+- CSCI235 (6 CP) | Aut | Prereq: CSIT115
+- CSIT314 (6 CP) | Aut | Prereq: CSIT214 AND 12 CP at 200-level CSCI/ISIT
+- CSIT321 (12 CP) | Aut/Spr | Prereq: CSIT214 AND 18 CP at 200-level CSCI/CSIT/ISIT | Coreq: CSIT226 AND CSIT314 |
+
+### Specifically for CSIT321:
+- CSIT321 is split into Part 1 and Part 2 both worth 6CP each for the purpose of scheduling. They CANNOT BE TAKEN SIMULTANEOUSLY AND YOU CANNOT COMBINE BOTH PARTS. 
+- CSIT321 Part 1 has ALL the prequisites and corequisites of CSIT321. CSIT321 Part 2 only has CSIT321 Part 1 as a prerequisite. 
+- Part 2 MUST be in the **immediately following** session from Part 1 (Session N then Session N + 1).
+- If the student was already enrolled in Part 1 last session, Part 2 must appear in next current session.
+- Prioritise starting CSIT321 in the same session as CSIT314 if possible. 
+- CSIT321 Part 1 is 6 CP. CSIT321 Part 2 is 6 CP.
+
+### Specifically for CSIT314:
+- CSIT314 is a corequisite of CSIT321
+- CSIT314 is **NOT** a core subject for students with commencement year ≤ 2023, so remove it from the core list when auditing or planning for those students.
+- CSIT314 is a mandatory subject for students with commencement year ≥ 2024. Example: A student who commenced 2025 -> 2025 ≥ 2024 -> CSIT314 IS core.a
+
+### Core Replacements & Alternates
+- MATH255 Complete -> Satisfies CSIT205 core. If both present, CSIT205 = Core, MATH255 = Elective.
+- CSIT111 satisfies CSIT110 where allowed. CSIT113 satisfies CSIT123 where allowed.
+
+---
+
+## (B) Core Selection — (6 CP required)
+
+- CSCI251 (6 CP) | Spr | Prereq: CSIT121 or CSIT213
+- CSIT213 (6 CP) | Aut | Prereq: CSIT110 OR CSIT111
+
+### Core Selection rules:
+- CSCI251 and CSIT213 can each individually satisfy (B) Core Selection.
+- Whenever BOTH CSCI251 and CSIT213 appear anywhere in the plan (scheduled or completed):
+    - Whichever of the two was scheduled FIRST (earlier term, or earlier add-order if same term) is tagged "Core Selection"
+    - The other one is tagged "Elective"
+- This tagging must be re-evaluated every time the plan changes — including when a second course is added later, or when scheduling is edited/reordered.
+- If only one of the two is in the plan, it is tagged "Core Selection" by default.
+
+---
+
+## (C) MAJORS (24 CP Each)
+
+Only refer and use the student's declared major's subtable. Do not include or reference requirements from any other major subtable in the audit or plan. if the student has declared no major, skip this and use the No-Major Path below.
+
+If no major is declared, skip this section and use the **No-Major Path** below.
+For a **double major**, list requirements for BOTH majors. At most **ONE subject** may be cross-counted between the two majors.
+
+### AI & Big Data (MAJ44204)
+- CSCI218 (6 CP) | Spr | Prereq: (CSIT110 OR CSIT111) AND 18 CP at 100-level 
+- CSCI316 (6 CP) | Aut | Prereq: CSCI203
+- CSCI323 (6 CP) | Aut | Prereq: (CSIT110 OR CSIT111) AND 12 CP of 200-level CSCI/CSIT
+- ISIT312 (6 CP) | Spr | Prereq: CSIT115 AND 18 CP at 200-level
+
+### Cybersecurity (MAJ40516)
+- CSCI262 (6 CP) | Spr | Prereq: CSIT121 AND CSIT115 AND CSIT127
+- CSCI369 (6 CP) | Spr | (CSIT110 OR CSIT111) AND 18 CP at 200-level
+- CSIT302 (6 CP) | Aut | CSIT127 AND 12 CP at 100-level CSIT
+- CSIT375 (6 CP) | Aut | CSIT121 AND CSIT127 AND 18 CP at 200-level CSCI/CSIT
+
+### Software Engineering (MAJ40277)
+- CSCI318 (6 CP) | Spr | Prereq: (CSIT121 AND CSIT214) OR (ECTE250 AND CSCI291)
+- CSCI334 (6 CP) | Aut | Prereq: CSIT121 AND CSIT214
+- CSIT377 (6 CP) | Spr | Prereq: CSIT128 AND 6 CP at 200-level | Coreq: 12 CP at 200-level |
+- ISIT219 (6 CP) | Aut | Prereq: CSIT128
+
+#### Specifically for Software Engineering majors:
+- ISIT219 is **NOT** an SE major core for students with commencement year ≤ 2023. 
+- CSIT314 **IS** an SE major core for students with commencement year ≤ 2023.
+
+### No-Major Path (if no major is declared)
+- **18 CP** of 300-level CSCI/CSIT/ISIT subjects (subject codes with a 3xx number) **Not** already in the Core or Core Selection
+- **6 CP** at 200-level OR 300-level CSCI/CSIT/ISIT subjects **Not** already in the Core or Core Selection
+
+---
+
+## Unspecified Credits
+
+Unspecified credits count toward the total CP and toward the 100-level cap based on their listed level. Include them in the Stage 1 total.
+
+---
+
+## Student Enrolment Record Format
+
+The enrolment record is a table with the following columns:
+
+    Year | Session | Campus | Delivery | Subject Code | NomCP | Mark | Grade | Status
+
+A subject is **Complete** if ALL of the following are true:
+- Grade is one of: **HD, D, C, P, PS, S**
+- Status is **"Complete"**
+- OR it is listed as a **Specified Credit**
+
+Grades TF, F, N, NH, W, WF, AF, or any blank Grade do **NOT** count as complete or count towards the CP total.
+
+Specified Credits table format: `Course | Subject Code | Name | Level | NomCP`
+Unspecified Credits table format: `Course | Level | NomCP`
+
+–-
+
+## EXECUTION STEPS & AUDIT PROTOCOL
+
+### STAGE 1: ANALYSIS & AUDIT
+1. Identify Commencement Year & Declared Major.
+   - Valid Majors: AI & Big Data (MAJ44204), Cybersecurity (MAJ40516), Software Engineering (MAJ40277), or No-Major Path.
+   - If invalid: Trigger CIRCUIT BREAKER -> Abort immediately to Scenario A.
+2. Resolve Replacements (e.g., MATH255 -> CSIT205).
+3. Audit COMPLETED and ENROLLED subjects in strict priority order (Core -> Major -> Elective -> Excess):
+   - Core_CP_Completed = [X] CP
+   - Major_CP_Completed = [X] CP
+   - Raw_Elective_CP_Taken = [X] CP
+   - Valid_Elective_CP = MIN(24, Raw_Elective_CP_Taken) = [X] CP
+   - Excess_CP = MAX(0, Raw_Elective_CP_Taken - 24) = [X] CP (List codes here immediately)
+   - Total_Applicable_Earned = Core_CP_Completed + Major_CP_Completed + Valid_Elective_CP = [X] / 144 CP
+
+### STAGE 2: SESSION SCRATCHPAD
+1. Calculate Remaining Needed CP to reach 144 CP.
+2. Run Session Scratchpad for ALL future sessions in chronological order until 144 CP is reached.
+3. Apply Session Filters (Availability, Prereq <= N-1, Coreq <= N, CP level thresholds) to every uncompleted subject.
+4. Enforce Session Load Limits (Standard: 4 subjects / 24 CP; Hard Cap: Max 4 subjects).
+5. Proceed to Step 10 (Macro & Tool Audit) and Step 11 (Pre-Flight Verification Matrix).
+
+"""
+
+
 SEED_DATA = [
     {
         "year": 2026,
         "course": "766",
         "campus": "Wollongong",
-        "information": HANDBOOK_766_2026_WOLLONGONG,
+        "information": HANDBOOK_766_2026_LIVERPOOL,
+    },
+    {
+        "year": 2026,
+        "course": "766",
+        "campus": "Wollongong",
+        "information": HANDBOOK_766_2026_LIVERPOOL,
     },
     {
         "year": 2026,
@@ -634,11 +787,11 @@ SEED_DATA = [
         "information": HANDBOOK_1807_2026_WOLLONGONG,
     },
     {
-            "year": 2026,
-            "course": "1807",
-            "campus": "Liverpool",
-            "information": HANDBOOK_1807_2026_LIVERPOOL,
-        },
+        "year": 2026,
+        "course": "1807",
+        "campus": "Liverpool",
+        "information": HANDBOOK_1807_2026_LIVERPOOL,
+    },
     {
         "year": 2026,
         "course": "1838",
