@@ -128,6 +128,8 @@ class AgentChatService:
                 "meta": None,
                 "meta_confirmed": False,
 
+                "conversation_mode": "collecting",
+
                 "handbook": None,
 
                 "electives": None,
