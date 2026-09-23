@@ -1,9 +1,9 @@
 import json
 import re
-from typing import Literal, TypedDict, Annotated
+from typing import Annotated, Literal, TypedDict
 
 from langchain_core.language_models import BaseChatModel
-from langchain_core.messages import (AIMessage, BaseMessage, HumanMessage, SystemMessage, ToolMessage)
+from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage, ToolMessage
 from langgraph.checkpoint.base import BaseCheckpointSaver
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.message import add_messages
@@ -14,12 +14,17 @@ from app.agents.skills import build_skills, fetch_handbook
 from app.llm.config import LLMConfig
 from app.llm.factory import make_chat_model
 from app.prompts.builder import build_system_prompt
-from app.prompts.prompts import (EVAL_PLAN, EVAL_SUBJECTS_ELECTIVES, SUBJECT_GENERATION_PROMPT, SYSTEM_PROMPT, SYSTEM_PROMPT_V1)
+from app.prompts.prompts import (
+    EVAL_PLAN,
+    EVAL_SUBJECTS_ELECTIVES,
+    SUBJECT_GENERATION_PROMPT,
+    SYSTEM_PROMPT,
+    SYSTEM_PROMPT_V1,
+)
 from app.schemas.elective_ranking import ElectivePriorityInput
-from app.services.elective_ranking import (flatten_ranked_electives, get_elective_priorities)
-from app.services.enrolment import (UnreadableRecord, parse_enrolment)
+from app.services.elective_ranking import flatten_ranked_electives, get_elective_priorities
+from app.services.enrolment import UnreadableRecord, parse_enrolment
 from app.services.sols_parser import parse_sols
-
 
 # CONSTANTS for max retries/loops to keep the model requests per minute < 15 for free API key tiers
 MAX_STAGE1_RETRIES = 2
@@ -107,7 +112,7 @@ def _major_for_ranking(
         return text.upper()
 
     return (
-        re.split(r"\s+[—–-]\s+", text, maxsplit=1)[0].strip()
+        re.split(r"\s+[—–-]\s+", text, maxsplit=1)[0].strip()  # noqa: RUF001 (en dash is intentional)
         or text
     )
 
@@ -975,7 +980,7 @@ def build_advisor_graph(
 
         start = time.perf_counter()
 
-        parser_model = llm("parser")
+        llm("parser")
 
         print(
             f"llm() took "
@@ -1042,7 +1047,7 @@ def build_advisor_graph(
 
         system_content += "\n\n" "INITIAL METADATA CONFIRMATION RULES\n- Before metadata is confirmed, extract only degree/course code, commencement year, campus, session, and major wording explicitly stated by the student or already present in parsed student enrolment data.\n- NEVER convert a shorthand or colloquial major into a canonical handbook major name before the handbook is retrieved.\n- For example, if the student says 'network', do not confirm 'Network Design and Security' unless the student explicitly used that exact wording or selected it from the handbook.\n- A major may remain unresolved text; it is not permission to invent a canonical major.\n- NEVER infer commencement year, course code, campus, session, or major from no-enrolment status, the current year, common defaults, or world knowledge.\n- Do not invent a session. Missing session remains missing.\n\n" "PLAN CHANGE TOOL RULES\n- Decide whether the student's latest request requires a new or revised study plan.\n- Call request_plan_change_tool when the student changes or proposes a major,\n  elective preference, course, campus, commencement year, or session.\n- Call request_plan_change_tool when the student asks to revise, update,\n  regenerate, rebuild, or otherwise materially change the study plan.\n- Call request_plan_change_tool when the student agrees to an immediately\n  preceding assistant question that offered to revise or update the plan.\n- Do NOT call request_plan_change_tool for general questions, explanations,\n  policy questions, or discussion that does not change the requested plan.\n- Only pass values explicitly stated by the student or clearly established\n  by the immediately preceding conversation.\n- NEVER invent or default a commencement year, course, campus, major, or session.\n- A successful planning-change tool call is the signal that the graph must\n  run Stage 1 and Stage 2 again."
 
-        messages = [SystemMessage(content=system_content),] + state.get("messages", [])
+        messages = [SystemMessage(content=system_content), *state.get("messages", [])]
 
         response = await model.ainvoke(messages)
 
@@ -1544,11 +1549,11 @@ def build_advisor_graph(
             f"{state.get('electives')}\n"
         )
 
-        messages = (
-            [SystemMessage(content=base_prompt)]
-            + state.get("messages", [])
-            + [HumanMessage(content=content_prompt)]
-        )
+        messages = [
+            SystemMessage(content=base_prompt),
+            *state.get("messages", []),
+            HumanMessage(content=content_prompt),
+        ]
 
         response = await llm("full").ainvoke(messages)
 
@@ -1820,10 +1825,10 @@ def build_advisor_graph(
 
     # entry edge = start node
     graph.add_edge(START, "parse_input")          # from user input get any given metadata (commencement year, degree, major, campus, enrolment)
-    graph.add_edge("parse_input", "agent")        # give the information to the agent 
+    graph.add_edge("parse_input", "agent")        # give the information to the agent
 
     # the agent then determines what needs to be done
-    # either: 
+    # either:
     # 1. use tools to wait for a used tool to return request
     # 2. get the handbook from the user info
     # 3. start planning the study plan with the user info and handbook
@@ -1862,10 +1867,10 @@ def build_advisor_graph(
     # once we have electives go get the needed subjects from the handbook (core and/or major/s)
     graph.add_edge("fetch_elective_list", "stage1_review_must_includes")
 
-    # review the found core and major/s subjects 
+    # review the found core and major/s subjects
     graph.add_edge("stage1_review_must_includes", "evaluate_required_subjects")
 
-    # check the result of the evaluation of the needed subjects. Either: 
+    # check the result of the evaluation of the needed subjects. Either:
     # 1. The evaluation found an issue, so go back to stage1_review_must_includes and pass the feedback into the prompt
     # 2. OR the evaluation passes, so go on to stage2 to start making the plan
     graph.add_conditional_edges(
@@ -1876,7 +1881,7 @@ def build_advisor_graph(
         },
     )
 
-    # during making a plan either: 
+    # during making a plan either:
     # 1. the LLM needs to make a tool call, in which case go to stage2_tools
     # 2. OR the plan has been successfully made, so go to the evaluation node
     graph.add_conditional_edges(
@@ -1892,7 +1897,7 @@ def build_advisor_graph(
     # give the tool results back to stage2_make_plan to use to make the plan
     graph.add_edge("capture_stage2_tool_results", "stage2_make_plan")
 
-    # evaluation of stage2 will either: 
+    # evaluation of stage2 will either:
     # 1. find that the plan is missing some information or is incorrect, so go back to stage2_make_plan while passing in the feedback of issues
     # 2. OR the evaluation will pass, so go to output the plan
     graph.add_conditional_edges(

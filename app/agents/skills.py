@@ -5,9 +5,8 @@ functions (handbook lookup, metadata confirmation) as tools the advisor agent
 can choose to invoke, and binds whatever runtime context (e.g. a DB session)
 those services need.
 """
-from typing import TypedDict
 import json
-from typing import Literal
+from typing import Literal, TypedDict
 
 from langchain_core.tools import StructuredTool, tool
 from pydantic import BaseModel, Field
@@ -166,8 +165,8 @@ def get_elective_priorities_tool(
     campus: str,
     session: str | None,
     mode: str = 'major',
-    completed_subjects: list[str] = [],
-    planned_subjects: list[str] = [],
+    completed_subjects: list[str] = [],  # noqa: B006 (tool schema; never mutated)
+    planned_subjects: list[str] = [],  # noqa: B006 (tool schema; never mutated)
     major: str | None = None,
     interests: str | None = None,
     limit: int = 25,

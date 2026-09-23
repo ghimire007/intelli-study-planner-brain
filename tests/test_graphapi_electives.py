@@ -5,7 +5,6 @@ import json
 from pathlib import Path
 
 import pytest
-
 from app.agents.graphAPI import (
     extract_and_parse_json,
     sols_codes_for_ranking,
