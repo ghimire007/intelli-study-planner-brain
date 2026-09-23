@@ -6,6 +6,16 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
+class HandbookUnavailable(ValueError):
+    """No handbook exists for this course/year/campus.
+
+    Subclasses ValueError so the existing broad handlers around
+    fetch_handbook keep catching it; the chat API maps it to 503 ahead of
+    its generic ValueError branch, so it can never read as "session not
+    found".
+    """
+
+
 async def fetch_handbook(db: AsyncSession, degree_code: str, year: int, campus: str) -> str:
     """Fetch the handbook markdown for a degree, preferring an exact campus match."""
     for campus_filter in [campus, None]:
@@ -20,4 +30,4 @@ async def fetch_handbook(db: AsyncSession, degree_code: str, year: int, campus: 
         handbook = result.scalar_one_or_none()
         if handbook:
             return handbook.information
-    raise ValueError(f"No handbook found for course {degree_code}")
+    raise HandbookUnavailable(f"No handbook found for course {degree_code}")

@@ -1,3 +1,4 @@
+import time
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -14,9 +15,11 @@ from app.schemas.chat import (
     HistoryOut,
     MessageOut,
     StartSessionOut,
+    TitleOut,
 )
 from app.services.agent_chat_service import AgentChatService, CredentialRejected
 from app.services.credential_resolver import CredentialUnreadable, NoCredentialError
+from app.services.handbook_service import HandbookUnavailable
 
 router = APIRouter()
 
@@ -48,12 +51,12 @@ def _get_agent_service(
 ) -> AgentChatService:
     return AgentChatService(db=db, user=user)
 
-
 @router.post("", response_model=StartSessionOut, status_code=201)
 async def start_session(
     body: ChatRequest,
     service: AgentChatService = Depends(_get_agent_service),
 ):
+    print(f"DEBUG API HIT at {time.time()} | Message: '{body.message}'")
     try:
         session, reply = await service.start_session(body.message, model=body.model)
     except (NoCredentialError, CredentialUnreadable) as e:
@@ -62,6 +65,10 @@ async def start_session(
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e)) from e
     except ProviderNotInstalled as e:
         raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail=str(e)) from e
+    except HandbookUnavailable as e:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e)
+        ) from e
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e)) from e
     except Exception as e:
@@ -83,6 +90,10 @@ async def continue_session(
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e)) from e
     except ProviderNotInstalled as e:
         raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail=str(e)) from e
+    except HandbookUnavailable as e:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e)
+        ) from e
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e)) from e
     except Exception as e:
@@ -105,3 +116,17 @@ async def get_history(
         model=session.model,
         messages=[MessageOut.model_validate(m) for m in messages if m.role != "system"],
     )
+
+
+@router.post("/{session_id}/title", response_model=TitleOut)
+async def generate_title(
+    session_id: uuid.UUID,
+    service: AgentChatService = Depends(_get_agent_service),
+):
+    try:
+        title = await service.generate_title(session_id)
+        return TitleOut(session_id=str(session_id), title=title)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e)) from e
+    except Exception as e:
+        _raise_llm_http_error(e)

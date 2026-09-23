@@ -40,3 +40,7 @@ class HistoryOut(BaseModel):
     degree_code: str
     model: str | None = None
     messages: list[MessageOut]
+
+
+class TitleOut(BaseModel):
+    title: str

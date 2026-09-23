@@ -6,14 +6,18 @@ can choose to invoke, and binds whatever runtime context (e.g. a DB session)
 those services need.
 """
 import json
-from typing import Literal
+from typing import Literal, TypedDict
 
 from langchain_core.tools import StructuredTool, tool
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.schemas.elective_ranking import ElectivePriorityInput
-from app.services.elective_ranking import get_elective_priorities
+from app.schemas.elective_ranking import (
+    ElectivePriorityInput,
+    ElectivePriorityResult,
+    RankedElectivesWithSubjects,
+)
+from app.services.elective_ranking import flatten_ranked_electives, get_elective_priorities
 from app.services.handbook_service import fetch_handbook
 from app.services.kb_service import fetch_major, fetch_subjects
 from app.services.knowledge_service import TOPIC_SLUGS, TOPICS, load_topic
@@ -23,17 +27,67 @@ from app.services.knowledge_service import TOPIC_SLUGS, TOPICS, load_topic
 _LATEST_HANDBOOK_YEAR = 9999
 
 
+class HandbookFetchResult(TypedDict):
+    ok: bool
+    degree_code: str
+    year: int
+    campus: str
+    content: str | None
+    error: str | None
+
+
 def make_fetch_handbook_tool(db: AsyncSession):
-    """Bind a DB session to a `fetch_handbook` LangChain tool the agent can call."""
 
     @tool
-    async def fetch_handbook_tool(degree_code: str, year: int, campus: str) -> str:
-        """Fetch the official UOW course handbook markdown for a degree code/year/campus.
-
-        Call this when you need the degree's rules, subject prerequisites, or
-        session availability and don't already have the handbook content in context.
+    async def fetch_handbook_tool(
+        degree_code: str,
+        year: int,
+        campus: str,
+    ) -> dict:
         """
-        return await fetch_handbook(db, degree_code, year, campus)
+        Fetch the official UOW course handbook.
+
+        Returns structured success/failure information so the graph can
+        deterministically decide whether planning is allowed to continue.
+        """
+
+        try:
+            content = await fetch_handbook(
+                db,
+                degree_code,
+                year,
+                campus,
+            )
+
+            # Do not treat an empty/placeholder response as a successful fetch.
+            if not content or not content.strip():
+                return {
+                    "ok": False,
+                    "degree_code": degree_code,
+                    "year": year,
+                    "campus": campus,
+                    "content": None,
+                    "error": "Handbook was not found or returned empty content.",
+                }
+
+            return {
+                "ok": True,
+                "degree_code": degree_code,
+                "year": year,
+                "campus": campus,
+                "content": content,
+                "error": None,
+            }
+
+        except Exception as exc:
+            return {
+                "ok": False,
+                "degree_code": degree_code,
+                "year": year,
+                "campus": campus,
+                "content": None,
+                "error": str(exc),
+            }
 
     return fetch_handbook_tool
 
@@ -109,10 +163,10 @@ def make_lookup_major_tool(db: AsyncSession):
 def get_elective_priorities_tool(
     course: str,
     campus: str,
-    session: str,
-    mode: Literal["major", "interest"],
-    completed_subjects: list[str],
-    planned_subjects: list[str],
+    session: str | None,
+    mode: str = 'major',
+    completed_subjects: list[str] = [],  # noqa: B006 (tool schema; never mutated)
+    planned_subjects: list[str] = [],  # noqa: B006 (tool schema; never mutated)
     major: str | None = None,
     interests: str | None = None,
     limit: int = 25,
@@ -125,6 +179,7 @@ def get_elective_priorities_tool(
     planned subject codes from the SOLS record. Prefer higher-ranked codes
     when scheduling electives unless session/prereqs rule them out.
     """
+    print("!!!!!!!!!!!!!!!! EXECUTION STARTED !!!!!!!!!!!!!!!!")
     result = get_elective_priorities(
         ElectivePriorityInput(
             course=course,
@@ -138,7 +193,77 @@ def get_elective_priorities_tool(
             limit=limit,
         )
     )
+    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n", result)
     return json.dumps(result.model_dump(), indent=2)
+
+
+def ranked_elective_codes(result: ElectivePriorityResult) -> list[str]:
+    """Unique ranked codes in pool order, first occurrence wins."""
+    codes: list[str] = []
+    seen: set[str] = set()
+    for pool in result.pools:
+        for item in pool.priorities:
+            if item.code not in seen:
+                seen.add(item.code)
+                codes.append(item.code)
+    return codes
+
+
+def make_lookup_ranked_electives_tool(db: AsyncSession):
+    """Rank electives then look up official subject cards in one tool call."""
+
+    @tool
+    async def lookup_ranked_electives_tool(
+        course: str,
+        campus: str,
+        session: str,
+        mode: Literal["major", "interest"],
+        completed_subjects: list[str],
+        planned_subjects: list[str],
+        major: str | None = None,
+        interests: str | None = None,
+        limit: int = 25,
+    ) -> str:
+        """Rank elective shortlists and return official handbook cards for those codes.
+
+
+
+        Returns JSON: mode, pools (ranked code/title/score per handbook pool),
+        and subject_cards (markdown cards: CP, prereqs, sessions, handbook URL).
+        Codes missing from the subject table are marked — do not invent details.
+        """
+        ranking = get_elective_priorities(
+            ElectivePriorityInput(
+                course=course,
+                campus=campus,
+                session=session,
+                major=major,
+                completed_subjects=completed_subjects,
+                planned_subjects=planned_subjects,
+                mode=mode,
+                interests=interests,
+                limit=limit,
+            )
+        )
+        codes = ranked_elective_codes(ranking)
+        stage1 = flatten_ranked_electives(
+            ranking,
+            campus=campus,
+            session=session,
+            course=course,
+        )
+        subject_cards = (
+            await fetch_subjects(db, codes, _LATEST_HANDBOOK_YEAR) if codes else ""
+        )
+        combined = RankedElectivesWithSubjects(
+            mode=ranking.mode,
+            pools=ranking.pools,
+            subjects=stage1.subjects,
+            subject_cards=subject_cards,
+        )
+        return json.dumps(combined.model_dump(by_alias=True), indent=2)
+
+    return lookup_ranked_electives_tool
 
 
 _topic_list = "\n".join(f"- {t.slug}: {t.description}" for t in TOPICS)
@@ -163,6 +288,41 @@ lookup_uow_policy_tool = StructuredTool.from_function(
     args_schema=_LookupPolicyArgs,
 )
 
+@tool
+def request_plan_change_tool(
+    change_type: Literal[
+        "major",
+        "elective_preference",
+        "course",
+        "campus",
+        "commencement_year",
+        "session",
+        "general_revision",
+    ],
+    major: str | None = None,
+    elective_preference: str | None = None,
+    course: str | None = None,
+    campus: str | None = None,
+    commencement_year: int | None = None,
+    session: str | None = None,
+) -> str:
+    """
+    Signal that the student's latest request requires a new or revised
+    study plan.
+
+    Only pass values explicitly stated by the student or clearly
+    established in the immediately preceding conversation.
+    """
+    return json.dumps({
+        "change_type": change_type,
+        "major": major,
+        "elective_preference": elective_preference,
+        "course": course,
+        "campus": campus,
+        "commencement_year": commencement_year,
+        "session": session,
+    })
+
 
 def build_skills(db: AsyncSession):
     """Return the tools ("skills") available to the advisor agent, split by whether
@@ -172,13 +332,19 @@ def build_skills(db: AsyncSession):
     depend on having confirmed the student's degree/year/campus.
     """
     return {
-        "confirm": [confirm_metadata_tool, lookup_uow_policy_tool],
+        "confirm": [confirm_metadata_tool, lookup_uow_policy_tool, request_plan_change_tool],
         "full": [
             confirm_metadata_tool,
             lookup_uow_policy_tool,
             make_fetch_handbook_tool(db),
             make_lookup_subjects_tool(db),
             make_lookup_major_tool(db),
+            get_elective_priorities_tool,
+            make_lookup_ranked_electives_tool(db),
+            request_plan_change_tool,
+        ],
+        "electives": [
+            make_lookup_subjects_tool(db),
             get_elective_priorities_tool,
         ],
     }
