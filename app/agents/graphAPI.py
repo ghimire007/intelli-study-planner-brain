@@ -1073,8 +1073,6 @@ def build_advisor_graph(
         """
         print("NODE: agent")
 
-        start = time.perf_counter()
-
         model = llm(
             "full" if state.get("meta_confirmed") else "confirm"
         )
@@ -1105,7 +1103,7 @@ def build_advisor_graph(
 
             DO NOT call request_plan_change_tool for general questions, questions about the plan itself or question about your logic.
 
-            Only call request_plan_change_tool when the student explicitly wants the plan to change. 
+            Only call request_plan_change_tool when the student explicitly wants the plan to change.
 
             Current conversation mode:
             {conversation_mode}
