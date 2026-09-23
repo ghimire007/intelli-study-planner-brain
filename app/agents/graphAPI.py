@@ -275,6 +275,12 @@ class AdvisorState(TypedDict):
     planning_requested: bool
     elective_preference: str | None
 
+    conversation_mode: Literal[
+        "collecting",
+        "planning",
+        "post_plan",
+    ]
+
     # Handbook
     handbook: str | None
     handbook_degree_code: str | None
@@ -294,6 +300,46 @@ class AdvisorState(TypedDict):
     stage2_retry_count: int
     stage2_tool_loop_count: int
 
+# get the type of message to control whether the planning branch should be executed
+def latest_student_message(
+    state: AdvisorState,
+) -> str:
+    """
+    Return latest student message text.
+    """
+    for message in reversed(state.get("messages", [])):
+        if isinstance(message, HumanMessage):
+            return _message_text(message)
+
+    return ""
+
+
+def is_plan_explanation_question(
+    text: str,
+) -> bool:
+    """
+    Detect questions about an existing plan.
+    These should not trigger regeneration.
+    """
+
+    patterns = [
+        r"\bwhy is\b.*\blisted\b",
+        r"\bwhy is\b.*\bduplicated\b",
+        r"\bwhy does\b.*\bappear\b",
+        r"\bwhy are\b.*\btwice\b",
+        r"\bexplain\b.*\bplan\b",
+        r"\bwhat is\b.*\bsubject\b",
+        r"\bis this\b.*\bmistake\b",
+    ]
+
+    return any(
+        re.search(
+            pattern,
+            text,
+            flags=re.IGNORECASE,
+        )
+        for pattern in patterns
+    )
 
 # HANDBOOK IDENTITY
 def metadata_handbook_key(
@@ -712,6 +758,7 @@ def apply_confirm_metadata(
         "meta": new_meta,
         "meta_confirmed": True,
         "planning_requested": True,
+        "conversation_mode": "planning",
         "elective_preference": None,
 
         # Invalidate generated planning data.
@@ -798,6 +845,7 @@ def apply_plan_change_request(
 
         return {
             "planning_requested": True,
+            "conversation_mode": "planning",
             "elective_preference": str(value).strip(),
             "electives": None,
             "remaining_subjects": None,
@@ -873,6 +921,7 @@ def apply_plan_change_request(
         "meta": meta,
         "meta_confirmed": True,
         "planning_requested": True,
+        "conversation_mode": "planning",
         "elective_preference": None,
         "electives": None,
         "remaining_subjects": None,
@@ -1036,6 +1085,8 @@ def build_advisor_graph(
         )
 
         confirmed = bool(state.get("meta_confirmed"))
+        # either getting info or replying to a question/input
+        conversation_mode = (state.get("conversation_mode") or "collecting")
 
         system_content = build_system_prompt(
             prompt=SYSTEM_PROMPT,
@@ -1045,28 +1096,53 @@ def build_advisor_graph(
             raw_sols=state.get("raw_sols"),
         )
 
-        system_content += "\n\n" "INITIAL METADATA CONFIRMATION RULES\n- Before metadata is confirmed, extract only degree/course code, commencement year, campus, session, and major wording explicitly stated by the student or already present in parsed student enrolment data.\n- NEVER convert a shorthand or colloquial major into a canonical handbook major name before the handbook is retrieved.\n- For example, if the student says 'network', do not confirm 'Network Design and Security' unless the student explicitly used that exact wording or selected it from the handbook.\n- A major may remain unresolved text; it is not permission to invent a canonical major.\n- NEVER infer commencement year, course code, campus, session, or major from no-enrolment status, the current year, common defaults, or world knowledge.\n- Do not invent a session. Missing session remains missing.\n\n" "PLAN CHANGE TOOL RULES\n- Decide whether the student's latest request requires a new or revised study plan.\n- Call request_plan_change_tool when the student changes or proposes a major,\n  elective preference, course, campus, commencement year, or session.\n- Call request_plan_change_tool when the student asks to revise, update,\n  regenerate, rebuild, or otherwise materially change the study plan.\n- Call request_plan_change_tool when the student agrees to an immediately\n  preceding assistant question that offered to revise or update the plan.\n- Do NOT call request_plan_change_tool for general questions, explanations,\n  policy questions, or discussion that does not change the requested plan.\n- Only pass values explicitly stated by the student or clearly established\n  by the immediately preceding conversation.\n- NEVER invent or default a commencement year, course, campus, major, or session.\n- A successful planning-change tool call is the signal that the graph must\n  run Stage 1 and Stage 2 again."
+        system_content += """
+            PLAN CHANGE RULES:
+
+            You must distinguish between:
+            1. questions about the existing plan
+            2. requests to modify the plan
+
+            DO NOT call request_plan_change_tool for general questions, questions about the plan itself or question about your logic.
+
+            Only call request_plan_change_tool when the student explicitly wants the plan to change. 
+
+            Current conversation mode:
+            {conversation_mode}
+
+            """.format(
+                conversation_mode=conversation_mode
+            )
+
 
         messages = [SystemMessage(content=system_content), *state.get("messages", [])]
 
+        latest = latest_student_message(state)
+
+        # if the question is determined to be just asking an explaination and not to replan the plan (yet), only answer converstionally
+        if (state.get("conversation_mode") == "post_plan" and is_plan_explanation_question(latest)):
+            system_content += """
+                The user is asking about the existing generated plan. Do not call any plan-change tools. Explain the existing plan instead.
+            """
+
         response = await model.ainvoke(messages)
 
-        print("agent: response =", repr(response))
-        print("agent: tool calls =", response.tool_calls)
-        print("agent: content =", repr(response.content))
+        # print("agent: response =", repr(response))
+        # print("agent: tool calls =", response.tool_calls)
+        # print("agent: content =", repr(response.content))
 
-        print("agent: response tool calls =", getattr(response, "tool_calls", None))
-        print("agent: response content length =", len(response.content or ""))
+        # print("agent: response tool calls =", getattr(response, "tool_calls", None))
+        # print("agent: response content length =", len(response.content or ""))
 
-        print(
-            f"agent: LLM finished in {time.perf_counter() - start:.2f}s"
-        )
+        # print(
+        #     f"agent: LLM finished in {time.perf_counter() - start:.2f}s"
+        # )
 
-        print("agent: system prompt chars =", len(system_content))
-        print(
-            "agent: message chars =",
-            sum(len(str(m.content)) for m in state.get("messages", []))
-        )
+        # print("agent: system prompt chars =", len(system_content))
+        # print(
+        #     "agent: message chars =",
+        #     sum(len(str(m.content)) for m in state.get("messages", []))
+        # )
 
         return {
             "messages": [response],
@@ -1303,6 +1379,7 @@ def build_advisor_graph(
 
         return {
             "planning_requested": False,
+            "conversation_mode": "planning",
 
             # Reset Stage 1 execution state.
             "electives": None,
@@ -1769,6 +1846,7 @@ def build_advisor_graph(
         return {
             "messages": [AIMessage(content=plan)],
             "planning_requested": False,
+            "conversation_mode": "post_plan"
         }
 
 # ------------------------------------------------------------------------------
