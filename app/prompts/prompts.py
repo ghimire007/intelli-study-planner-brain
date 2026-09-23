@@ -81,39 +81,6 @@ Ask for the commencement year if it has not already been explicitly provided.
 """.strip()
 
 
-### elective list
-ELECTIVE_GENERATION_PROMPT = """
-## WORKFLOW & INSTRUCTIONS
-
-You are an academic elective advisor. Follow these exact steps:
-
-### STEP 1: TOOL EXECUTION
-You MUST call `get_elective_priorities_tool` before outputting your final answer.
-- Choose `mode="major"` if ranking by the student's declared major.
-- Choose `mode="interest"` and populate `interests` if the student specifies topics of interest.
-- Pass all required student context fields (`course`, `campus`, `major`).
-
-### STEP 2: FINAL OUTPUT GENERATION
-After receiving tool outputs, format the final output.
-
-Your response MUST be exclusively a raw JSON object matching the schema below. Do NOT wrap the JSON in markdown code blocks (e.g., no ```json) and do NOT include any introductory or trailing conversational text.
-
-{
-  "subjects": [
-    {
-      "code": "STRING",
-      "title": "STRING",
-      "cp": NUMBER,
-      "campus": "STRING",
-      "session": "STRING",
-      "pre-requisites": "STRING",
-      "co-requisites": "STRING"
-    }
-  ]
-}
-""".strip()
-
-
 
 ### stage 1 review && list of must include subjects
 SUBJECT_GENERATION_PROMPT = """
@@ -306,7 +273,7 @@ Before generating the plan:
 
 ## OUTPUT FORMAT
 
-Always include a preamble before providing the audit and study plan. Ensure to follow these preamble instructions: 
+ALWAYS include a preamble before providing the audit and study plan. Ensure to follow these preamble instructions: 
 - Response in concise conversational text with a 1-2 sentence summary of the student's progress. 
 - Include the student's identified and confirmed course, and the identified and confirmed major based on the enrolment record the student has provided. 
 - If applicable, identify and include the TF, F, N, NH, W, WF, AF subjects. 
@@ -365,9 +332,11 @@ For EVERY elective placeholder you must find an eligible elective to recommend.
 (Mandatory: Output this block for EVERY elective placeholder. Do NOT skip or use '...'. FOLLOW THIS TEMPLATE EXACTLY. Failure to out only of the filters is a CRITICAL ERROR.)
 #### Elective placeholder [title]:
 - Current session: List the current session the elective placeholder is in.
+- Confirm the subject exists: If the subject does not exist it CANNOT be scheduled.
 - Remaining generated electives: [Explicitly list ALL Generated Elective codes in the given order.]
+- Remove any elective codes that are already in the plan.
 For EVERY code listed in Remaining generated electives until you find an eligible match, you MUST output a dedicated line evaluating all 5 conditions. 
-Required Format Per Elective subject:
+REQUIRED FORMAT TO OUTPUT FOR EACH ELECTIVE SUBJECT, FAILURE TO OUTPUT THIS EXACT FORMAT IS A CRITICAL ERROR:
 [ELECTIVE_CODE]:
 - [1/5] Availability: [Code]: [Autumn/Spring] == current session? [PASS/FAIL]
 - [2/5] Prereq (Subjects): [Code] (Session N): Prereqs [failed subjects do not count] (Session N-1 or earlier), Prereqs Met? [PASS/FAIL]

@@ -28,8 +28,8 @@ from app.services.sols_parser import parse_sols
 
 # CONSTANTS for max retries/loops to keep the model requests per minute < 15 for free API key tiers
 MAX_STAGE1_RETRIES = 2
-MAX_STAGE2_RETRIES = 1
-MAX_STAGE2_TOOL_LOOPS = 5
+MAX_STAGE2_RETRIES = 2
+MAX_STAGE2_TOOL_LOOPS = 3
 
 
 # function to get information from JSON
