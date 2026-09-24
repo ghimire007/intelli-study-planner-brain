@@ -1,0 +1,311 @@
+{
+  "code": "1862",
+  "title": "Bachelor of Engineering (Honours) - Bachelor of Computer Science",
+  "year": 2026,
+  "cp": "264",
+  "structure": [
+    {
+      "title": "Bachelor of Computer Science",
+      "cp": "96",
+      "description": "Complete the following core and capstone subjects.",
+      "items": [],
+      "children": [
+        {
+          "title": "Major Studies",
+          "cp": "24",
+          "description": "<p>Students may complete (but are not required to) one of the following Computer Science majors. </p> \n<p>Note: 300-level subjects which are required as part of a major may have 100- and 200-level pre-requisite subjects which are not listed as part of the major.</p>",
+          "items": [
+            {
+              "code": "MAJ40164",
+              "name": "Digital Systems Security",
+              "cp": "24",
+              "type": null,
+              "url": "/aos/2021/MAJ40164"
+            },
+            {
+              "code": "MAJ40516",
+              "name": "Cyber Security",
+              "cp": "24",
+              "type": null,
+              "url": "/aos/2021/MAJ40516"
+            },
+            {
+              "code": "MAJ44204",
+              "name": "Artificial Intelligence and Big Data",
+              "cp": "24",
+              "type": null,
+              "url": "/aos/2021/MAJ44204"
+            },
+            {
+              "code": "MAJ40277",
+              "name": "Software Engineering for Bachelor of Computer Science",
+              "cp": "24",
+              "type": null,
+              "url": "/aos/2021/MAJ40277"
+            },
+            {
+              "code": "MAJ41477",
+              "name": "Game and Mobile Development",
+              "cp": "24",
+              "type": null,
+              "url": "/aos/2021/MAJ41477"
+            }
+          ],
+          "children": []
+        },
+        {
+          "title": "Core",
+          "cp": "66",
+          "description": "Complete core subjects from the list below. NOTE: students completing a SECTE major do not need to complete CSIT127",
+          "items": [
+            {
+              "code": "CSIT121",
+              "name": "Object Oriented Design and Programming",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2021/CSIT121"
+            },
+            {
+              "code": "CSIT123",
+              "name": "Computing and Cyber Security Fundamentals",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2023/CSIT123"
+            },
+            {
+              "code": "CSCI203",
+              "name": "Algorithms and Data Structures",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2021/CSCI203"
+            },
+            {
+              "code": "CSIT127",
+              "name": "Networks and Communications",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2024/CSIT127"
+            },
+            {
+              "code": "CSIT128",
+              "name": "Introduction to Web Technology",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2021/CSIT128"
+            },
+            {
+              "code": "CSIT226",
+              "name": "Human Computer Interaction",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2021/CSIT226"
+            },
+            {
+              "code": "CSIT205",
+              "name": "Generative AI",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2025/CSIT205"
+            },
+            {
+              "code": "CSCI235",
+              "name": "Database Systems",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2021/CSCI235"
+            },
+            {
+              "code": "CSIT314",
+              "name": "Software Development Methodologies",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2021/CSIT314"
+            },
+            {
+              "code": "CSIT115",
+              "name": "Database Management Systems",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2025/CSIT115"
+            },
+            {
+              "code": "CSCI251",
+              "name": "Advanced Programming",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2026/CSCI251"
+            }
+          ],
+          "children": []
+        },
+        {
+          "title": "Capstone - Annual session",
+          "cp": "12",
+          "description": "",
+          "items": [
+            {
+              "code": null,
+              "name": null,
+              "cp": null,
+              "type": null,
+              "url": null
+            },
+            {
+              "code": "CSIT321",
+              "name": "Project",
+              "cp": "12",
+              "type": null,
+              "url": "/subjects/2023/CSIT321"
+            }
+          ],
+          "children": []
+        }
+      ]
+    },
+    {
+      "title": "Bachelor of Engineering (Honours)",
+      "cp": "162",
+      "description": "",
+      "items": [],
+      "children": [
+        {
+          "title": "Majors",
+          "cp": "144",
+          "description": "Choose one from the following. Please note, some majors will require the completion of additional credit points, affecting the duration of study.",
+          "items": [
+            {
+              "code": "MAJ40172",
+              "name": "Mechatronic Engineering",
+              "cp": "144",
+              "type": null,
+              "url": "/aos/2020/MAJ40172"
+            },
+            {
+              "code": "MAJ44198",
+              "name": "Computer and Autonomous Systems Engineering for BEng(Hons)",
+              "cp": "144",
+              "type": null,
+              "url": "/aos/2021/MAJ44198"
+            },
+            {
+              "code": "MAJ41913",
+              "name": "Biomedical Engineering",
+              "cp": "144",
+              "type": null,
+              "url": "/aos/2021/MAJ41913"
+            },
+            {
+              "code": "MAJ44203",
+              "name": "Electrical and Electronics Engineering for BEng (Hons) ",
+              "cp": "144",
+              "type": null,
+              "url": "/aos/2021/MAJ44203"
+            },
+            {
+              "code": "MAJ44200",
+              "name": "Telecommunications Engineering and Internet of Things for BEng (Hons)",
+              "cp": "144",
+              "type": null,
+              "url": "/aos/2021/MAJ44200"
+            }
+          ],
+          "children": []
+        },
+        {
+          "title": "Year 1",
+          "cp": "48",
+          "description": "Year 1 is common across all Engineering majors.",
+          "items": [
+            {
+              "code": "ENGG105",
+              "name": "Engineering Design for Sustainability",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2021/ENGG105"
+            },
+            {
+              "code": "ENGG102",
+              "name": "Fundamentals of Engineering Mechanics",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2021/ENGG102"
+            },
+            {
+              "code": "MATH141",
+              "name": "Foundations of Engineering Mathematics",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2021/MATH141"
+            },
+            {
+              "code": "ENGG103",
+              "name": "Materials in Design",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2021/ENGG103"
+            },
+            {
+              "code": "PHYS143",
+              "name": "Physics For Engineers",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2020/PHYS143"
+            },
+            {
+              "code": "ENGG104",
+              "name": "Electrical Systems",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2021/ENGG104"
+            },
+            {
+              "code": "ENGG100",
+              "name": "Engineering Computing and Analysis",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2021/ENGG100"
+            },
+            {
+              "code": "MATH142",
+              "name": "Essentials of Engineering Mathematics",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2021/MATH142"
+            }
+          ],
+          "children": []
+        },
+        {
+          "title": "Professional Options",
+          "cp": "18",
+          "description": "The Faculty encourages the development of engineering skills and knowledge gained in the workplace through Professional Options. Students who work in appropriate industries can enrol in Professional Option subjects and count their industry skills and knowledge toward their degree. This is only available to students in the Mechanical and Biomedical Engineering majors.\n\nDepending on the degree, and subject to approval by the Discipline Advisor, students will be able to take up to three six credit point Professional Option subjects during their course:",
+          "items": [
+            {
+              "code": "ENGG355",
+              "name": "Professional Option 3",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2018/ENGG355"
+            },
+            {
+              "code": "ENGG255",
+              "name": "Professional Option 2",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2018/ENGG255"
+            },
+            {
+              "code": "ENGG455",
+              "name": "Professional Option 4",
+              "cp": "6",
+              "type": null,
+              "url": "/subjects/2018/ENGG455"
+            }
+          ],
+          "children": []
+        }
+      ]
+    }
+  ],
+  "url": "https://courses.uow.edu.au/courses/2026/1862"
+}
