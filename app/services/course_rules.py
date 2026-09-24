@@ -97,6 +97,10 @@ def _find_campus_root(structure: list[dict], campus: str) -> dict | None:
 
     candidates = [node for node in nodes if _campus_matches(node.get("title") or "", campus)]
     if not candidates:
+        # Single-campus courses (e.g. 1802, 1862) have no per-campus containers;
+        # the whole structure is that campus's tree.
+        if not any("campus" in (node.get("title") or "").lower() for node in nodes):
+            return {"title": campus, "items": [], "children": structure}
         return None
 
     for node in candidates:
@@ -191,7 +195,11 @@ def load_course_rules(course: str, campus: str = "Wollongong") -> CourseRules:
     core_selection_section = _find_section(campus_root, "core selection")
     capstone_section = _find_section(campus_root, "capstone")
 
-    capstone_items = capstone_section.get("items") if capstone_section else []
+    # 1862 lists a code-less placeholder row ahead of CSIT321.
+    capstone_items = [
+        item for item in (capstone_section.get("items") if capstone_section else []) or []
+        if item.get("code")
+    ]
     capstone_code = capstone_items[0]["code"] if capstone_items else "CSIT321"
     capstone_cp = int(capstone_items[0].get("cp") or 12) if capstone_items else 12
 
@@ -205,7 +213,9 @@ def load_course_rules(course: str, campus: str = "Wollongong") -> CourseRules:
         campus=campus,
         year=int(course_data.get("year") or 2026),
         total_cp=int(course_data.get("cp") or 144),
-        max_100_level_cp=_parse_max_100_level_cp(campus_root),
+        max_100_level_cp=int(
+            overrides.get("max_100_level_cp") or _parse_max_100_level_cp(campus_root)
+        ),
         capstone_code=_normalize_code(capstone_code),
         capstone_cp=capstone_cp,
         core_subjects=frozenset(_normalize_code(c) for c in _item_codes(core_section)),

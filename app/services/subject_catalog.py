@@ -9,12 +9,25 @@ SEEDS_DIR = Path(__file__).resolve().parent.parent.parent / "seeds"
 SCRAPED_DIR = SEEDS_DIR / "scraped"
 
 
+def _normalize(code: str) -> str:
+    return code.upper().replace(" ", "")
+
+
+def _load(path: Path) -> dict[str, dict]:
+    if not path.exists():
+        return {}
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
 def load_subject_catalog(course: str, year: int = 2026) -> dict[str, dict]:
-    """Prefer canonical merge; fall back to per-degree scrape."""
-    canonical = SCRAPED_DIR / f"subjects_canonical_{year}.json"
-    if canonical.exists():
-        return json.loads(canonical.read_text(encoding="utf-8"))
-    degree_path = SCRAPED_DIR / f"subjects_{course}.json"
-    if degree_path.exists():
-        return json.loads(degree_path.read_text(encoding="utf-8"))
-    return {}
+    """Canonical merge (General Schedule + 766/1807/1838), plus this course's own
+    scraped subjects that the merge lacks — so e.g. 1862's engineering subjects
+    reach 1862 students without appearing for every other course."""
+    canonical = _load(SCRAPED_DIR / f"subjects_canonical_{year}.json")
+    known = {_normalize(code) for code in canonical}
+    extra = {
+        code: subject
+        for code, subject in _load(SCRAPED_DIR / f"subjects_{course}.json").items()
+        if _normalize(code) not in known
+    }
+    return {**canonical, **extra}
