@@ -13,7 +13,8 @@ The Bachelor of Computer Science (Dean's Scholar) (course 1802, 144 CP, 3 years
 full-time, Wollongong only) is an enriched version of the Bachelor of Computer
 Science (766) for high-achieving students. Students complete the normal degree
 requirements plus a 400-level Dean's Scholar subject, get direct access to
-academic mentoring, and are encouraged to continue into Honours and research.
+academic mentoring, and are encouraged to continue into Honours (765 Bachelor of
+Computer Science (Honours) — see the honours topic) and research.
 Places are limited each year.
 
 ## Getting in

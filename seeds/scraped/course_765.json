@@ -1,0 +1,124 @@
+{
+  "code": "765",
+  "title": "Bachelor of Computer Science (Honours)",
+  "year": 2026,
+  "cp": "48",
+  "structure": [
+    {
+      "title": "Elective",
+      "cp": "18",
+      "description": "Select 3 subjects from the list of electives below.\nWith the permission of the Academic Program Director, candidates may substitute up to 6 credit points with a 300-level Computer Science subject or a 400-level subject from another discipline.",
+      "items": [
+        {
+          "code": "CSCI433",
+          "name": "Machine Learning Algorithms and Applications",
+          "cp": "6",
+          "type": null,
+          "url": "/subjects/2018/CSCI433"
+        },
+        {
+          "code": "CSCI446",
+          "name": "Big Data Analytics",
+          "cp": "6",
+          "type": null,
+          "url": "/subjects/2018/CSCI446"
+        },
+        {
+          "code": "CSIT488",
+          "name": "Security, Ethics and Professionalism",
+          "cp": "6",
+          "type": null,
+          "url": "/subjects/2021/CSIT488"
+        },
+        {
+          "code": "INFO411",
+          "name": "Data Mining and Knowledge Discovery",
+          "cp": "6",
+          "type": null,
+          "url": "/subjects/2018/INFO411"
+        },
+        {
+          "code": "CSCI427",
+          "name": "Service-Oriented Software Engineering",
+          "cp": "6",
+          "type": null,
+          "url": "/subjects/2018/CSCI427"
+        },
+        {
+          "code": "CSCI471",
+          "name": "Advanced Computer Security",
+          "cp": "6",
+          "type": null,
+          "url": "/subjects/2018/CSCI471"
+        },
+        {
+          "code": "CSIT470",
+          "name": "Security Essentials",
+          "cp": "6",
+          "type": null,
+          "url": "/subjects/2023/CSIT470"
+        },
+        {
+          "code": "CSCI426",
+          "name": "Software Testing and Analysis",
+          "cp": "6",
+          "type": null,
+          "url": "/subjects/2018/CSCI426"
+        },
+        {
+          "code": "CSCI410",
+          "name": "Software Requirements, Specifications and Formal Methods",
+          "cp": "6",
+          "type": null,
+          "url": "/subjects/2018/CSCI410"
+        },
+        {
+          "code": "CSCI435",
+          "name": "Computer Vision Algorithms and Systems",
+          "cp": "6",
+          "type": null,
+          "url": "/subjects/2018/CSCI435"
+        },
+        {
+          "code": "CSCI444",
+          "name": "Perception, Planning and Interactions",
+          "cp": "6",
+          "type": null,
+          "url": "/subjects/2025/CSCI444"
+        }
+      ],
+      "children": []
+    },
+    {
+      "title": "Capstone ",
+      "cp": "24",
+      "description": "Complete the following capstone subject:",
+      "items": [
+        {
+          "code": "CSIT499",
+          "name": "Honours Research Project",
+          "cp": "24",
+          "type": null,
+          "url": "/subjects/2021/CSIT499"
+        }
+      ],
+      "children": []
+    },
+    {
+      "title": "Core",
+      "cp": "6",
+      "description": "Complete the following core subject:",
+      "items": [
+        {
+          "code": "CSIT440",
+          "name": "Research Methodology",
+          "cp": "6",
+          "type": null,
+          "url": "/subjects/2018/CSIT440"
+        }
+      ],
+      "children": []
+    }
+  ],
+  "url": "https://courses.uow.edu.au/courses/2026/765"
+}

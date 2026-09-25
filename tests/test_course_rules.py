@@ -59,19 +59,18 @@ def test_load_course_rules_single_campus_deans_scholar() -> None:
     assert rules.major_aliases["cyber security"] == "MAJ40516"
 
 
-def test_load_course_rules_honours_double_degree_overrides() -> None:
-    rules = load_course_rules("1862", "Wollongong")
-    assert rules.total_cp == 264
-    assert rules.max_100_level_cp == 90
-    assert rules.capstone_code == "CSIT321"
-    assert {"CSIT110", "CSIT114", "CSIT214"}.isdisjoint(rules.core_subjects)
-    assert rules.major_aliases["mechatronic engineering"] == "MAJ40172"
+def test_load_course_rules_honours_follow_on_degree() -> None:
+    rules = load_course_rules("765", "Wollongong")
+    assert rules.total_cp == 48
+    assert rules.core_subjects == {"CSIT440"}
+    assert rules.capstone_code == "CSIT499"
+    assert rules.capstone_cp == 24
 
 
 def test_course_specific_subjects_stay_out_of_other_catalogs() -> None:
     from app.services.subject_catalog import load_subject_catalog
 
-    assert "ECTE498" in load_subject_catalog("1862")
-    assert "ECTE498" not in load_subject_catalog("766")
+    assert "CSIT499" in load_subject_catalog("765")
+    assert "CSIT499" not in load_subject_catalog("766")
     assert "CSCI471" in load_subject_catalog("1802")
     assert len(load_subject_catalog("1838")) == len(load_subject_catalog("766"))
