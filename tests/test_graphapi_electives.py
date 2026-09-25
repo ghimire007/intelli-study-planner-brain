@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 
 import pytest
-from app.agents.graphAPI import (
+from app.agents.state import (
     extract_and_parse_json,
     sols_codes_for_ranking,
     stage1_electives_from_advisor_state,
