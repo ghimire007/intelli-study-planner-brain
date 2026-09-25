@@ -21,8 +21,8 @@ def _load(path: Path) -> dict[str, dict]:
 
 def load_subject_catalog(course: str, year: int = 2026) -> dict[str, dict]:
     """Canonical merge (General Schedule + 766/1807/1838), plus this course's own
-    scraped subjects that the merge lacks — so e.g. 1862's engineering subjects
-    reach 1862 students without appearing for every other course."""
+    scraped subjects that the merge lacks — so e.g. 765's honours subjects
+    reach 765 students without appearing for every other course."""
     canonical = _load(SCRAPED_DIR / f"subjects_canonical_{year}.json")
     known = {_normalize(code) for code in canonical}
     extra = {
