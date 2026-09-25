@@ -23,7 +23,7 @@ TOPICS: list[Topic] = [
     Topic("course_progress", "Course progress rules (passing >50% of enrolled CP), what happens if a student falls behind, and where to get academic support"),
     Topic("credit_and_rpl", "Credit for Prior Learning (CPL) — getting credit/exemptions for previous formal, informal, or non-formal study/experience"),
     Topic("leaving_uow", "Withdrawing from UOW entirely, Leave of Absence, changing full-time/part-time study load, census date liabilities, and course lapsing"),
-    Topic("honours", "How honours grades/classes are calculated (Honours Methods 1-4, WAM bands, level weightings), 1862 honours rules, and applying for BCompSc (Honours)"),
+    Topic("honours", "Bachelor of Computer Science (Honours) (765): entry requirements (WAM 75 + two final-year subjects at 75), structure, and how the honours class is calculated (Method 1 bands; other methods for comparison)"),
     Topic("deans_scholar", "Dean's Scholar degree (1802): entry (ATAR, transfer from 766 with WAM 80 after 48 CP), the 80% average needed to stay in, and how it differs from 766"),
     Topic("subject_withdrawal", "Withdrawing from an individual subject (not the whole course) — deadlines, academic/financial penalties, compassionate circumstances, fee refunds"),
 ]

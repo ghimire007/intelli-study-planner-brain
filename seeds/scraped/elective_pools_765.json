@@ -1,0 +1,47 @@
+{
+  "course": "765",
+  "year": 2026,
+  "campus": "Wollongong",
+  "pools": [
+    {
+      "id": "elective",
+      "title": "Elective",
+      "cp": 18,
+      "description": "Select 3 subjects from the list of electives below.\nWith the permission of the Academic Program Director, candidates may substitute up to 6 credit points with a 300-level Computer Science subject or a 400-level subject from another discipline.",
+      "mode": "named_list",
+      "codes": [
+        "CSCI433",
+        "CSCI446",
+        "CSIT488",
+        "INFO411",
+        "CSCI427",
+        "CSCI471",
+        "CSIT470",
+        "CSCI426",
+        "CSCI410",
+        "CSCI435",
+        "CSCI444"
+      ]
+    }
+  ],
+  "named_lists": {
+    "root_electives_list": {
+      "title": "Elective",
+      "cp": 18,
+      "codes": [
+        "CSCI433",
+        "CSCI446",
+        "CSIT488",
+        "INFO411",
+        "CSCI427",
+        "CSCI471",
+        "CSIT470",
+        "CSCI426",
+        "CSCI410",
+        "CSCI435",
+        "CSCI444"
+      ],
+      "description": "Select 3 subjects from the list of electives below.\nWith the permission of the Academic Program Director, candidates may substitute up to 6 credit points with a 300-level Computer Science subject or a 400-level subject from another discipline."
+    }
+  }
+}
