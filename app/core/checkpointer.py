@@ -8,6 +8,8 @@ This is deliberately separate from app/core/database.py's SQLAlchemy engine:
   app/agents/graph.py for why the two are kept apart.
 """
 import logging
+import uuid
+from collections.abc import Iterable
 
 from app.core.config import settings
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
@@ -60,3 +62,13 @@ def get_checkpointer() -> AsyncPostgresSaver:
     if _saver is None:
         raise RuntimeError("Checkpointer not initialised — connect_checkpointer() must run at startup")
     return _saver
+
+
+async def delete_checkpoint_threads(thread_ids: Iterable[uuid.UUID | str]) -> None:
+    """Delete LangGraph state for these thread ids (chat_session.id as a string).
+       Clear chat sessions and messages from the checkpoint_* tables.
+    
+    """
+    saver = get_checkpointer()
+    for thread_id in thread_ids:
+        await saver.adelete_thread(str(thread_id))
