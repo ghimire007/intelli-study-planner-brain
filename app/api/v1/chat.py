@@ -58,7 +58,34 @@ async def start_session(
 ):
     print(f"DEBUG API HIT at {time.time()} | Message: '{body.message}'")
     try:
-        session, reply = await service.start_session(body.message, model=body.model)
+        session, reply = await service.start_session(
+            body.message, 
+            model=body.model,
+            elective_mode=(
+                body.context.profile.elective_mode
+                if body.context and body.context.profile
+                else None
+            ),
+            elective_interests=(
+                body.context.profile.elective_interests
+                if body.context and body.context.profile
+                else None
+            )
+        )
+
+        print("BACKEND CONTEXT:", body.context)
+        print(
+            "BACKEND ELECTIVE MODE:",
+            body.context.profile.elective_mode
+            if body.context and body.context.profile
+            else None,
+        )
+        print(
+            "BACKEND ELECTIVE INTERESTS:",
+            body.context.profile.elective_interests
+            if body.context and body.context.profile
+            else None,
+        )
     except (NoCredentialError, CredentialUnreadable) as e:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e)) from e
     except CredentialRejected as e:
@@ -83,7 +110,13 @@ async def continue_session(
     service: AgentChatService = Depends(_get_agent_service),
 ):
     try:
-        reply = await service.continue_session(session_id, body.message, model=body.model)
+        reply = await service.continue_session(
+            session_id, 
+            body.message, 
+            model=body.model,
+            elective_mode=body.context.profile.elective_mode if body.context else None,
+            elective_interests=body.context.profile.elective_interests if body.context else None
+        )
     except (NoCredentialError, CredentialUnreadable) as e:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e)) from e
     except CredentialRejected as e:

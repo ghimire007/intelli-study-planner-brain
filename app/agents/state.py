@@ -147,6 +147,7 @@ def stage1_electives_from_advisor_state(
     """
     Deterministically generate Stage 1 elective candidates.
     """
+    print("1111111\n AdvisorState: ", state.get("elective_interests"))
 
     meta = state.get("meta") or {}
 
@@ -175,32 +176,27 @@ def stage1_electives_from_advisor_state(
     # Keep the existing single-major ranking interface for now.
     major = ranking_majors[0] if ranking_majors else None
 
-    elective_preference = (
-        state.get("elective_preference")
-        or meta.get("interests")
-    )
+    elective_mode = state.get("elective_mode", "degree")
+    elective_interests = state.get("elective_interests") or []
 
-    unresolved_major_preference = (
-        major
-        if major
-        and not re.fullmatch(r"MAJ\d+", major, flags=re.IGNORECASE)
-        and not elective_preference
-        else None
-    )
+    # elective_interests = list(
+    #     dict.fromkeys(
+    #         str(interest).strip()
+    #         for interest in elective_interests
+    #         if interest and str(interest).strip()
+    #     )
+    # )
 
-    mode = (
-        "interest"
-        if elective_preference or unresolved_major_preference
-        else ("major" if major else "interest")
-    )
+    print("interests: ", elective_interests)
 
-    if unresolved_major_preference:
-        elective_preference = unresolved_major_preference
+    if elective_mode == "interest" and not elective_interests:
+        print("STAGE 1: interest mode selected but no interests supplied")
+        return json.dumps({
+            "mode": "interest",
+            "pools": [],
+        })
 
-        print(
-            "UNRESOLVED MAJOR TREATED AS KEYWORD PREFERENCE:",
-            unresolved_major_preference
-        )
+    mode = "interest" if elective_mode == "interest" else "major"
 
     # Metadata must have been confirmed before Stage 1 reaches this node.
     course = str(meta.get("degree_code") or "").strip()
@@ -226,7 +222,7 @@ def stage1_electives_from_advisor_state(
         planned_subjects=planned,
         mode=mode,
         interests=(
-            elective_preference
+            elective_interests
             if mode == "interest"
             else None
         ),
@@ -237,12 +233,10 @@ def stage1_electives_from_advisor_state(
 
     #debugging
     print("ELECTIVE INPUT:")
-    print("  meta:", meta)
+    print("  elective_mode:", elective_mode)
+    print("  elective_interests:", elective_interests)
     print("  major:", major)
-    print("  raw_major:", raw_majors)
-    print("  elective_preference:", elective_preference)
-    print("  mode:", mode)
-    print("  interests:", student.interests)
+    print("  raw_majors:", raw_majors)
     print("  completed:", completed)
     print("  planned:", planned)
 
@@ -278,7 +272,8 @@ class AdvisorState(TypedDict):
     meta: dict | None
     meta_confirmed: bool
     planning_requested: bool
-    elective_preference: str | None
+    elective_mode: Literal["degree", "interest"] | None
+    elective_interests: list[str]
 
     conversation_mode: Literal[
         "collecting",
@@ -786,7 +781,6 @@ def apply_confirm_metadata(
         "meta_confirmed": True,
         "planning_requested": True,
         "conversation_mode": "planning",
-        "elective_preference": None,
 
         # Invalidate generated planning data.
         "electives": None,
@@ -830,7 +824,7 @@ def apply_plan_change_request(
 
     allowed_types = {
         "major",
-        "elective_preference",
+        "elective_interests",
         "course",
         "campus",
         "commencement_year",
@@ -874,24 +868,41 @@ def apply_plan_change_request(
         meta["majors"] = list(dict.fromkeys(majors))
         meta.pop("major", None)
 
-    elif change_type == "elective_preference":
-        value = request.get("elective_preference")
+    elif change_type == "elective_interests":
+        value = request.get("elective_interests")
 
-        if not value or not str(value).strip():
+        if isinstance(value, str):
+            value = [value]
+
+        if not isinstance(value, list):
             print(
-                "PLAN CHANGE REJECTED: elective preference missing",
+                "PLAN CHANGE REJECTED: elective_interests must be a list"
             )
             return {}
 
+        interests = [
+            str(interest).strip()
+            for interest in value
+            if interest and str(interest).strip()
+        ]
+
+        if not interests:
+            print(
+                "PLAN CHANGE REJECTED: elective interests missing"
+            )
+            return {}
+
+        interests = list(dict.fromkeys(interests))
+
         print(
-            "PLAN CHANGE APPLIED: elective_preference",
-            value,
+            "PLAN CHANGE APPLIED: elective_interests",
+            interests,
         )
 
         return {
             "planning_requested": True,
             "conversation_mode": "planning",
-            "elective_preference": str(value).strip(),
+            "elective_interests": interests,
             "electives": None,
             "remaining_subjects": None,
             "remaining_feedback": None,
@@ -967,7 +978,6 @@ def apply_plan_change_request(
         "meta_confirmed": True,
         "planning_requested": True,
         "conversation_mode": "planning",
-        "elective_preference": None,
         "electives": None,
         "remaining_subjects": None,
         "remaining_feedback": None,
