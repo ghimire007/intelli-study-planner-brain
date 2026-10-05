@@ -130,6 +130,7 @@ def sols_codes_for_ranking(
         if row.status == "Complete":
             completed.append(row.code)
 
+# add provisional to planned?
         elif row.status == "Enrolled":
             planned.append(row.code)
 
