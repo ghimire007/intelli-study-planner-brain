@@ -8,7 +8,7 @@ referenced by description (e.g. Business Electives List).
 
 Usage:
   python scripts/build_elective_pools.py
-  python scripts/build_elective_pools.py 766 1807 1838 --campus Wollongong
+  python scripts/build_elective_pools.py 766 1807 1838 1802 765 --campus Wollongong
 """
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ import re
 import sys
 from pathlib import Path
 
-DEFAULT_COURSES = ("766", "1807", "1838")
+DEFAULT_COURSES = ("766", "1807", "1838", "1802", "765")
 SCHOOL_PREFIXES = ("CSIT", "CSCI", "ISIT")
 
 _ELECTIVE_TITLE_RE = re.compile(r"elective", re.IGNORECASE)
@@ -92,6 +92,10 @@ def _find_campus_root(structure: list[dict], campus: str) -> dict | None:
                 return node
 
     candidates = [n for n in nodes if campus_l in _title(n).lower()]
+    # Single-campus courses (e.g. 1802, 765) have no per-campus containers;
+    # the whole structure is that campus's tree.
+    if not candidates and not any("campus" in _title(n).lower() for n in nodes):
+        return {"title": campus, "items": [], "children": structure}
     for node in candidates:
         t = _title(node).lower()
         if "honours" in t or "top up" in t or "admitted" in t:
@@ -135,7 +139,6 @@ def _classify_pool(node: dict, named_lists: dict[str, dict]) -> dict:
     codes = _item_codes(node)
     cp = _parse_cp(node.get("cp"))
     lower_title = title.lower()
-    lower_desc = desc.lower()
 
     pool: dict = {
         "id": re.sub(r"[^a-z0-9]+", "_", lower_title).strip("_") or "elective",

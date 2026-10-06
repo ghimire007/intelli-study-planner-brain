@@ -1,15 +1,13 @@
 import asyncio
 from logging.config import fileConfig
 
+import app.models  # noqa: F401 — ensure all models are registered
+from alembic import context
+from app.core.config import settings
+from app.core.database import Base
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
-
-from alembic import context
-
-from app.core.config import settings
-from app.core.database import Base
-import app.models  # noqa: F401 — ensure all models are registered
 
 config = context.config
 
@@ -17,7 +15,7 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 # Inject the real DB URL from settings
-config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
+config.set_main_option("sqlalchemy.url", settings.DATABASE_URL.replace("%", "%%"))
 
 target_metadata = Base.metadata
 

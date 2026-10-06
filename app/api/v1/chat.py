@@ -1,5 +1,5 @@
-import uuid
 import time
+import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -19,7 +19,7 @@ from app.schemas.chat import (
 )
 from app.services.agent_chat_service import AgentChatService, CredentialRejected
 from app.services.credential_resolver import CredentialUnreadable, NoCredentialError
-
+from app.services.handbook_service import HandbookUnavailable
 
 router = APIRouter()
 
@@ -65,6 +65,10 @@ async def start_session(
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e)) from e
     except ProviderNotInstalled as e:
         raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail=str(e)) from e
+    except HandbookUnavailable as e:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e)
+        ) from e
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e)) from e
     except Exception as e:
@@ -86,6 +90,10 @@ async def continue_session(
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e)) from e
     except ProviderNotInstalled as e:
         raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail=str(e)) from e
+    except HandbookUnavailable as e:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e)
+        ) from e
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e)) from e
     except Exception as e:

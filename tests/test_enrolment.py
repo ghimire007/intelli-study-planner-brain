@@ -86,11 +86,36 @@ def test_every_subject_survives(path):
 def test_failed_and_uncounted_rows_keep_their_meaning():
     """The rows a careless projection would flatten into "incomplete"."""
     everything = [parse_enrolment(path.read_text()) for path in RECORDS]
+    for path in RECORDS:
+        record = parse_enrolment(path.read_text())
+        print("\n", path.name, len(record.rows))
+        for row in record.rows:
+            print(row.code, row.status)
     rows = [row for record in everything for row in record.rows]
+
+    from collections import Counter
+
+    print("\nALL SUBJECTS")
+    for code, count in Counter(row.code for row in rows).items():
+        print(code, count)
+
+    for row in rows:
+        if row.status == "Not Counted (Prior Course)":
+            print("UNCOUNTED:", row)
 
     by_status = {}
     for row in rows:
         by_status.setdefault(row.status, []).append(row)
+
+    print("\nSTATUS COUNTS")
+    for status, items in by_status.items():
+        print(status, len(items))
+
+    print("\nALL ROW COUNT BY CODE")
+    from collections import Counter
+    for code, count in Counter(row.code for row in rows).items():
+        if count > 2:
+            print(code, count)
 
     assert len(rows) == 161
     assert len(by_status["Withdrawn"]) == 7

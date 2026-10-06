@@ -76,7 +76,7 @@ def _alternation(values: frozenset[str]) -> str:
 
 _COURSE = re.compile(r"^\*{0,2}Course:?\*{0,2}\s*(\d{3,4})\b", re.IGNORECASE)
 _CAMPUS = re.compile(r"^\*{0,2}Campus:?\*{0,2}\s*([A-Za-z][A-Za-z ]*?)\s*(?:\||$)", re.IGNORECASE)
-_MAJOR = re.compile(r"^\*{0,2}(?:(Second)\s+)?Major:?\*{0,2}\s*(.+?)\s*$", re.IGNORECASE)
+_MAJOR = re.compile(r"^\*{0,2}(?:(?:Second)\s+)?Major(?:\s+\d+)?" r"\s*:?\*{0,2}\s*(.*?)\s*$", re.IGNORECASE)
 # "AIBD — Artificial Intelligence and Big Data" -> "AIBD"; a major is a short
 # uppercase code, so "Not yet declared" simply yields nothing.
 _MAJOR_CODE = re.compile(r"^([A-Z]{2,6})\b")
@@ -122,7 +122,7 @@ _FLAT_CREDIT = re.compile(r"\b(?:Unspecified|Specified)\s+Credit\b(?P<body>[^#]*
 _FLAT_LABELS = frozenset(
     {
         "Student", "Effective Date", "Course", "Instance", "Campus", "Delivery",
-        "Status", "Second Major", "Major", "Note", "Notes", "Supervisor",
+        "Status", "Second Major", "Note", "Notes", "Supervisor",
         "Honours GPA", "GPA", "WAM",
     }
 )
@@ -130,14 +130,17 @@ _FLAT_LABELS = frozenset(
 # A header value runs until the next label, until the column headings, or until
 # the first row.
 _FLAT_END = (
-    rf"(?=\s+(?:(?:{_alternation(_FLAT_LABELS)})\s*:|Year\s+Session\b|(?:19|20)\d{{2}}\s)|\s*$)"
+    rf"(?=\s+(?:(?:{_alternation(_FLAT_LABELS)}|"
+    rf"Major(?:\s+\d+)?|Second\s+Major)\s*:|"
+    rf"Year\s+Session\b|(?:19|20)\d{{2}}\s)|\s*$)"
 )
 _FLAT_COURSE = re.compile(r"\bCourse\s*:\s*(\d{3,4})\b", re.IGNORECASE)
 _FLAT_CAMPUS = re.compile(
     rf"\bCampus\s*:\s*(?P<value>[A-Za-z][A-Za-z ]{{0,40}}?){_FLAT_END}", re.IGNORECASE
 )
 _FLAT_MAJOR = re.compile(
-    rf"\b(?:Second\s+)?Major\s*:\s*(?P<value>[A-Za-z][A-Za-z0-9 &—-]{{0,60}}?){_FLAT_END}",
+    rf"\b(?:Second\s+)?Major(?:\s+\d+)?\s*:\s*"
+    rf"(?P<value>[A-Za-z][A-Za-z0-9 &—-]{{0,60}}?){_FLAT_END}",
     re.IGNORECASE,
 )
 
@@ -261,19 +264,58 @@ def _add_major(header: dict, value: str) -> None:
     if code := _MAJOR_CODE.match(value):
         header["majors"].append(code.group(1))
     elif _MAJOR_TITLE.match(value) and not _UNDECLARED.match(value):
+        value = re.sub(
+            r"\s+Honours?$",
+            "",
+            value,
+            flags=re.IGNORECASE,
+        ).strip()
+
         header["majors"].append(value)
 
 
 def _read_header_line(line: str, header: dict) -> None:
-    """Pick the three allowlisted header fields out of a non-table line."""
+    """Read allowlisted header fields, including separate-line major values."""
+
+    # If the previous line was an empty major label, read this line as its value.
+    if header.get("_pending_major"):
+        value = line.replace("*", "").strip()
+
+        # Do not mistake another header label for a major name.
+        is_header = (
+            _COURSE.match(line)
+            or _CAMPUS.match(line)
+            or _MAJOR.match(line)
+        )
+
+        if value and not is_header:
+            previous_count = len(header["majors"])
+            _add_major(header, value)
+
+            if len(header["majors"]) > previous_count:
+                header["_pending_major"] = False
+                return
+
+        # If this is another header, clear the pending state and process it
+        # normally instead of accidentally treating the label as a major.
+        header["_pending_major"] = False
+
     if (course := _COURSE.match(line)) and header["course_code"] is None:
         header["course_code"] = course.group(1)
         return
+
     if (campus := _CAMPUS.match(line)) and header["campus"] is None:
         header["campus"] = campus.group(1).strip()
         return
+
     if major := _MAJOR.match(line):
-        _add_major(header, major.group(2).strip())
+        value = major.group(1).strip()
+
+        if value:
+            _add_major(header, value)
+        else:
+            # The major label is present, but its value is on the next line.
+            header["_pending_major"] = True
 
 
 _NO_HISTORY = (
@@ -305,67 +347,100 @@ def _parse_flat(raw_sols: str) -> EnrolmentRecord:
 
     With no columns left, rows are recovered by matching the known row shape
     end to end. Text left over between two rows means a row was only partly
-    understood, and that is a refusal rather than a silent drop: a record
-    quietly missing a subject is worse than no record at all.
+    understood, and that is a refusal rather than a silent drop.
     """
-    # Pipes and bold markers may or may not have survived the copy; neither
-    # carries any allowlisted meaning, so both become whitespace and the one
-    # shape below covers a run-together markdown table, a tab-separated copy
-    # straight out of the browser, and plain text alike.
+
+    # Pipes and markdown markers do not carry allowlisted meaning.
     text = " ".join(raw_sols.replace("|", " ").replace("*", " ").split())
 
     matches = list(_FLAT_ROW.finditer(text))
+
     if not matches:
         if re.search(r"\b[A-Z]{2,4}\d{3}[A-Z]?\b", text):
             raise UnreadableRecord(
-                "Subject codes were found but no row could be read in full. Each row needs "
-                "its year, session, campus, subject code, nominal CP and status."
+                "Subject codes were found but no row could be read in full. "
+                "Each row needs its year, session, campus, subject code, "
+                "nominal CP and status."
             )
+
         raise UnreadableRecord(_NO_HISTORY)
 
+    # Nothing meaningful should exist between recognised rows.
     for previous, current in pairwise(matches):
-        if leftover := text[previous.end() : current.start()].strip():
-            raise UnreadableRecord(f"Could not read the subject row at {leftover!r}.")
+        if leftover := text[previous.end():current.start()].strip():
+            raise UnreadableRecord(
+                f"Could not read the subject row at {leftover!r}."
+            )
 
-    # Advanced standing cannot be read here: a specified-credit row carries a
-    # free-text subject name, and with the columns gone there is nothing to
-    # tell where that name ends. A section reading "None" costs nothing, but
-    # dropping real credit rows would understate the credit the student holds,
-    # so those are a refusal.
-    tail = text[matches[-1].end() :]
-    if any(re.search(r"\d", section.group("body")) for section in _FLAT_CREDIT.finditer(tail)):
+    # Advanced standing cannot be safely recovered without table boundaries.
+    tail = text[matches[-1].end():]
+
+    if any(
+        re.search(r"\d", section.group("body"))
+        for section in _FLAT_CREDIT.finditer(tail)
+    ):
         raise UnreadableRecord(
-            "This record lists advanced standing, which cannot be read once the table "
-            "layout is lost. Paste the record again with each row on its own line."
+            "This record lists advanced standing, which cannot be read once "
+            "the table layout is lost. Paste the record again with each row "
+            "on its own line."
         )
 
-    header: dict = {"course_code": None, "campus": None, "majors": []}
-    preamble = text[: matches[0].start()]
+    # Parse header fields from the complete flattened text.
+    # The regexes themselves are bounded, so this does not leak row values.
+    header: dict = {
+        "course_code": None,
+        "campus": None,
+        "majors": [],
+        "_pending_major": False,
+    }
+
+    preamble = text
+
     if course := _FLAT_COURSE.search(preamble):
         header["course_code"] = course.group(1)
+
     if campus := _FLAT_CAMPUS.search(preamble):
         header["campus"] = campus.group("value").strip()
+
     for major in _FLAT_MAJOR.finditer(preamble):
         _add_major(header, major.group("value").strip())
+
+    # Rebuild rows with the same validation rules as the table parser.
+    rows: list[EnrolmentRow] = []
+
+    for row in matches:
+        code = row.group("code").upper()
+
+        if not _SUBJECT_CODE.match(code):
+            raise UnreadableRecord(
+                f"{code!r} is not a subject code."
+            )
+
+        grade = row.group("grade")
+        if grade is not None:
+            grade = grade.upper()
+            if grade not in KNOWN_GRADES:
+                raise UnreadableRecord(
+                    f"{grade!r} is not a known grade."
+                )
+
+        rows.append(
+            EnrolmentRow(
+                year=int(row.group("year")),
+                session=row.group("session"),
+                campus=row.group("campus").split("/")[0].strip(),
+                code=code,
+                nom_cp=int(row.group("nom_cp")),
+                grade=grade,
+                status=row.group("status"),
+            )
+        )
 
     return EnrolmentRecord(
         course_code=header["course_code"],
         campus=header["campus"],
         majors=header["majors"],
-        # The mark is captured only so the row shape stays anchored; like the
-        # table parser, this never reads it out.
-        rows=[
-            EnrolmentRow(
-                year=int(row.group("year")),
-                session=row.group("session"),
-                campus=row.group("campus").split("/")[0].strip(),
-                code=row.group("code"),
-                nom_cp=int(row.group("nom_cp")),
-                grade=row.group("grade"),
-                status=row.group("status"),
-            )
-            for row in matches
-        ],
+        rows=rows,
         specified_credit=[],
         unspecified_credit=[],
     )
@@ -373,7 +448,7 @@ def _parse_flat(raw_sols: str) -> EnrolmentRecord:
 
 def _parse_table(raw_sols: str) -> EnrolmentRecord:
     """Parse a paste that still has its markdown tables."""
-    header: dict = {"course_code": None, "campus": None, "majors": []}
+    header: dict = {"course_code": None, "campus": None, "majors": [], "_pending_major": False}
     rows: list[EnrolmentRow] = []
     specified: list[CreditRow] = []
     unspecified: list[CreditRow] = []
@@ -475,4 +550,6 @@ def render_for_llm(record: EnrolmentRecord) -> str:
 
 def project(raw_sols: str) -> str:
     """Parse a SOLS paste and render only its allowlisted fields."""
-    return render_for_llm(parse_enrolment(raw_sols))
+    rendered = (render_for_llm(parse_enrolment(raw_sols)))
+    print(rendered)
+    return rendered
