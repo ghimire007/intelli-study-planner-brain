@@ -67,7 +67,6 @@ def get_checkpointer() -> AsyncPostgresSaver:
 async def delete_checkpoint_threads(thread_ids: Iterable[uuid.UUID | str]) -> None:
     """Delete LangGraph state for these thread ids (chat_session.id as a string).
        Clear chat sessions and messages from the checkpoint_* tables.
-    
     """
     saver = get_checkpointer()
     for thread_id in thread_ids:
