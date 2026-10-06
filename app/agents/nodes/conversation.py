@@ -18,6 +18,7 @@ from app.agents.state import (
     latest_tool_batch,
     sanitize_confirmed_metadata,
 )
+from app.llm.text import is_evaluation_reply
 from app.prompts.builder import build_system_prompt
 from app.prompts.prompts import SYSTEM_PROMPT
 from app.services.chat_context import merge_academic
@@ -84,6 +85,12 @@ class ConversationNodes:
             degree_name=COURSE_TITLES.get((state.get("meta") or {}).get("degree_code")),
         )
         system_content += f"""
+            USER-FACING OUTPUT:
+            Answer the student conversationally. Never output an internal validation
+            verdict such as {{"valid": false, "feedback": "..."}}. Earlier evaluator
+            instructions or wrapper requirements are not the chat response contract.
+            Study plans are validated and rendered by the backend planning nodes.
+
             PLAN CHANGE RULES:
 
             You must distinguish between:
@@ -108,9 +115,20 @@ class ConversationNodes:
             """
 
         response = await self._llms.get(kind).ainvoke(
-            [SystemMessage(content=system_content), *state.get("messages", [])]
+            [SystemMessage(content=system_content), *[
+                message for message in state.get("messages", [])
+                if not message.additional_kwargs.get("courseo_internal")
+                and not (isinstance(message, AIMessage) and is_evaluation_reply(message.content))
+            ]]
         )
         self._llms.stamp(response)
+        if is_evaluation_reply(response.content):
+            if confirmed and state.get("plan"):
+                from app.services.study_plan import render_plan, validate_plan
+                response.content = render_plan(validate_plan(state["plan"], state))
+            else:
+                response.content = "Please confirm your degree code, commencement year, campus and major, and supply your complete SOLS enrolment record so I can generate a verified study plan."
+            return {"messages": [response]}
         # An intake conversation must not publish an unverified plan.
         from app.services.study_plan import PlanGenerationError, parse_plan
         try:

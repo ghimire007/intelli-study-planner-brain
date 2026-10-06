@@ -178,3 +178,36 @@ async def test_fully_enrolled_degree_does_not_depend_on_provider_output():
     llms.get.assert_not_called()
     assert result["plan"] == '{"plan":[]}'
     assert result["messages"][0].response_metadata["generation_source"] == "validated_enrolment_record"
+
+
+async def test_evaluator_verdict_and_internal_drafts_do_not_leak_into_conversation():
+    from unittest.mock import AsyncMock, MagicMock
+
+    from app.agents.nodes.conversation import ConversationNodes
+    from langchain_core.messages import HumanMessage
+
+    verdict = '{"valid": false, "feedback": "The previous response violated your Step 1 wrapper requirement."}'
+    draft = AIMessage(content="Unvalidated draft", additional_kwargs={"courseo_internal": True})
+    old_verdict = AIMessage(content=verdict)
+    question = HumanMessage(content="Please help me create a plan")
+    llms = MagicMock()
+    llms.get.return_value.ainvoke = AsyncMock(return_value=AIMessage(content=verdict))
+    result = await ConversationNodes(llms, []).agent({"meta": {}, "meta_confirmed": False, "messages": [draft, old_verdict, question]})
+    sent = llms.get.return_value.ainvoke.call_args.args[0]
+    assert draft not in sent and old_verdict not in sent and question in sent
+    assert "confirm your degree code" in result["messages"][0].content
+    assert '"valid"' not in result["messages"][0].content
+
+
+async def test_evaluator_verdict_recovers_existing_validated_plan():
+    from unittest.mock import AsyncMock, MagicMock
+
+    from app.agents.nodes.conversation import ConversationNodes
+    from langchain_core.messages import HumanMessage
+
+    payload, state = example()
+    state.update(plan=render_plan(validate_plan(json.dumps(payload), state)), messages=[HumanMessage(content="Explain my plan")], conversation_mode="post_plan")
+    llms = MagicMock()
+    llms.get.return_value.ainvoke = AsyncMock(return_value=AIMessage(content='```json\n{"valid": false, "feedback": "wrapper"}\n```'))
+    result = await ConversationNodes(llms, []).agent(state)
+    assert parse_plan(result["messages"][0].content) == parse_plan(state["plan"])
