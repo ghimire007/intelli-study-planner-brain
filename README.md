@@ -279,3 +279,71 @@ make migrate-current
 | LLM | **Google Gemini** (`google-genai`) |
 | Settings | **Pydantic v2** `pydantic-settings` |
 | Deployment | **Docker** (prod only) |
+
+## Demo verification
+
+After integrating new course data, apply migrations **and seed the database**; a running
+API with an empty handbook table cannot produce a verified plan.
+
+```bash
+source .venv/bin/activate
+python -m alembic upgrade head
+python -m seeds.seed
+python -m uvicorn app.main:app --reload --port 7777
+```
+
+For local HTTP development, configure `AUTH_COOKIE_SECURE=false` and
+`AUTH_COOKIE_SAMESITE=lax` in `.env`. Keep secure cross-site cookies for production.
+The existing `.env` must contain the database connection and vault master keys;
+do not replace master keys that encrypted stored student credentials.
+
+1. Sign in, save the student's numeric course code, commencement year, campus and major.
+2. Connect a provider key in Settings and verify that it is active. The model catalog
+   includes Gemini, OpenAI and Anthropic; each model uses a key for its own provider.
+3. For the verified Gemini demo, select **Gemini 3.5 Flash Lite**. Model access varies
+   by key: an advertised provider model may still be unavailable to a particular account.
+4. Start a chat asking for a complete study plan and provide the complete SOLS record.
+   Both linked Markdown tables and flattened transfer-course records are supported.
+   Confirm academic candidates or resolve conflicts when requested.
+5. The returned reply contains one Markdown table and one fenced JSON plan. Names
+   and credit points come from the checked-in subject catalog; the backend verifies
+   degree credit, required subjects, preserved record rows and future placements.
+6. Ask to revise the plan. Only future subjects may move; completed/current record rows
+   remain unchanged. The new response supplies the same table/JSON contract.
+7. Reload/reopen the chat. Its ownership-checked Postgres checkpoint history retains
+   the rendered plan. Replayed browser context does not reset the plan on each question.
+
+The API preserves the selected model in the session and allows explicit model changes
+within a conversation, including provider changes when the student has a usable key.
+`reply.requested_model` identifies the selected model; `reply.model` identifies the
+provider-reported model. Google can report `gemini-3.5-flash-lite` for a selected
+`gemini-3.5-flash` request. No silent substitute is made after an explicitly selected
+model is denied. Older replies can lack `requested_model`.
+
+Source data currently comes from the repository's **2026** handbook snapshots, rather
+than a newly fetched historical handbook for each commencement year. Future offerings
+are checked against that snapshot and must be reconfirmed with UOW before enrolment.
+Missing/unsupported rules, unavailable handbooks, unknown subject data, ambiguous credit,
+failed validation and provider timeouts produce an actionable error, not a draft plan.
+Unspecified transfer credit requires confirmation before automated completion validation.
+
+```bash
+python -m pytest -m 'not needs_db' --llm=fake -q
+ruff check app tests
+```
+
+`LLM_REQUEST_TIMEOUT_SECONDS` defaults to 60; `CHAT_TURN_TIMEOUT_SECONDS` defaults to
+180. Generation drafts are kept internal and only a validated table plus matching JSON
+is published. The adjacent frontend Study Plan panel reads that JSON.
+
+For a repeatable real HTTP check, put demo login credentials in a private JSON file
+containing `email` and `password` (never commit it), then run:
+
+```bash
+python -m scripts.verify_demo --credentials /path/to/private-login.json
+```
+
+The verifier uses the saved profile and stored provider key, checks the actual plan
+content, regenerates it, reauthenticates, verifies restored history and denies anonymous
+access. Use `--base-url`, `--model`, `--record` and `--revision` for other demo scenarios.
+It writes plan/history evidence with restricted permissions and never prints credentials.

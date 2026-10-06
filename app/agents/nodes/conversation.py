@@ -63,6 +63,11 @@ class ConversationNodes:
         print("NODE: agent")
 
         confirmed = bool(state.get("meta_confirmed"))
+        if confirmed and state.get("planning_requested"):
+            if not state.get("raw_sols"):
+                return {"messages": [AIMessage(content="Please paste your complete SOLS enrolment record so I can preserve completed/current subjects and build a verified plan.")], "planning_requested": False}
+            # Planning goes through the handbook gate and validated output nodes.
+            return {}
         kind = "full" if confirmed else "confirm"
         print("agent: invoking", kind)
 
@@ -105,6 +110,16 @@ class ConversationNodes:
         response = await self._llms.get(kind).ainvoke(
             [SystemMessage(content=system_content), *state.get("messages", [])]
         )
+        self._llms.stamp(response)
+        # An intake conversation must not publish an unverified plan.
+        from app.services.study_plan import PlanGenerationError, parse_plan
+        try:
+            parse_plan(response.content if isinstance(response.content, str) else "")
+        except PlanGenerationError:
+            if "| Subject Code" in str(response.content) or "| Year | Session" in str(response.content):
+                response.content = "Before I can generate a verified plan, please confirm your degree code, commencement year, campus and major, and supply your SOLS enrolment record."
+        else:
+            response.content = "Before I can generate a verified plan, please confirm your academic details and supply your SOLS enrolment record."
         return {"messages": [response]}
 
     async def run_tools(self, state: AdvisorState) -> dict:

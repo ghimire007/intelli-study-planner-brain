@@ -44,6 +44,7 @@ class MessageOut(BaseModel):
     created_at: datetime
     provider: str | None = None
     model: str | None = None
+    requested_model: str | None = None
     tokens_in: int | None = None
     tokens_out: int | None = None
     cached_tokens: int | None = None

@@ -1,9 +1,11 @@
+import asyncio
 import re
 import uuid
 
 from app.agents.graphAPI import build_advisor_graph
 from app.agents.history import MessageView, build_history, latest_reply
 from app.core.checkpointer import get_checkpointer
+from app.core.config import settings
 from app.llm.config import LLMConfig
 from app.llm.errors import ProviderFailure, classify
 from app.llm.factory import make_chat_model
@@ -32,6 +34,11 @@ def prepare_first_message(message: str, input_type: str = "enrolment") -> tuple[
     if input_type == "enrolment" or looks_like_record:
         return safe_record(message), True
     return scrub_pii(message), False
+
+
+def wants_plan(message: str) -> bool:
+    """Recognise explicit generation/revision requests without replanning explanations."""
+    return bool(re.search(r"\b(?:create|generate|build|make|revise|update|change|modify|adjust|regenerate)\b.{0,100}\b(?:plan|schedule)\b|\b(?:plan|schedule)\b.{0,100}\b(?:revise|update|change|modify|adjust)\b", message, re.I | re.S))
 
 
 class CredentialRejected(Exception):
@@ -94,7 +101,7 @@ class AgentChatService:
                 "stage2_retry_count": 0,
                 "stage2_tool_loop_count": 0,
 
-                "planning_requested": bool(intake.get("raw_sols")),
+                "planning_requested": bool(is_record or wants_plan(raw_sols)),
                 "conversation_mode": "collecting",
                 "current_stage": None,
             },
@@ -116,6 +123,8 @@ class AgentChatService:
         await self._db.commit()
 
         reply = await latest_reply(graph, str(session_id), fallback_model=llm_config.model)
+        if reply is None:
+            raise ValueError("The advisor returned no response. Confirm the academic details and retry.")
         return session, reply
 
     async def continue_session(
@@ -140,8 +149,10 @@ class AgentChatService:
             **intake_context(self._user, context, state.values, prepared if is_record else None),
             "messages": [HumanMessage(content=prepared)],
         }
-        if is_record or (context and context.enrolment_record is not None):
-            payload.update(planning_requested=True, plan=None)
+        changed_record = payload.get("raw_sols") != state.values.get("raw_sols")
+        if is_record or changed_record or wants_plan(user_message):
+            payload.update(planning_requested=True)
+        # Replayed client context must not clear the existing plan on every question.
         await self._invoke(graph, llm_config, payload, config)
 
         # A student may switch models mid-conversation; keep the session in step
@@ -152,7 +163,10 @@ class AgentChatService:
             session.credential_id = llm_config.credential_id
             await self._db.commit()
 
-        return await latest_reply(graph, str(session_id), fallback_model=llm_config.model)
+        reply = await latest_reply(graph, str(session_id), fallback_model=llm_config.model)
+        if reply is None:
+            raise ValueError("The advisor returned no response. Confirm the academic details and retry.")
+        return reply
 
     async def get_history(self, session_id: uuid.UUID) -> tuple[ChatSession, list[MessageView]]:
         session = await self._owned_session(session_id)
@@ -180,7 +194,8 @@ class AgentChatService:
     async def _invoke(self, graph, llm_config: LLMConfig, payload: dict, config: dict) -> None:
         """Run a turn, converting a rejected key into a fixable error for the student."""
         try:
-            await graph.ainvoke(payload, config=config)
+            async with asyncio.timeout(settings.CHAT_TURN_TIMEOUT_SECONDS):
+                await graph.ainvoke(payload, config=config)
         except Exception as exc:
             if classify(exc) is ProviderFailure.AUTH and llm_config.credential_id is not None:
                 await self._vault.mark_rejected(

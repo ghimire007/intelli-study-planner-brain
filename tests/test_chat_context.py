@@ -362,3 +362,14 @@ def test_unknown_parser_campus_remains_unknown():
 
     assert SOLSMeta(degree_code=None, year=None, campus=None).campus is None
     assert 'default to "Wollongong"' not in _PARSER_MODEL_PROMPT
+
+
+async def test_replayed_record_context_does_not_clear_plan_or_request_replanning(monkeypatch):
+    prior = intake_context(student(), ChatContext(enrolment_record=RECORD), {})
+    prior.update(plan="Existing verified plan", planning_requested=False, conversation_mode="post_plan")
+    service = make_service(monkeypatch, prior)
+    service._db.get = AsyncMock(return_value=SimpleNamespace(user_id=service._user.id, model="selected-model", credential_id=None))
+    await service.continue_session(uuid.uuid4(), "Why is that subject listed?", context=ChatContext(enrolment_record=RECORD))
+    payload = service._invoke.call_args.args[2]
+    assert "plan" not in payload
+    assert not payload.get("planning_requested", False)

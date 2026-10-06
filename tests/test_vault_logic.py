@@ -259,3 +259,7 @@ def test_the_langchain_wrapper_around_it_is_too() -> None:
 def test_an_ordinary_400_is_still_not_an_auth_failure() -> None:
     """Only a message that actually names the key counts — 400 alone does not."""
     assert classify(FakeProviderError(400)) is ProviderFailure.UNKNOWN
+
+
+def test_provider_model_not_found_is_actionable_and_does_not_reject_key():
+    assert classify(FakeGoogleError(404)) is ProviderFailure.MODEL_UNAVAILABLE

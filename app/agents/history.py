@@ -28,6 +28,7 @@ class MessageView:
     created_at: datetime
     provider: str | None = None
     model: str | None = None
+    requested_model: str | None = None
     tokens_in: int | None = None
     tokens_out: int | None = None
     cached_tokens: int | None = None
@@ -53,6 +54,8 @@ def _to_view(
         return MessageView(id=idx, role="user", content=as_text(message.content), created_at=created_at)
 
     if isinstance(message, AIMessage):
+        if message.additional_kwargs.get("courseo_internal"):
+            return None
         content = as_text(message.content)
         if not content:
             return None  # tool-call-only turn — internal plumbing, not user-facing
@@ -68,6 +71,7 @@ def _to_view(
             created_at=created_at,
             provider=_provider_of(model),
             model=model,
+            requested_model=message.response_metadata.get("requested_model"),
             tokens_in=tokens_in,
             tokens_out=tokens_out,
             cached_tokens=cached or None,
