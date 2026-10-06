@@ -12,4 +12,4 @@ COPY alembic.ini .
 
 EXPOSE 7777
 
-CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-7777}"]
+CMD ["sh", "-c", "python -m alembic upgrade head && exec uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-7777}"]

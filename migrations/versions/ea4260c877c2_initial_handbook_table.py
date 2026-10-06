@@ -1,15 +1,14 @@
 """initial handbook table
 
 Revision ID: ea4260c877c2
-Revises: 
+Revises:
 Create Date: 2026-04-05 13:55:37.483669
 
 """
 from typing import Sequence, Union
 
-from alembic import op
 import sqlalchemy as sa
-
+from alembic import op
 
 revision: str = 'ea4260c877c2'
 down_revision: Union[str, None] = None

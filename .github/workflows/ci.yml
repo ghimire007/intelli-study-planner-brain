@@ -51,6 +51,8 @@ jobs:
           tests/test_vault_logic.py
           tests/test_enrolment.py
           tests/test_api_auth.py
+          tests/test_profile_update.py
+          tests/test_migration_url.py
           tests/eval/test_parser.py
           -m "smoke and not needs_db"
           --llm=fake -q
@@ -131,11 +133,17 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Apply Alembic migrations
+      - name: Install migration test dependencies
+        run: pip install -r requirements-dev.txt
+
+      - name: Verify existing accounts survive profile migration
         env:
           DATABASE_URL: postgresql+psycopg_async://ci:ci@127.0.0.1:5432/ci
           GEMINI_API_KEY: ci-not-used
-        run: python -m alembic upgrade head
+          PROFILE_MIGRATION_TEST_URL: postgresql+psycopg_async://ci:ci@127.0.0.1:5432/ci
+        run: |
+          python -m alembic upgrade a1b2c3d4e5f6
+          python -m pytest tests/test_profile_migration.py -q
 
   deploy:
     name: Deploy to Render

@@ -97,6 +97,10 @@ def _find_campus_root(structure: list[dict], campus: str) -> dict | None:
 
     candidates = [node for node in nodes if _campus_matches(node.get("title") or "", campus)]
     if not candidates:
+        # Single-campus courses (e.g. 1802, 765) have no per-campus containers;
+        # the whole structure is that campus's tree.
+        if not any("campus" in (node.get("title") or "").lower() for node in nodes):
+            return {"title": campus, "items": [], "children": structure}
         return None
 
     for node in candidates:

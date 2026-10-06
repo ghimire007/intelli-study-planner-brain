@@ -104,7 +104,19 @@ async def build_history(
 
 
 async def latest_reply(
-    graph: CompiledStateGraph, thread_id: str, fallback_model: str | None = None
-) -> MessageView:
-    history = await build_history(graph, thread_id, fallback_model)
-    return next(v for v in reversed(history) if v.role == "assistant")
+    graph: CompiledStateGraph,
+    thread_id: str,
+    fallback_model: str | None = None,
+) -> MessageView | None:
+    history = await build_history(
+        graph,
+        thread_id,
+        fallback_model,
+    )
+
+    for view in reversed(history):
+        if view.role == "assistant":
+            return view
+
+    return None
+

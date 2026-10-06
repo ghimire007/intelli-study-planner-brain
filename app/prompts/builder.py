@@ -3,7 +3,6 @@
 Kept separate from the graph's orchestration logic (app/agents/graph.py) so
 prompt phrasing/structure can change without touching state-machine code.
 """
-from app.prompts.system import SYSTEM_PROMPT
 
 # Exact intake question when degree metadata is not yet confirmed.
 INTAKE_QUESTION = (

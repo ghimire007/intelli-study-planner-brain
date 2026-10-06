@@ -1,0 +1,406 @@
+{
+  "CSCI410": {
+    "code": "CSCI410",
+    "title": "Software Requirements, Specifications and Formal Methods",
+    "cp": "6",
+    "description": "This subject demonstrates how software development can be viewed as a kind of engineering - an activity of building useful things to serve recognisable purposes. The subject introduces students to the understanding of software requirements, techniques of requirement elicitation and analysis, and formal methods for software specification. The role of formal methods in the software development process is explained and investigated. The subject uses the Z notation as an example of a formal specification technique. Case studies are used as a basis for a study of the application of requirement processes and formal specification techniques. Topics will include: Introduction to the procedure of software requirement engineering, formal approaches to design and specification, review of mathematical foundation for formal methods, use of assertions and proof, analysis and verification of specification and design, disciplined approaches to design change, Z notation and other Morden methods for formal specification.",
+    "prerequisites": [
+      "24cp @300 level"
+    ],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "400-level",
+    "tags": [],
+    "rules": [
+      {
+        "type": "Pre-Requisite",
+        "description": "24cp @300 level"
+      }
+    ],
+    "offerings": [
+      {
+        "campus": "Wollongong",
+        "session": "Autumn",
+        "mode": "On-Campus",
+        "display": "Wollongong-Autumn-On-Campus"
+      }
+    ],
+    "url": "https://courses.uow.edu.au/subjects/2026/CSCI410"
+  },
+  "CSCI426": {
+    "code": "CSCI426",
+    "title": "Software Testing and Analysis",
+    "cp": "6",
+    "description": "Testing is a crucial task in the software development life cycle, and can easily exceed fifty percent of a project's total development cost. This subject will provide students with practical software testing and analysis methods for software quality assurance. Topics include: software qualities, static analysis methods including reviews and analysis by tools, specification-based or black-box testing techniques, structure-based or white-box testing techniques, debugging techniques, data flow analysis, model checking, automation of testing, quality assurance for Web applications, testing for software security, testing throughout the software life cycle, test management, and the psychology of testing. Practical components will include designing and implementing strategies and methods to test real-world programs effectively and efficiently.",
+    "prerequisites": [
+      "24 cp @ 300 level"
+    ],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "400-level",
+    "tags": [
+      "General Schedule"
+    ],
+    "rules": [
+      {
+        "type": "Pre-Requisite",
+        "description": "24 cp @ 300 level"
+      }
+    ],
+    "offerings": [
+      {
+        "campus": "Wollongong",
+        "session": "Autumn",
+        "mode": "On-Campus",
+        "display": "Wollongong-Autumn-On-Campus"
+      }
+    ],
+    "url": "https://courses.uow.edu.au/subjects/2026/CSCI426"
+  },
+  "CSCI427": {
+    "code": "CSCI427",
+    "title": "Service-Oriented Software Engineering",
+    "cp": "6",
+    "description": "This subject aims to provide students with a thorough understanding of the software engineering aspects of the increasingly important service-oriented computing paradigm. Topics covered include service-oriented architectures, service modeling and requirements analysis, service semantics, service discovery, service design, service composition, service inter-operation, QoS factors, service-level agreement management, business process modeling and management, lifecycle management, compliance management, distributed transaction management, privacy and trust. The subject will involve industry guest lectures and a practical development project.",
+    "prerequisites": [
+      "24cp @CSCI 300 level"
+    ],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "400-level",
+    "tags": [],
+    "rules": [
+      {
+        "type": "Pre-Requisite",
+        "description": "24cp @CSCI 300 level"
+      }
+    ],
+    "offerings": [
+      {
+        "campus": "Wollongong",
+        "session": "Spring",
+        "mode": "On-Campus",
+        "display": "Wollongong-Spring-On-Campus"
+      }
+    ],
+    "url": "https://courses.uow.edu.au/subjects/2026/CSCI427"
+  },
+  "CSCI433": {
+    "code": "CSCI433",
+    "title": "Machine Learning Algorithms and Applications",
+    "cp": "6",
+    "description": "Machine learning aims to develop computer systems that learn from example data to model and solve real-life problems. Students will develop the knowledge and skills required to analyse, design and implement machine learning systems applicable in big data analytics, social media data analysis, computer vision, neuroimage analysis, speech recognition, surveillance, information retrieval, bioinformatics, document image analysis and recognition, computational linguistics, forensics and biometrics. Conceptual understanding of the fundamental tools and their application in practice will be emphasised. Topics covered include supervised and unsupervised learning; kernel machines; deep learning; data clustering; Bayesian methods; linear discriminant analysis; regression; and graphical models.",
+    "prerequisites": [
+      "24 Credit points of CSCI subjects at 300 level"
+    ],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "400-level",
+    "tags": [
+      "General Schedule"
+    ],
+    "rules": [
+      {
+        "type": "Pre-Requisite",
+        "description": "24 Credit points of CSCI subjects at 300 level"
+      }
+    ],
+    "offerings": [
+      {
+        "campus": "Wollongong",
+        "session": "Autumn",
+        "mode": "On-Campus",
+        "display": "Wollongong-Autumn-On-Campus"
+      }
+    ],
+    "url": "https://courses.uow.edu.au/subjects/2026/CSCI433"
+  },
+  "CSCI435": {
+    "code": "CSCI435",
+    "title": "Computer Vision Algorithms and Systems",
+    "cp": "6",
+    "description": "This subject is designed to equip students with an understanding of the fundamental concepts and tools required to analyse, design, and implement practical computer vision systems. Topics covered include digital cameras, image processing, image features, shape detection, video processing and analysis, image classification, object detection, image segmentation, and recent advances in the field. The subject will focus on the practical application of conventional and contemporary computer vision technologies, including deep learning, using widely adopted libraries such as OpenCV and other publicly available libraries.",
+    "prerequisites": [
+      "24cp @CSCI 300 level"
+    ],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "400-level",
+    "tags": [
+      "General Schedule"
+    ],
+    "rules": [
+      {
+        "type": "Pre-Requisite",
+        "description": "24cp @CSCI 300 level"
+      }
+    ],
+    "offerings": [
+      {
+        "campus": "Wollongong",
+        "session": "Spring",
+        "mode": "On-Campus",
+        "display": "Wollongong-Spring-On-Campus"
+      },
+      {
+        "campus": "Dubai",
+        "session": "DXB UG Spring",
+        "mode": "On-Campus",
+        "display": "Dubai-DXB UG Spring-On-Campus"
+      },
+      {
+        "campus": "Dubai",
+        "session": "DXB UG Winter",
+        "mode": "On-Campus",
+        "display": "Dubai-DXB UG Winter-On-Campus"
+      }
+    ],
+    "url": "https://courses.uow.edu.au/subjects/2026/CSCI435"
+  },
+  "CSCI444": {
+    "code": "CSCI444",
+    "title": "Perception, Planning and Interactions",
+    "cp": "6",
+    "description": "This subject is designed to provide a solid foundation in perception, planning and interactions in embodied artificial intelligence using accessible tools and programming languages. Emphasis is placed on hands-on learning through simulation, allowing students to experiment and apply theoretical concepts. By the end of the course, students will have a fundamental understanding of embodied artificial intelligence and be able to design and analyse algorithms related to how embodied intelligent agents perceive their environments, make decisions, and interact with humans and environments through advanced sensors and technologies such as multimodal generative artificial intelligence.",
+    "prerequisites": [
+      "24cp @300 level"
+    ],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "400-level",
+    "tags": [],
+    "rules": [
+      {
+        "type": "Pre-Requisite",
+        "description": "24cp @300 level"
+      }
+    ],
+    "offerings": [
+      {
+        "campus": "Wollongong",
+        "session": "Spring",
+        "mode": "On-Campus",
+        "display": "Wollongong-Spring-On-Campus"
+      }
+    ],
+    "url": "https://courses.uow.edu.au/subjects/2026/CSCI444"
+  },
+  "CSCI446": {
+    "code": "CSCI446",
+    "title": "Big Data Analytics",
+    "cp": "6",
+    "description": "This subject covers the principles, techniques and applications of processing and analysing big data. The first part of this subject introduces the fundamental concepts, platforms, systems, and tools for big data analysis, to give students a basic understanding of this field. The second part introduces the main analytics algorithms that are used to uncover the underlying patterns and rules in big data; including classification, regression, clustering, recommendation and retrieval algorithms. The third part then focuses on case studies and the practical application of big data analytics to help students gain a better understanding of these algorithms. This subject will equip students with the fundamental knowledge on big data analytics and the skills to appropriately choose and apply algorithms to resolve practical analytics problems.",
+    "prerequisites": [
+      "CSCI433 OR INFO433 OR CSCI435"
+    ],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "400-level",
+    "tags": [],
+    "rules": [
+      {
+        "type": "Pre-Requisite",
+        "description": "CSCI433 OR INFO433 OR CSCI435"
+      }
+    ],
+    "offerings": [
+      {
+        "campus": "Wollongong",
+        "session": "Spring",
+        "mode": "On-Campus",
+        "display": "Wollongong-Spring-On-Campus"
+      }
+    ],
+    "url": "https://courses.uow.edu.au/subjects/2026/CSCI446"
+  },
+  "CSCI471": {
+    "code": "CSCI471",
+    "title": "Modern Cryptography",
+    "cp": "6",
+    "description": "This subject provides a review of modern cryptography. Topics include one-way function, pseudorandom generator, pseudorandom function, block cipher, stream cipher, message authentication code, hash function, public key encryption, digital signatures, identity-based cryptography and advanced cryptographic topics such as post-quantum cryptography.",
+    "prerequisites": [
+      "24cp @300 level"
+    ],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "400-level",
+    "tags": [],
+    "rules": [
+      {
+        "type": "Pre-Requisite",
+        "description": "24cp @300 level"
+      }
+    ],
+    "offerings": [
+      {
+        "campus": "Wollongong",
+        "session": "Spring",
+        "mode": "On-Campus",
+        "display": "Wollongong-Spring-On-Campus"
+      }
+    ],
+    "url": "https://courses.uow.edu.au/subjects/2026/CSCI471"
+  },
+  "CSIT440": {
+    "code": "CSIT440",
+    "title": "Research Methodology",
+    "cp": "6",
+    "description": "This subject introduces students to research methodology. Topics include defining research problems, research design, conducting a systematic literature review, methods of data collection, processing and analysis of data, writing a research proposal, and interpretation and report writing. Students will gain understanding of different research methodology, including qualitative and quantitative analysis (e.g., causal model and statistical analysis). Students will learn how to design an appropriate research plan.",
+    "prerequisites": [
+      "24 credit points CSCI, CSIT, ISIT @ 300 level"
+    ],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "Unknown",
+    "tags": [],
+    "rules": [
+      {
+        "type": "Pre-Requisite",
+        "description": "24 credit points CSCI, CSIT, ISIT @ 300 level"
+      }
+    ],
+    "offerings": [
+      {
+        "campus": "Wollongong",
+        "session": "Autumn",
+        "mode": "On-Campus",
+        "display": "Wollongong-Autumn-On-Campus"
+      }
+    ],
+    "url": "https://courses.uow.edu.au/subjects/2026/CSIT440"
+  },
+  "CSIT470": {
+    "code": "CSIT470",
+    "title": "Security Essentials",
+    "cp": "6",
+    "description": "This subject provides essential knowledge of security. The subject will also introduce a wide range of modern security topics including privacy, network defence, hardware security, cyber physical system security, usability and information warfare.\u00a0 Students will be able to apply the knowledge gained from this subject to address various security issues.",
+    "prerequisites": [
+      "18cp CSCI/CSIT 300-level subjects"
+    ],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "400-level",
+    "tags": [],
+    "rules": [
+      {
+        "type": "Pre-Requisite",
+        "description": "18cp CSCI/CSIT 300-level subjects"
+      }
+    ],
+    "offerings": [
+      {
+        "campus": "Wollongong",
+        "session": "Autumn",
+        "mode": "On-Campus",
+        "display": "Wollongong-Autumn-On-Campus"
+      }
+    ],
+    "url": "https://courses.uow.edu.au/subjects/2026/CSIT470"
+  },
+  "CSIT488": {
+    "code": "CSIT488",
+    "title": "Security, Ethics and Professionalism",
+    "cp": "6",
+    "description": "This subject aims to provide students with a deep understanding of the security, risk management, and professional practice\u00a0aspects,\u00a0including ethical and social issues,\u00a0of enterprises and organisations in the digital world. In today\u2019s world, organisations must be prepared to defend against threats in digital space. Decision-makers must be familiar with the principles and best practices of information security to better protect their organisations. This subject covers key issues in\u00a0information security management, including security options, ethical and social issues, best practices, the regulatory environment and Government policy, risk management and control.",
+    "prerequisites": [
+      "24 cp @ 300 level"
+    ],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "400-level",
+    "tags": [
+      "Computing and Information Technology"
+    ],
+    "rules": [
+      {
+        "type": "Pre-Requisite",
+        "description": "24 cp @ 300 level"
+      }
+    ],
+    "offerings": [
+      {
+        "campus": "Wollongong",
+        "session": "Autumn",
+        "mode": "On-Campus",
+        "display": "Wollongong-Autumn-On-Campus"
+      }
+    ],
+    "url": "https://courses.uow.edu.au/subjects/2026/CSIT488"
+  },
+  "CSIT499": {
+    "code": "CSIT499",
+    "title": "Honours Research Project",
+    "cp": "24",
+    "description": "This is an Honours research project conducted under the supervision of academic staff in the school. It provides an opportunity for the student to engage in research training and to specialise in an area of mutual interest to them and their supervisor.",
+    "prerequisites": [],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "400-level",
+    "tags": [],
+    "rules": [],
+    "offerings": [
+      {
+        "campus": "Wollongong",
+        "session": "Annual",
+        "mode": "On-Campus",
+        "display": "Wollongong-Annual-On-Campus"
+      },
+      {
+        "campus": "Wollongong",
+        "session": "Spring/Autumn",
+        "mode": "On-Campus",
+        "display": "Wollongong-Spring/Autumn-On-Campus"
+      }
+    ],
+    "url": "https://courses.uow.edu.au/subjects/2026/CSIT499"
+  },
+  "INFO411": {
+    "code": "INFO411",
+    "title": "Data Mining and Knowledge Discovery",
+    "cp": "6",
+    "description": "Introduction to Data Mining, Knowledge Discovery, and Big Data with coverage of Data Structures, role of Data Quality and per-processing, Association Rules, Artificial Neural Networks, Support Vector methods, Tree Based Methods, Clustering and Classification Methods, Regression and Statistical Methods, Overfitting and Inferential issues, Evaluation, Use of Data Mining packages with applications for benchmark and real world situations.",
+    "prerequisites": [
+      "36 cp (Knowledge of mathematical and statistical notation at an introductory level.)"
+    ],
+    "corequisites": [],
+    "exclusions": [],
+    "degree_restrictions": [],
+    "subject_level": "400-level",
+    "tags": [
+      "General Schedule"
+    ],
+    "rules": [
+      {
+        "type": "Pre-Requisite",
+        "description": "36 cp (Knowledge of mathematical and statistical notation at an introductory level.)"
+      }
+    ],
+    "offerings": [
+      {
+        "campus": "Wollongong",
+        "session": "Autumn",
+        "mode": "On-Campus",
+        "display": "Wollongong-Autumn-On-Campus"
+      },
+      {
+        "campus": "Dubai",
+        "session": "DXB UG Winter",
+        "mode": "On-Campus",
+        "display": "Dubai-DXB UG Winter-On-Campus"
+      }
+    ],
+    "url": "https://courses.uow.edu.au/subjects/2026/INFO411"
+  }
+}

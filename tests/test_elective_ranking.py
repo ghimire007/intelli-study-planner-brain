@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-
 from unittest.mock import AsyncMock, patch
 
 from app.agents.skills import get_elective_priorities_tool, ranked_elective_codes

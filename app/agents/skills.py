@@ -6,7 +6,7 @@ can choose to invoke, and binds whatever runtime context (e.g. a DB session)
 those services need.
 """
 import json
-from typing import Literal
+from typing import Literal, TypedDict
 
 from langchain_core.tools import StructuredTool, tool
 from pydantic import BaseModel, Field
@@ -27,17 +27,67 @@ from app.services.knowledge_service import TOPIC_SLUGS, TOPICS, load_topic
 _LATEST_HANDBOOK_YEAR = 9999
 
 
+class HandbookFetchResult(TypedDict):
+    ok: bool
+    degree_code: str
+    year: int
+    campus: str
+    content: str | None
+    error: str | None
+
+
 def make_fetch_handbook_tool(db: AsyncSession):
-    """Bind a DB session to a `fetch_handbook` LangChain tool the agent can call."""
 
     @tool
-    async def fetch_handbook_tool(degree_code: str, year: int, campus: str) -> str:
-        """Fetch the official UOW course handbook markdown for a degree code/year/campus.
-
-        Call this when you need the degree's rules, subject prerequisites, or
-        session availability and don't already have the handbook content in context.
+    async def fetch_handbook_tool(
+        degree_code: str,
+        year: int,
+        campus: str,
+    ) -> dict:
         """
-        return await fetch_handbook(db, degree_code, year, campus)
+        Fetch the official UOW course handbook.
+
+        Returns structured success/failure information so the graph can
+        deterministically decide whether planning is allowed to continue.
+        """
+
+        try:
+            content = await fetch_handbook(
+                db,
+                degree_code,
+                year,
+                campus,
+            )
+
+            # Do not treat an empty/placeholder response as a successful fetch.
+            if not content or not content.strip():
+                return {
+                    "ok": False,
+                    "degree_code": degree_code,
+                    "year": year,
+                    "campus": campus,
+                    "content": None,
+                    "error": "Handbook was not found or returned empty content.",
+                }
+
+            return {
+                "ok": True,
+                "degree_code": degree_code,
+                "year": year,
+                "campus": campus,
+                "content": content,
+                "error": None,
+            }
+
+        except Exception as exc:
+            return {
+                "ok": False,
+                "degree_code": degree_code,
+                "year": year,
+                "campus": campus,
+                "content": None,
+                "error": str(exc),
+            }
 
     return fetch_handbook_tool
 
@@ -47,17 +97,17 @@ def confirm_metadata_tool(
     degree_code: str,
     year: int,
     campus: str,
-    major: str | None = None,
+    majors: list[str] | None = None,
 ) -> str:
-    """Record or switch the student's degree_code, commencement year, campus, and major.
+    """Record or switch the student's degree, commencement year,
+    campus, and explicitly declared majors.
 
-    Call AFTER the student has answered the intake question (or corrected/switched
-    these values) — never guess on their behalf, and never call this before they
-    have replied with the details.
+    Include every explicitly stated major in the original order.
+    Do not infer missing majors. Use an empty list if the student
+    has no major.
 
-    Pass the final values. For major, use the major name and/or MAJ code when
-    known (e.g. "Web Design and Development (MAJ40246)"), or "none" / null if
-    they have no major.
+    Call after the student has answered the intake question or
+    explicitly corrected their details.
 
     On first confirmation: do not call fetch_handbook_tool or attempt any
     audit/planning before this has been called.
@@ -71,7 +121,7 @@ def confirm_metadata_tool(
             "degree_code": degree_code,
             "year": year,
             "campus": campus,
-            "major": major,
+            "major": majors or [],
         }
     )
 
@@ -115,8 +165,8 @@ def get_elective_priorities_tool(
     campus: str,
     session: str | None,
     mode: str = 'major',
-    completed_subjects: list[str] = [],
-    planned_subjects: list[str] = [],
+    completed_subjects: list[str] = [],  # noqa: B006 (tool schema; never mutated)
+    planned_subjects: list[str] = [],  # noqa: B006 (tool schema; never mutated)
     major: str | None = None,
     interests: str | None = None,
     limit: int = 25,
@@ -238,6 +288,41 @@ lookup_uow_policy_tool = StructuredTool.from_function(
     args_schema=_LookupPolicyArgs,
 )
 
+@tool
+def request_plan_change_tool(
+    change_type: Literal[
+        "major",
+        "elective_preference",
+        "course",
+        "campus",
+        "commencement_year",
+        "session",
+        "general_revision",
+    ],
+    majors: list[str] | None = None,
+    elective_preference: str | None = None,
+    course: str | None = None,
+    campus: str | None = None,
+    commencement_year: int | None = None,
+    session: str | None = None,
+) -> str:
+    """
+    Signal that the student's latest request requires a new or revised
+    study plan.
+
+    Only pass values explicitly stated by the student or clearly
+    established in the immediately preceding conversation.
+    """
+    return json.dumps({
+        "change_type": change_type,
+        "major": majors,
+        "elective_preference": elective_preference,
+        "course": course,
+        "campus": campus,
+        "commencement_year": commencement_year,
+        "session": session,
+    })
+
 
 def build_skills(db: AsyncSession):
     """Return the tools ("skills") available to the advisor agent, split by whether
@@ -247,7 +332,7 @@ def build_skills(db: AsyncSession):
     depend on having confirmed the student's degree/year/campus.
     """
     return {
-        "confirm": [confirm_metadata_tool, lookup_uow_policy_tool],
+        "confirm": [confirm_metadata_tool, lookup_uow_policy_tool, request_plan_change_tool],
         "full": [
             confirm_metadata_tool,
             lookup_uow_policy_tool,
@@ -256,6 +341,7 @@ def build_skills(db: AsyncSession):
             make_lookup_major_tool(db),
             get_elective_priorities_tool,
             make_lookup_ranked_electives_tool(db),
+            request_plan_change_tool,
         ],
         "electives": [
             make_lookup_subjects_tool(db),
