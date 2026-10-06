@@ -2,9 +2,12 @@ import hashlib
 import secrets
 from datetime import datetime, timedelta, timezone
 
+from app.core.checkpointer import delete_checkpoint_threads
 from app.core.config import settings
 from app.models.auth import AuthSession, PasswordResetToken, User
+from app.models.session import ChatSession
 from app.services.email_service import send_password_reset_email
+from app.services.vault_service import VaultService
 from argon2 import PasswordHasher
 from argon2.exceptions import InvalidHashError, VerifyMismatchError
 from sqlalchemy import delete, select
@@ -118,6 +121,20 @@ class AuthService:
         user.password_hash = password_hasher.hash(new_password)
         reset_token.used_at = now
         await self.db.execute(delete(AuthSession).where(AuthSession.user_id == user.id))
+        await self.db.commit()
+
+    async def delete_account(self, user: User, password: str) -> None:
+        if not self._verify_password(user.password_hash, password):
+            raise ValueError("Invalid password")
+
+        session_ids = (
+            await self.db.scalars(
+                select(ChatSession.id).where(ChatSession.user_id == user.id)
+            )
+        ).all()
+        await delete_checkpoint_threads(session_ids)
+        await VaultService(self.db).purge_keys_for_user(user)
+        await self.db.delete(user)
         await self.db.commit()
 
     async def _create_session(self, user: User) -> str:

@@ -8,6 +8,7 @@ from app.core.config import settings
 from app.core.database import get_db
 from app.models.auth import User
 from app.schemas.auth import (
+    DeleteAccountRequest,
     ForgotPasswordRequest,
     LoginRequest,
     ProfileUpdate,
@@ -16,6 +17,7 @@ from app.schemas.auth import (
     UserOut,
 )
 from app.services.auth_service import AuthService
+from app.services.vault_service import VaultError
 
 router = APIRouter()
 
@@ -33,6 +35,18 @@ def _set_session_cookie(response: Response, token: str) -> None:
         secure=settings.AUTH_COOKIE_SECURE,
         samesite=settings.AUTH_COOKIE_SAMESITE,
         path="/",
+    )
+
+
+def _clear_session_cookie(response: Response) -> None:
+    # These attributes must match the ones the cookie was set with, or the
+    # browser keeps the old cookie and "logout" silently does nothing.
+    response.delete_cookie(
+        settings.AUTH_COOKIE_NAME,
+        path="/",
+        httponly=True,
+        secure=settings.AUTH_COOKIE_SECURE,
+        samesite=settings.AUTH_COOKIE_SAMESITE,
     )
 
 
@@ -75,15 +89,7 @@ async def logout(
     service: AuthService = Depends(_get_service),
 ):
     await service.logout(session_token)
-    # These attributes must match the ones the cookie was set with, or the
-    # browser keeps the old cookie and "logout" silently does nothing.
-    response.delete_cookie(
-        settings.AUTH_COOKIE_NAME,
-        path="/",
-        httponly=True,
-        secure=settings.AUTH_COOKIE_SECURE,
-        samesite=settings.AUTH_COOKIE_SAMESITE,
-    )
+    _clear_session_cookie(response)
 
 
 @router.get("/me", response_model=UserOut)
@@ -91,6 +97,24 @@ async def me(user: User = Depends(get_current_user)):
     return user
 
 
+@router.delete("/me", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_account(
+    body: DeleteAccountRequest,
+    response: Response,
+    user: User = Depends(get_current_user),
+    service: AuthService = Depends(_get_service),
+):
+    try:
+        await service.delete_account(user, body.password)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)
+        ) from exc
+    except VaultError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)
+        ) from exc
+    _clear_session_cookie(response)
 @router.patch("/me", response_model=UserOut)
 async def update_me(
     body: ProfileUpdate,
