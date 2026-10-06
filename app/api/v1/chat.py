@@ -1,4 +1,4 @@
-import time
+import logging
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -18,10 +18,11 @@ from app.schemas.chat import (
     TitleOut,
 )
 from app.services.agent_chat_service import AgentChatService, CredentialRejected
-from app.services.chat_context import SessionNotFound
+from app.services.chat_context import InvalidChatContext, SessionNotFound
 from app.services.credential_resolver import CredentialUnreadable, NoCredentialError
 from app.services.handbook_service import HandbookUnavailable
 
+logger = logging.getLogger("uvicorn.error")
 router = APIRouter()
 
 
@@ -57,7 +58,7 @@ async def start_session(
     body: ChatRequest,
     service: AgentChatService = Depends(_get_agent_service),
 ):
-    print(f"DEBUG API HIT at {time.time()} | Message: '{body.message}'")
+    logger.debug("Starting chat (input_type=%s)", body.input_type)
     try:
         session, reply = await service.start_session(body.message, model=body.model, input_type=body.input_type, context=body.context)
     except (NoCredentialError, CredentialUnreadable) as e:
@@ -68,6 +69,10 @@ async def start_session(
         raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail=str(e)) from e
     except HandbookUnavailable as e:
         raise HTTPException(status_code=503, detail="The course handbook is unavailable. Please try again later.") from e
+    except InvalidChatContext as e:
+        # The message is sanitized by safe_record; never log the raw record.
+        logger.warning("Chat enrolment validation failed: %s", e)
+        raise HTTPException(status_code=422, detail=str(e)) from e
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e)) from e
     except Exception as e:
@@ -93,6 +98,10 @@ async def continue_session(
         raise HTTPException(status_code=404, detail=str(e)) from e
     except HandbookUnavailable as e:
         raise HTTPException(status_code=503, detail="The course handbook is unavailable. Please try again later.") from e
+    except InvalidChatContext as e:
+        # The message is sanitized by safe_record; never log the raw record.
+        logger.warning("Chat enrolment validation failed: %s", e)
+        raise HTTPException(status_code=422, detail=str(e)) from e
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e)) from e
     except Exception as e:

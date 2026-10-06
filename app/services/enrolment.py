@@ -96,6 +96,8 @@ _UNDECLARED = re.compile(r"^(?:not yet declared|undeclared|none|n/?a|tbd)$", re.
 _FLAT_ROW = re.compile(
     r"(?P<year>(?:19|20)\d{2})\s+"
     rf"(?P<session>{_alternation(KNOWN_SESSIONS)})\s+"
+    # SOLS sometimes includes teaching dates between session and campus.
+    r"(?:\d{1,2}/[A-Za-z]{3}/\d{2,4}\s*~\s*\d{1,2}/[A-Za-z]{3}/\d{2,4}\s+)?"
     r"(?P<campus>[A-Za-z][A-Za-z/ ]*?)\s+"
     r"(?P<code>[A-Z]{2,4}\d{3}[A-Z]?)\s+"
     r"(?P<nom_cp>\d{1,2})"
@@ -134,9 +136,9 @@ _FLAT_END = (
     rf"Major(?:\s+\d+)?|Second\s+Major)\s*:|"
     rf"Year\s+Session\b|(?:19|20)\d{{2}}\s)|\s*$)"
 )
-_FLAT_COURSE = re.compile(r"\bCourse\s*:\s*(\d{3,4})\b", re.IGNORECASE)
+_FLAT_COURSE = re.compile(r"\bCourse\s*:\s*(\d{3,4})(?=[A-Za-z\s]|$)", re.IGNORECASE)
 _FLAT_CAMPUS = re.compile(
-    rf"\bCampus\s*:\s*(?P<value>[A-Za-z][A-Za-z ]{{0,40}}?){_FLAT_END}", re.IGNORECASE
+    rf"(?<![A-Za-z])Campus\s*:\s*(?P<value>[A-Za-z][A-Za-z ]{{0,40}}?){_FLAT_END}", re.IGNORECASE
 )
 _FLAT_MAJOR = re.compile(
     rf"\b(?:Second\s+)?Major(?:\s+\d+)?\s*:\s*"
@@ -188,7 +190,9 @@ class EnrolmentRecord(BaseModel):
 def _norm(cell: str) -> str:
     """Normalise a header cell for matching: lowercase, unbolded, despaced."""
     name = re.sub(r"\s+", " ", cell.replace("*", "").strip()).lower()
-    return "nom cp" if name in {"nomcp", "nominal cp"} else name
+    if name in {"nomcp", "nominal cp"}:
+        return "nom cp"
+    return re.sub(r"\s*/\s*", "/", name)
 
 
 def _split_row(line: str) -> list[str]:
@@ -221,8 +225,17 @@ def _require_int(value: str, field: str) -> int:
         raise UnreadableRecord(f"Could not read {field} from {value!r}.") from exc
 
 
+def _subject_code_cell(value: str) -> str:
+    """Accept a plain code or a complete Markdown link whose label is a code.
+
+    The URL is discarded and never enters the projected record.
+    """
+    linked = re.fullmatch(r"\[([A-Za-z]{2,4}\d{3}[A-Za-z]?)\]\(https?://[^\s]+\)", value)
+    return (linked.group(1) if linked else value).upper()
+
+
 def _enrolment_row(cells: dict[str, str]) -> EnrolmentRow:
-    code = cells.get("subject code", "").upper()
+    code = _subject_code_cell(cells.get("subject code", ""))
     if not _SUBJECT_CODE.match(code):
         raise UnreadableRecord(f"{code!r} is not a subject code.")
 
@@ -249,7 +262,7 @@ def _enrolment_row(cells: dict[str, str]) -> EnrolmentRow:
 
 
 def _credit_row(cells: dict[str, str]) -> CreditRow:
-    code = cells.get("subject code", "").upper() or None
+    code = _subject_code_cell(cells.get("subject code", "")) or None
     if code is not None and not _SUBJECT_CODE.match(code):
         raise UnreadableRecord(f"{code!r} is not a subject code.")
     return CreditRow(
@@ -277,6 +290,35 @@ def _add_major(header: dict, value: str) -> None:
 
 def _read_header_line(line: str, header: dict) -> None:
     """Read allowlisted header fields, including separate-line major values."""
+
+    line = re.sub(r"\s+", " ", line.replace("*", "")).strip()
+    if not line:
+        return
+
+    if header.pop("_pending_course", False):
+        if re.fullmatch(r"\d{3,4}", line):
+            header["_current_course"] = line
+            if header["course_code"] is None:
+                header["course_code"] = line
+            return
+
+    if re.fullmatch(r"Course\s*:", line, flags=re.IGNORECASE):
+        header["_pending_course"] = True
+        header["_pending_major"] = False
+        return
+
+    if course := _COURSE.match(line):
+        header["_current_course"] = course.group(1)
+        if header["course_code"] is None:
+            header["course_code"] = course.group(1)
+        header["_pending_major"] = False
+        return
+
+    # Do not assign a previous course's major/campus to the current course.
+    if header.get("_current_course") not in (None, header["course_code"]):
+        return
+
+    line = re.split(r"\s+(?:Delivery|Status)\s*:", line, maxsplit=1, flags=re.IGNORECASE)[0]
 
     # If the previous line was an empty major label, read this line as its value.
     if header.get("_pending_major"):
@@ -344,6 +386,20 @@ def parse_enrolment(raw_sols: str) -> EnrolmentRecord:
 
 
 def _parse_flat(raw_sols: str) -> EnrolmentRecord:
+    """Read each course section separately while retaining all subject attempts."""
+    sections = list(_FLAT_COURSE.finditer(raw_sols.replace("*", "")))
+    if len(sections) < 2:
+        return _parse_flat_section(raw_sols)
+    text = raw_sols.replace("*", "")
+    records = [
+        _parse_flat_section(text[section.start():sections[index + 1].start() if index + 1 < len(sections) else len(text)])
+        for index, section in enumerate(sections)
+    ]
+    current = records[0]
+    return current.model_copy(update={"rows": [row for record in records for row in record.rows]})
+
+
+def _parse_flat_section(raw_sols: str) -> EnrolmentRecord:
     """Parse a paste whose table markup did not survive the copy.
 
     With no columns left, rows are recovered by matching the known row shape
