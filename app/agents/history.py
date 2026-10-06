@@ -64,6 +64,8 @@ def _to_view(
         tokens_out = usage.get("output_tokens")
         cached = (usage.get("input_token_details") or {}).get("cache_read", 0)
         model = message.response_metadata.get("model_name") or fallback_model
+        if message.response_metadata.get("generation_source") == "validated_enrolment_record":
+            model = None  # No provider call was needed for this complete record.
         return MessageView(
             id=idx,
             role="assistant",
@@ -123,4 +125,3 @@ async def latest_reply(
             return view
 
     return None
-

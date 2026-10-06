@@ -319,6 +319,8 @@ within a conversation, including provider changes when the student has a usable 
 provider-reported model. Google can report `gemini-3.5-flash-lite` for a selected
 `gemini-3.5-flash` request. No silent substitute is made after an explicitly selected
 model is denied. Older replies can lack `requested_model`.
+When the complete enrolment record already satisfies the checked degree rules, the
+backend renders it directly without a generation call; `reply.model` is then null.
 
 Source data currently comes from the repository's **2026** handbook snapshots, rather
 than a newly fetched historical handbook for each commencement year. Future offerings

@@ -39,6 +39,17 @@ class Stage2Nodes:
 
         feedback = state.get("plan_feedback")
 
+        # A fully enrolled degree needs no speculative future subjects. Validate
+        # that fact against every rule instead of asking a provider to echo it.
+        try:
+            validate_plan(merge_record_history('{"plan":[]}', state), state)
+        except PlanGenerationError:
+            pass
+        else:
+            response = AIMessage(content='{"plan":[]}', additional_kwargs={"courseo_internal": True}, response_metadata={"generation_source": "validated_enrolment_record"})
+            self._llms.stamp(response)
+            return {"messages": [response], "plan": response.content, "stage2_tool_loop_count": 0}
+
         content_prompt = (
             "Authoritative metadata:\n"
             f"{state.get('meta')}\n\n"
@@ -58,6 +69,9 @@ class Stage2Nodes:
 
         from app.services.enrolment import parse_enrolment
         record = parse_enrolment(state["raw_sols"])
+        credited_codes = {r.code for r in record.rows if r.status == "Enrolled" or (r.status == "Complete" and r.grade in {"HD", "D", "C", "P", "PS", "CO", "S", "E"})}
+        credited_codes |= {r.code for r in record.specified_credit if r.code}
+        recorded_cp = sum(int(catalog[c]["cp"]) for c in credited_codes if c in catalog)
         codes = required | set(rules.core_selection) | {r.code for r in record.rows}
         codes |= {c for choice in choices for c in choice["codes"]}
         codes |= set(re.findall(r"\b[A-Z]{2,5}\d{3}[A-Z]?\b", latest_student_message(state)))
@@ -73,6 +87,8 @@ class Stage2Nodes:
             "Generate ONLY future subjects; the backend automatically adds every historical/current record row. "
             'If the existing completed/current subjects satisfy all degree requirements, return {"plan":[]}. '
             "Do not repeat passed or enrolled subjects or copy record rows. Add ALL future sessions needed to finish the degree, "
+            f"Completed AND currently enrolled subjects already contribute {recorded_cp} CP; future subjects must contribute exactly {rules.total_cp - recorded_cp} CP. Do not add elective credit beyond this remainder. "
+            "On revision replace a future subject's placement instead of adding another elective. Return every retained future subject exactly once. "
             "respect prerequisites, corequisites, exclusions and campus offerings. "
             "Use the exact source CP. Never invent facts or placeholders. Notes may be empty; the backend renders them. "
             f"Total applicable CP must be {rules.total_cp}. Required codes: {sorted(required)}. "
@@ -85,10 +101,12 @@ class Stage2Nodes:
         if feedback:
             base_prompt += " Previous validation error to fix: " + str(feedback)
         content_prompt += "\nVERIFIED SUBJECT FACTS:\n" + json.dumps(facts, ensure_ascii=False)
+        content_prompt += "\nLATEST STUDENT REQUEST:\n" + latest_student_message(state)
+        if state.get("plan"):
+            content_prompt += "\nPRIOR PLAN (data to revise, not an output template):\n" + str(state["plan"])
 
         response = await self._llms.get("full").ainvoke([
             SystemMessage(content=base_prompt),
-            *state.get("messages", []),
             HumanMessage(content=content_prompt),
         ])
 

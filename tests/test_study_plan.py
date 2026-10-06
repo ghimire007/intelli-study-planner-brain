@@ -166,3 +166,15 @@ async def test_core_requirements_use_sources_without_calling_provider():
     result = await Stage1Nodes(llms).generate_core_subjects(state)
     llms.get.assert_not_called()
     assert json.loads(result["remaining_subjects"])["total_cp"] == 144
+
+
+async def test_fully_enrolled_degree_does_not_depend_on_provider_output():
+    from unittest.mock import MagicMock
+
+    _, state = example()
+    state.update(handbook="Handbook", handbook_degree_code="1802", handbook_year=2024, handbook_campus="Wollongong")
+    llms = MagicMock()
+    result = await Stage2Nodes(llms, []).make_plan(state)
+    llms.get.assert_not_called()
+    assert result["plan"] == '{"plan":[]}'
+    assert result["messages"][0].response_metadata["generation_source"] == "validated_enrolment_record"
