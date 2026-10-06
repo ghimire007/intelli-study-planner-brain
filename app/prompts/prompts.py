@@ -184,10 +184,11 @@ Your job is to build a valid semester-by-semester study plan satisfying all degr
 Addressing any evaluation feedback is your highest priority. 
 
 Your response MUST ALWAYS INCLUDE THE FOLLOWING:
-1. The Audit & Rule Verification section (Stage 1 Analysis & Audit, Stage 2 Session Scratchpad, Elective selection, Step 10 Macro & Tool Audit, and Step 11 Pre-Flight Verification Matrix).
-2. The Study Plan Table with all historical, current, and future subjects.
-3. The Credit Point Summary.
-4. A raw, valid, RFC-8259 compliant nested JSON block wrapped inside a ```json markdown code fence at the very end of the response containing the entire chronological plan.
+1. A short response to the given request or question. 
+2. The Audit & Rule Verification section (Stage 1 Analysis & Audit, Stage 2 Session Scratchpad, Elective selection, Step 10 Macro & Tool Audit, and Step 11 Pre-Flight Verification Matrix).
+3. The Study Plan Table with all historical, current, and future subjects.
+4. The Credit Point Summary.
+5. A raw, valid, RFC-8259 compliant nested JSON block wrapped inside a ```json markdown code fence at the very end of the response containing the entire chronological plan.
 
 Before generating the plan:
 1. Determine every tool required.
@@ -209,7 +210,7 @@ Before generating the plan:
 
 ## SESSION LOAD CONSTRAINTS
 - Standard Load: Target 4 subjects (24 CP) per session where prerequisites and session availability allow.
-- Hard Cap: Maximum 4 subjects (24 CP) per session. You CANNOT place 5 or more subjects in a session under any circumstances.
+- Hard Cap: Maximum 4 subjects (24 CP) per session. You CAN ONLY place 5 subjects in a session if specifically requested. You CANNOT place 6+ subjects for any reason. 
 - Timeline Extension: If prerequisites or session offerings prevent a 4-subject load, you MAY schedule 1-3 subjects in a session and extend the overall timeline to 7+ sessions.
 
 ## FAILED SUBJECT HANDLING RULE:
@@ -277,6 +278,7 @@ ALWAYS include a preamble before providing the audit and study plan. Ensure to f
 - Response in concise conversational text with a 1-2 sentence summary of the student's progress. 
 - Include the student's identified and confirmed course, and the identified and confirmed major based on the enrolment record the student has provided. 
 - If applicable, identify and include the TF, F, N, NH, W, WF, AF subjects. 
+- If applicable, answer any student queries or highlight specific changes made from a request.
 
 <details>
 <summary>Audit & Rule Verification (click to expand)</summary>
@@ -288,22 +290,23 @@ HISTORICAL_COMPLETED = [List exact codes from SOLS record] (Total: X CP)
 CURRENTLY_ENROLLED = [List exact codes from SOLS record] (Total: Y CP)
 EARNED_CP_TOTAL = HISTORICAL_COMPLETED + CURRENTLY_ENROLLED
 STRICT LEDGER LOCK: You are strictly forbidden from adding any subject to HISTORICAL_COMPLETED or CURRENTLY_ENROLLED that is not explicitly present in the provided student record string.
-- REQUIRED SUBJECT INVENTORY COUNT: Explicitly list all the subjects in Generated Remaining Core Subjects. Also list 4 elective placeholders unless they are doing a double major. You MUST state the total count of required subjects, THIS MUST MATCH the number of listed subjects. If it DOES NOT MATCH RE-CHECK THE HANDBOOK.
-- UNCOMPLETED SUBJECT INVENTORY: Cross-reference the required subject codes against the student's HISTORICAL_COMPLETED subjects. List every uncompleted subject code individually. State Total Uncompleted Subjects = N. This exact list of N subject codes is your Master Inventory.
+- ELECTIVE RULES: DO NOT replace any electives. If an elective is enrolled or completed it cannot be changed. If you cannot find a subject that is listed in SOLS assume it is a valid elective. You cannot assume other electives are taken. 24CP OF ELECTIVES MUST EXIST IN SOLS BEFORE YOU ARE ALLOWED TO PUT THE NEXT ELECTIVE INTO THE EXCESS CATEGORY.
+- UNCOMPLETED SUBJECT INVENTORY: Explicitly list all the subjects in Required/core subjects.
 - CP Audit (Categorize COMPLETED AND ENROLLED subjects IN ORDER TAKEN):
-    * Core_CP_Completed = [X] CP
-    * Major_1_CP_Completed = [X] CP
-    * Major_2_CP_Completed = [X] CP
-    * Raw_Elective_CP_Taken = [X] CP
-    * Valid_Elective_CP = MIN(24, Raw_Elective_CP_Taken) = [X] CP
+    * Core_CP_Completed = [X] CP [Explicitly list codes here]
+    * Major_1_CP_Completed = [X] CP [Explicitly list codes here] (check against lookup_major_tool, any subject not listed for the given major that is also not core is an elective)
+    * Major_2_CP_Completed = [X] CP [Explicitly list codes here] (check against lookup_major_tool, any subject not listed for the given major that is also not core is an elective)
+    * Raw_Elective_CP_Taken = [X] CP [Explicitly list codes here]
+    * Valid_Elective_CP = MIN(24, Raw_Elective_CP_Taken) = [X] CP [Explicitly list codes here]
     * Excess_CP = MAX(0, Raw_Elective_CP_Taken - 24) = [X] CP [Explicitly list codes here]
-    * Total_Applicable_Earned = Core_CP_Completed + Major_1_CP_Completed + Major_2_CP_Completed + Valid_Elective_CP = [X] / 144 CP
-- If any electives have been taken, remove an elective placeholder for every elective from uncompleted subject inventory. 
+    * Total_Applicable_Earned = Core_CP_Completed + Major_1_CP_Completed + Major_2_CP_Completed + Valid_Elective_CP = [X] / 144 CP (EXCESS CANNOT COUNT)
+- All subjects in IMMUTABLE SOLS LEDGER must be listed in the CP Audit. If any subject is missing, redo the audit.
+- UPDATED UNCOMPLETED SUBJECT INVENTORY: Updated UNCOMPLETED SUBJECT INVENTORY to have 0 to 4 elective placeholders if Valid_Elective_CP is not 24 CP and they are NOT doing an double major. Each elective is 6cp. Add enough elective placeholders to have 24cp of electives. Explicitly list all the subjects in UNCOMPLETED SUBJECT INVENTORY. State Total Uncompleted Subjects = N. This exact list of N subject codes is your Master Inventory.
 - Stage 1 Pre-Check Passed: [YES/NO]
 
 
 ### STAGE 2: SESSION SCRATCHPAD
-- Mandatory Inventory Verification: In the "Remaining Needed" field for the first session scratchpad, you MUST list every single uncompleted Core code, Major/No-Major code, and Major/Elective code INDIVIDUALLY. You are strictly forbidden from grouping remaining requirements under generic placeholders or credit point sums until every mandatory handbook code has been explicitly assigned to a future session. Once you have made the list DOUBLE CHECK ALL SUBJECT LISTED IN THE GIVEN HANDBOOK UNDER CORE AND MAJOR ARE LISTED. ADD THE CP OF EACH SUBJECT TO GET THE TOTAL. IF THE TOTAL + HISTORICAL_COMPLETED != 144 RECHECK THE LIST.  
+- Mandatory Inventory Verification: In the "Remaining Needed" field for the first session scratchpad, you MUST list every single UNCOMPLETED SUBJECT INVENTORY code INDIVIDUALLY. You are strictly forbidden from grouping remaining requirements under generic placeholders or credit point sums until every mandatory handbook code has been explicitly assigned to a future session. Once you have made the list DOUBLE CHECK ALL SUBJECT LISTED IN THE GIVEN HANDBOOK UNDER CORE AND MAJOR ARE LISTED. ADD THE CP OF EACH SUBJECT TO GET THE TOTAL. IF THE TOTAL + HISTORICAL_COMPLETED != 144 RECHECK THE LIST.  
 STRICT CARRY-FORWARD RULE: In every session scratchpad, Remaining Needed MUST equal [Previous Session Remaining Needed] minus [Previous Session Selected]. If an eligible subject is not selected due to the 4-subject cap or term mismatch, it MUST remain in Remaining Needed for all subsequent sessions until it is scheduled.
 SESSION INVENTORY STATUS: At the end of every session block, write: Unscheduled Subjects Remaining: [List remaining codes] (Count: X)
 TERMINATION RULE: You cannot end Stage 2 until Unscheduled Subjects Remaining Count = 0. If subjects remain and no more standard sessions exist, you MUST automatically create additional sessions (e.g., Autumn 2029) to schedule them.
@@ -332,9 +335,8 @@ For EVERY elective placeholder you must find an eligible elective to recommend.
 (Mandatory: Output this block for EVERY elective placeholder. Do NOT skip or use '...'. FOLLOW THIS TEMPLATE EXACTLY. Failure to out only of the filters is a CRITICAL ERROR.)
 #### Elective placeholder [title]:
 - Current session: List the current session the elective placeholder is in.
-- Confirm the subject exists: If the subject does not exist it CANNOT be scheduled.
-- Remaining generated electives: [Explicitly list ALL Generated Elective codes in the given order.]
-- Remove any elective codes that are already in the plan.
+- Remaining generated electives: [Explicitly list ALL Elective choices codes in the given order.]
+- Remove any Elective choices codes that are already in the plan.
 For EVERY code listed in Remaining generated electives until you find an eligible match, you MUST output a dedicated line evaluating all 5 conditions. 
 REQUIRED FORMAT TO OUTPUT FOR EACH ELECTIVE SUBJECT, FAILURE TO OUTPUT THIS EXACT FORMAT IS A CRITICAL ERROR:
 [ELECTIVE_CODE]:
@@ -431,11 +433,12 @@ STRICT JSON SCHEMA & SYNTAX RULES:
 EVAL_PLAN = """
 Step 1:
 To pass successfully, every response containing a study plan must strictly include:
-1. The Audit & Rule Verification section (Stage 1 Analysis & Audit, Stage 2 Session Scratchpad, Elective selection, Step 10 Macro & Tool Audit, and Step 11 Pre-Flight Verification Matrix).
-2. The Study Plan Table with all historical, current, and future subjects.
-3. The Credit Point Summary.
-4. A raw, valid, RFC-8259 compliant nested JSON block wrapped inside a ```json markdown code fence at the very end of the response containing the entire chronological plan.
-If all 4 sections are included then step 1 PASSES.
+1. A short response to the given request or question. 
+2. The Audit & Rule Verification section (Stage 1 Analysis & Audit, Stage 2 Session Scratchpad, Elective selection, Step 10 Macro & Tool Audit, and Step 11 Pre-Flight Verification Matrix).
+3. The Study Plan Table with all historical, current, and future subjects.
+4. The Credit Point Summary.
+5. A raw, valid, RFC-8259 compliant nested JSON block wrapped inside a ```json markdown code fence at the very end of the response containing the entire chronological plan.
+If all 5 sections are included then step 1 PASSES.
 
 If Step 1 PASSES then evaluate Step 2.
 
@@ -452,7 +455,7 @@ For the whole plan:
 1. Is the total CP 144?
 2. Are there <= 60 CP of 100 level subjects?
 3. For any listed majors are all the required subjects listed?
-4. Do all the sessions have <= 4 subjects?
+4. Do all the sessions have <= 4 subjects? (A session may have 5 subjects ONLY IF specifically requested by the student)
 If any of the above questions evaluate to NO, add this issue to the plan feedback.
 
 The response to evaluate: 
@@ -472,7 +475,7 @@ Respond ONLY in JSON format:
 
 
 
-# original -----------------------------------------------------------------------------------------
+# original - not currently used -----------------------------------------------------------------------------------------
 
 MAKE_PLAN = """
 You are an academic advisor for the University of Wollongong (UOW).
