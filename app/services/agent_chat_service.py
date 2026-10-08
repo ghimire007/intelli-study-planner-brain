@@ -45,7 +45,8 @@ class AgentChatService:
         self._resolver = CredentialResolver(db)
 
     async def start_session(
-        self, raw_sols: str, *, model: str | None = None
+        self, raw_sols: str, *, model: str | None = None, 
+        elective_mode: str | None = None, elective_interests: str | None = None
     ) -> tuple[ChatSession, MessageView]:
         session_id = uuid.uuid4()
 
@@ -128,6 +129,9 @@ class AgentChatService:
                 "meta": None,
                 "meta_confirmed": False,
 
+                "elective_mode": elective_mode,
+                "elective_interests": elective_interests or [],
+
                 "conversation_mode": "collecting",
 
                 "handbook": None,
@@ -173,7 +177,8 @@ class AgentChatService:
         return session, reply
 
     async def continue_session(
-        self, session_id: uuid.UUID, user_message: str, *, model: str | None = None
+        self, session_id: uuid.UUID, user_message: str, *, model: str | None = None,
+        elective_mode: str | None = None, elective_interests: str | None = None
     ) -> MessageView:
         session = await self._owned_session(session_id)
 
@@ -185,6 +190,12 @@ class AgentChatService:
 
         protected_message = scrub_pii(user_message)
         payload = {"messages": [HumanMessage(content=protected_message)]}
+
+        if elective_mode is not None:
+            payload["elective_mode"] = elective_mode
+
+        if elective_interests is not None:
+            payload["elective_interests"] = elective_interests
 
         # Only treat the message as a new SOLS/enrolment record if # project() successfully recognises it as one.
         try:
@@ -206,6 +217,11 @@ class AgentChatService:
                 "planning_requested": True,
                 "plan": None,
             }
+            if elective_mode is not None:
+                payload["elective_mode"] = elective_mode
+
+            if elective_interests is not None:
+                payload["elective_interests"] = elective_interests
         else:
             print("continue_session: standard chat message")
 

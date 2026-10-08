@@ -1,13 +1,31 @@
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict
 
 
+class ChatProfile(BaseModel):
+    degree_code: str | None = None
+    major: str | None = None
+    campus: str | None = None
+    commencement_year: int | None = None
+    elective_mode: Literal["degree", "interest"] | None = None
+    elective_interests: list[str] | None = None
+
+
+class ChatContext(BaseModel):
+    profile: ChatProfile
+    enrolment_record: str | None = None
+
+
 class ChatRequest(BaseModel):
     message: str
-    #: Which model to answer with. None uses the session's model, then the
-    #: server default. The provider — and so the key — follows from the model.
+
+    # Which model to answer with. None uses the session's model,
+    # then the server default.
     model: str | None = None
+
+    context: ChatContext | None = None
 
 
 class MessageOut(BaseModel):
