@@ -211,3 +211,33 @@ async def test_evaluator_verdict_recovers_existing_validated_plan():
     llms.get.return_value.ainvoke = AsyncMock(return_value=AIMessage(content='```json\n{"valid": false, "feedback": "wrapper"}\n```'))
     result = await ConversationNodes(llms, []).agent(state)
     assert parse_plan(result["messages"][0].content) == parse_plan(state["plan"])
+
+
+@pytest.mark.parametrize("raw", ["", "no enrolment yet"])
+async def test_student_with_no_enrolment_still_gets_a_plan_attempt(raw):
+    from unittest.mock import AsyncMock, MagicMock
+
+    from app.agents.nodes.stage2 import Stage2Nodes
+    from app.services.study_plan import merge_record_history
+    from langchain_core.messages import AIMessage
+
+    _, state = example()
+    state.update(raw_sols=raw, handbook="Handbook", handbook_degree_code="1802", handbook_year=2024, handbook_campus="Wollongong")
+    model = MagicMock()
+    model.ainvoke = AsyncMock(return_value=AIMessage(content='{"plan":[]}'))
+    llms = MagicMock()
+    llms.get.return_value = model
+
+    out = await Stage2Nodes(llms, []).make_plan(state)
+
+    model.ainvoke.assert_awaited_once()
+    assert out["plan"] == '{"plan":[]}'
+    assert merge_record_history('{"plan":[]}', state)
+
+
+def test_no_enrolment_is_not_a_missing_record_error():
+    _, state = example()
+    state["raw_sols"] = ""
+    with pytest.raises(PlanGenerationError) as excinfo:
+        validate_plan('{"plan":[]}', state)
+    assert "Add your complete SOLS enrolment record" not in str(excinfo.value)

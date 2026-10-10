@@ -17,6 +17,7 @@ from app.services.study_plan import (
     PlanGenerationError,
     merge_record_history,
     plan_sources,
+    record_for,
     render_plan,
     validate_plan,
 )
@@ -67,8 +68,7 @@ class Stage2Nodes:
         import json
         import re
 
-        from app.services.enrolment import parse_enrolment
-        record = parse_enrolment(state["raw_sols"])
+        record = record_for(state)
         credited_codes = {r.code for r in record.rows if r.status == "Enrolled" or (r.status == "Complete" and r.grade in {"HD", "D", "C", "P", "PS", "CO", "S", "E"})}
         credited_codes |= {r.code for r in record.specified_credit if r.code}
         recorded_cp = sum(int(catalog[c]["cp"]) for c in credited_codes if c in catalog)
