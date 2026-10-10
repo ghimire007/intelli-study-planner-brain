@@ -1,7 +1,33 @@
 from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+
+class AcademicProfileContext(BaseModel):
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+    degree_code: str | None = Field(default=None, pattern=r"^\d{3,4}$")
+    major: str | None = Field(default=None, min_length=1, max_length=120)
+    campus: str | None = Field(default=None, min_length=1, max_length=32)
+    commencement_year: int | None = Field(default=None, ge=1900, le=2100, strict=True)
+    # ERROR
+    # elective_mode: Literal["degree", "interest"] | None = None
+    elective_interests: list[str] | None = Field(default=None, max_length=100)
+
+    @field_validator("elective_interests")
+    @classmethod
+    def validate_interests(cls, value):
+        if value is not None and any(not item.strip() or len(item) > 120 for item in value):
+            raise ValueError("Interests must contain 1-120 characters each")
+        return value
+
+
+class ChatContext(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    profile: AcademicProfileContext | None = None
+    enrolment_record: str | None = Field(default=None, min_length=1, max_length=100_000)
+    # ERROR
+    # enrolment_record: str | None = None
 
 
 class ChatProfile(BaseModel):
@@ -13,18 +39,13 @@ class ChatProfile(BaseModel):
     elective_interests: list[str] | None = None
 
 
-class ChatContext(BaseModel):
-    profile: ChatProfile
-    enrolment_record: str | None = None
-
-
 class ChatRequest(BaseModel):
-    message: str
+    message: str = Field(min_length=1, max_length=100_000)
+    input_type: Literal["enrolment", "question"] = "enrolment"
 
     # Which model to answer with. None uses the session's model,
     # then the server default.
     model: str | None = None
-
     context: ChatContext | None = None
 
 
@@ -37,6 +58,7 @@ class MessageOut(BaseModel):
     created_at: datetime
     provider: str | None = None
     model: str | None = None
+    requested_model: str | None = None
     tokens_in: int | None = None
     tokens_out: int | None = None
     cached_tokens: int | None = None

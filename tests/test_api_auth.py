@@ -17,6 +17,7 @@ CREDENTIAL_ID = uuid.uuid4()
 
 PROTECTED = [
     ("GET", "/api/v1/auth/me"),
+    ("DELETE", "/api/v1/auth/me"),
     ("POST", "/api/v1/chat"),
     ("POST", f"/api/v1/chat/{SESSION_ID}"),
     ("GET", f"/api/v1/chat/{SESSION_ID}"),
@@ -38,7 +39,8 @@ async def client():
 
 @pytest.mark.parametrize(("method", "path"), PROTECTED, ids=[f"{m} {p}" for m, p in PROTECTED])
 async def test_requires_a_signed_in_student(client, method, path) -> None:
-    response = await client.request(method, path, json={"message": "hi"})
+    body = {"password": "longenough"} if method == "DELETE" else {"message": "hi"}
+    response = await client.request(method, path, json=body)
     assert response.status_code == 401, response.text
 
 
@@ -74,6 +76,8 @@ def test_protected_routes_are_padlocked_in_the_openapi_schema() -> None:
     assert "/api/v1/keys" in secured
     assert "/api/v1/chat" in secured
     assert "/api/v1/auth/me" in secured
+    delete_me = schema["paths"]["/api/v1/auth/me"]["delete"]
+    assert delete_me.get("security")
     # Signing in must not itself require being signed in.
     assert "/api/v1/auth/login" not in secured
     assert "/api/v1/auth/register" not in secured

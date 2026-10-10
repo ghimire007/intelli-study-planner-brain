@@ -5,6 +5,7 @@ provider still works — when one of them isn't installed.
 """
 from langchain_core.language_models import BaseChatModel
 
+from app.core.config import settings
 from app.llm.config import LLMConfig
 from app.llm.registry import PROVIDER_LABELS, Provider
 
@@ -25,17 +26,17 @@ def make_chat_model(config: LLMConfig) -> BaseChatModel:
         if config.provider is Provider.GEMINI:
             from langchain_google_genai import ChatGoogleGenerativeAI
 
-            return ChatGoogleGenerativeAI(model=config.model, google_api_key=config.api_key)
+            return ChatGoogleGenerativeAI(model=config.model, google_api_key=config.api_key, timeout=settings.LLM_REQUEST_TIMEOUT_SECONDS, max_retries=1, max_output_tokens=8192)
 
         if config.provider is Provider.ANTHROPIC:
             from langchain_anthropic import ChatAnthropic
 
-            return ChatAnthropic(model=config.model, api_key=config.api_key)
+            return ChatAnthropic(model=config.model, api_key=config.api_key, timeout=settings.LLM_REQUEST_TIMEOUT_SECONDS, max_retries=1, max_tokens=8192)
 
         if config.provider is Provider.OPENAI:
             from langchain_openai import ChatOpenAI
 
-            return ChatOpenAI(model=config.model, api_key=config.api_key)
+            return ChatOpenAI(model=config.model, api_key=config.api_key, timeout=settings.LLM_REQUEST_TIMEOUT_SECONDS, max_retries=1, max_tokens=8192)
     except ImportError as exc:
         raise ProviderNotInstalled(
             f"{PROVIDER_LABELS[config.provider]} support needs "
