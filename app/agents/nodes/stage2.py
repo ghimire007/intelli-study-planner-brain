@@ -15,6 +15,7 @@ from app.agents.state import (
 )
 from app.prompts.builder import build_system_prompt
 from app.prompts.prompts import EVAL_PLAN, SYSTEM_PROMPT_V1
+from app.schemas.plan_eval import PlanEvalVerdict
 
 
 class Stage2Nodes:
@@ -130,12 +131,9 @@ class Stage2Nodes:
         ])
 
         try:
-            data = extract_and_parse_json(response.content)
-            if not isinstance(data, dict):
-                raise ValueError("Stage 2 evaluator returned invalid JSON.")
-            if data.get("valid"):
+            feedback = PlanEvalVerdict.model_validate(extract_and_parse_json(response.content)).issues
+            if feedback is None:
                 return {"plan_feedback": None, "stage2_retry_count": 0}
-            feedback = data.get("feedback", "Invalid plan.")
         except Exception as exc:
             print("STAGE 2 EVAL ERROR:", repr(exc))
             feedback = "Failed to parse evaluation output."

@@ -32,6 +32,13 @@ from app.agents.state import (
 )
 from app.prompts.builder import build_system_prompt
 from app.prompts.prompts import EVAL_SUBJECTS_ELECTIVES, SUBJECT_GENERATION_PROMPT
+from app.schemas.core_subjects import CoreEvalVerdict, CoreSubjectFormatError, CoreSubjectList
+from app.services.core_subject_validation import (
+    codes_in_record,
+    codes_in_text,
+    validate_core_subjects,
+)
+from app.services.subject_catalog import load_subject_catalog
 
 
 class Stage1Nodes:
@@ -104,7 +111,11 @@ class Stage1Nodes:
         ])
 
         parsed = extract_and_parse_json(response.content)
-        content = parsed if isinstance(parsed, str) else json.dumps(parsed)
+        try:
+            content = CoreSubjectList.from_llm(parsed).to_state()
+        except CoreSubjectFormatError:
+            # Kept as written; evaluate reports the problems back to the model.
+            content = parsed if isinstance(parsed, str) else json.dumps(parsed)
 
         return {"remaining_subjects": content, "remaining_feedback": None}
 
@@ -136,6 +147,18 @@ class Stage1Nodes:
 
         retries = state.get("stage1_retry_count", 0)
 
+        # Exact checks first: they are free, and a list that fails them goes
+        # back for correction without spending the auditor call.
+        try:
+            issues = await self._check_core_subjects(state)
+        except Exception as exc:
+            # The checks are an extra layer; if they break, the auditor still runs.
+            print("CORE SUBJECT VALIDATION SKIPPED:", repr(exc))
+            issues = []
+        if issues:
+            print("CORE SUBJECT VALIDATION:", issues)
+            return {"remaining_feedback": "\n".join(f"- {issue}" for issue in issues), "stage1_retry_count": retries + 1}
+
         eval_prompt = build_system_prompt(
             prompt=EVAL_SUBJECTS_ELECTIVES,
             meta=state.get("meta"),
@@ -160,19 +183,29 @@ class Stage1Nodes:
         ])
 
         try:
-            data = extract_and_parse_json(response.content)
-            if not isinstance(data, dict):
-                raise ValueError("Stage 1 evaluator did not return an object.")
-            feedback = (
-                None
-                if data.get("remaining_valid")
-                else data.get("remaining_feedback") or "Invalid core subjects."
-            )
+            feedback = CoreEvalVerdict.model_validate(extract_and_parse_json(response.content)).feedback
         except Exception as exc:
             print("REQUIRED SUBJECT EVAL ERROR:", repr(exc))
             feedback = "Failed to parse validation output."
 
         return {"remaining_feedback": feedback, "stage1_retry_count": retries + 1}
+
+    @staticmethod
+    async def _check_core_subjects(state: AdvisorState) -> list[str]:
+        meta = state.get("meta") or {}
+        try:
+            core = CoreSubjectList.from_llm(extract_and_parse_json(state.get("remaining_subjects") or ""))
+        except CoreSubjectFormatError as exc:
+            return exc.issues
+        catalog = await asyncio.to_thread(
+            load_subject_catalog, str(meta.get("degree_code") or ""), int(meta.get("year") or 2026)
+        )
+        return validate_core_subjects(
+            core,
+            catalog=catalog,
+            handbook_codes=codes_in_text(state.get("handbook")),
+            record_codes=codes_in_record(state.get("raw_sols")),
+        )
 
     @staticmethod
     def route_stage1_eval(

@@ -86,4 +86,4 @@ async def parse_sols(llm, protected_sols: str) -> SOLSMeta:
         f"{time.perf_counter() - start:.2f}s"
     )
     data = json.loads(_strip_code_block(as_text(response.content)))
-    return SOLSMeta(**data)
+    return SOLSMeta.model_validate(data)
