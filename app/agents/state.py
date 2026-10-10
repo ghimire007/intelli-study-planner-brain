@@ -10,6 +10,8 @@ from typing import Annotated, Literal, TypedDict
 from langchain_core.messages import BaseMessage, HumanMessage, ToolMessage
 from langgraph.graph.message import add_messages
 
+from langgraph.graph import END, START, StateGraph
+
 from app.schemas.elective_ranking import ElectivePriorityInput
 from app.schemas.student_meta import StudentMeta
 from app.services.course_rules import load_course_rules
