@@ -20,6 +20,7 @@ from app.services.study_plan import (
     render_plan,
     validate_plan,
 )
+from app.schemas.plan_eval import PlanEvalVerdict
 
 
 class Stage2Nodes:
@@ -156,11 +157,37 @@ class Stage2Nodes:
         if not plan:
             return {"plan_feedback": "No plan was generated.", "stage2_retry_count": retries + 1}
 
+        eval_prompt = EVAL_PLAN.replace("{{PLAN}}", plan) + (
+            "\n\nAUTHORITATIVE METADATA:\n"
+            f"{state.get('meta')}\n\n"
+            "AUTHORITATIVE HANDBOOK:\n"
+            f"{state.get('handbook')}\n\n"
+            "CURRENT SOLS:\n"
+            f"{state.get('raw_sols')}\n\n"
+            "REQUIRED/CORE SUBJECTS:\n"
+            f"{state.get('remaining_subjects')}\n\n"
+            "ELECTIVE OPTIONS:\n"
+            f"{state.get('electives')}\n"
+        )
+
+        response = await self._llms.get("parser").ainvoke([
+            SystemMessage(content=(
+                "You are an academic auditor checking a generated study plan against authoritative source data. "
+                "Check subject accuracy, placement, session correctness, credit-point totals, prerequisites, and required output sections. "
+                "Return ONLY JSON."
+            )),
+            HumanMessage(content=eval_prompt),
+        ])
+
         try:
-            structured = validate_plan(merge_record_history(plan, state), state)
-            return {"plan": render_plan(structured), "plan_feedback": None, "stage2_retry_count": 0}
-        except PlanGenerationError as exc:
-            return {"plan_feedback": str(exc), "stage2_retry_count": retries + 1}
+            feedback = PlanEvalVerdict.model_validate(extract_and_parse_json(response.content)).issues
+            if feedback is None:
+                return {"plan_feedback": None, "stage2_retry_count": 0}
+        except Exception as exc:
+            print("STAGE 2 EVAL ERROR:", repr(exc))
+            feedback = "Failed to parse evaluation output."
+
+        return {"plan_feedback": feedback, "stage2_retry_count": retries + 1}
 
     @staticmethod
     def route_evaluation(state: AdvisorState) -> Literal["stage2_make_plan", "format_output"]:

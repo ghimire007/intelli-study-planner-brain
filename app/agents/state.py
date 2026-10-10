@@ -11,6 +11,7 @@ from langchain_core.messages import BaseMessage, HumanMessage, ToolMessage
 from langgraph.graph.message import add_messages
 
 from app.schemas.elective_ranking import ElectivePriorityInput
+from app.schemas.student_meta import StudentMeta
 from app.services.course_rules import load_course_rules
 from app.services.elective_ranking import flatten_ranked_electives, get_elective_priorities
 from app.services.eligibility_service import resolve_major_code
@@ -274,7 +275,7 @@ class AdvisorState(TypedDict):
     raw_sols: str | None
 
     # Metadata
-    meta: dict | None
+    meta: StudentMeta | None
     meta_confirmed: bool
     field_sources: dict
     context_conflicts: dict
@@ -362,7 +363,7 @@ def latest_tool_batch(state: AdvisorState) -> list[ToolMessage]:
 
 # HANDBOOK IDENTITY
 def metadata_handbook_key(
-    meta: dict | None,
+    meta: StudentMeta | None,
 ) -> tuple[str, int, str] | None:
     """
     Return the identity of the handbook required by metadata.
@@ -609,10 +610,10 @@ def _extract_explicit_major_hint(
 
 
 def sanitize_confirmed_metadata(
-    prior_meta: dict | None,
-    candidate_meta: dict,
+    prior_meta: StudentMeta | None,
+    candidate_meta: StudentMeta,
     state: "AdvisorState",
-) -> dict:
+) -> StudentMeta:
     """
     Prevent the confirmation LLM from creating metadata that the
     student did not actually state.
@@ -729,7 +730,7 @@ def sanitize_confirmed_metadata(
 
 # METADATA
 def validate_metadata(
-    meta: dict | None,
+    meta: StudentMeta | None,
 ) -> list[str]:
     """
     Return required metadata fields that are missing.
@@ -759,8 +760,8 @@ def validate_metadata(
 
 
 def apply_confirm_metadata(
-    prior_meta: dict | None,
-    new_meta: dict,
+    prior_meta: StudentMeta | None,
+    new_meta: StudentMeta,
 ) -> dict:
     """
     Apply a confirmed metadata update.
@@ -826,7 +827,7 @@ def apply_confirm_metadata(
 
 
 def apply_plan_change_request(
-    prior_meta: dict | None,
+    prior_meta: StudentMeta | None,
     request: dict,
 ) -> dict:
     """
