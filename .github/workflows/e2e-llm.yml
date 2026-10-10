@@ -2,7 +2,7 @@ name: LLM accuracy
 
 # Generates real study plans with the live model and grades them with the
 # deterministic oracle in tests/e2e. Slow and billed, so it runs only when
-# something that shapes a plan changes, nightly, or on demand -- never on every PR.
+# triggered by hand and never spends credits on its own.
 on:
   workflow_dispatch:
     inputs:
@@ -12,18 +12,6 @@ on:
       filter:
         description: pytest -k expression (e.g. bcs_25 or lp)
         default: ""
-  schedule:
-    - cron: "0 17 * * *"
-  pull_request:
-    branches:
-      - main
-    paths:
-      - app/prompts/**
-      - app/agents/**
-      - app/services/**
-      - app/knowledge/**
-      - seeds/**
-      - tests/e2e/**
 
 permissions:
   contents: read
@@ -35,8 +23,6 @@ concurrency:
 jobs:
   accuracy:
     name: Plan accuracy (live model)
-    # Fork PRs get no secrets, so there is nothing to run against.
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 90
     services:
