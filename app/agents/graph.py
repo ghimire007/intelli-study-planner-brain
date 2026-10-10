@@ -24,6 +24,8 @@ from app.agents.skills import build_skills
 from app.llm.config import LLMConfig
 from app.llm.factory import make_chat_model
 from app.prompts.builder import build_system_prompt
+from app.services.chat_context import merge_academic
+from app.services.course_catalog import COURSE_TITLES
 from app.services.sols_parser import parse_sols
 
 
@@ -36,6 +38,9 @@ class AdvisorState(TypedDict):
     meta: dict | None
     meta_confirmed: bool
     handbook: str | None
+    field_sources: dict
+    context_conflicts: dict
+    context_observations: dict
 
 
 def apply_confirm_metadata(prior_meta: dict | None, new_meta: dict) -> dict:
@@ -45,7 +50,8 @@ def apply_confirm_metadata(prior_meta: dict | None, new_meta: dict) -> dict:
     handbook so the next turn re-fetches rules for the new program.
     Major may be stored on meta but does not by itself clear the handbook.
     """
-    updates: dict = {"meta": new_meta, "meta_confirmed": True}
+    new_meta = {**(prior_meta or {}), **{k: v for k, v in new_meta.items() if v is not None}}
+    updates: dict = {"meta": new_meta, "meta_confirmed": all(new_meta.get(k) is not None for k in ("degree_code", "year", "campus"))}
     old = prior_meta or {}
     if (
         old.get("degree_code") != new_meta.get("degree_code")
@@ -64,9 +70,24 @@ def fold_tool_results(state: AdvisorState, batch: list[ToolMessage]) -> dict:
     """
     updates: dict = {}
     for message in batch:
+        if getattr(message, "status", None) == "error":
+            continue
         if message.name == "confirm_metadata_tool":
             prior = updates.get("meta", state.get("meta"))
-            updates.update(apply_confirm_metadata(prior, json.loads(message.content)))
+            confirmed = json.loads(message.content)
+            updates.update(apply_confirm_metadata(prior, confirmed))
+            sources = dict(updates.get("field_sources", state.get("field_sources", {})))
+            conflicts = dict(updates.get("context_conflicts", state.get("context_conflicts", {})))
+            for key, value in confirmed.items():
+                if value is not None:
+                    sources[key] = {"source": "conversation", "confirmed": True}
+                    conflicts.pop(key, None)
+            updates.update(field_sources=sources, context_conflicts=conflicts)
+            updates["meta_confirmed"] = not conflicts and all(
+                sources.get(key, {}).get("confirmed", state.get("meta_confirmed", False))
+                and updates["meta"].get(key) is not None
+                for key in ("degree_code", "year", "campus")
+            )
         elif message.name == "fetch_handbook_tool":
             updates["handbook"] = message.content
     return updates
@@ -106,11 +127,14 @@ def build_advisor_graph(
     async def parse_input(state: AdvisorState) -> dict:
         if state.get("meta") is not None:
             return {}
+        if not state.get("raw_sols"):
+            # A question needs an advisor response, not a SOLS parsing call.
+            return {"meta": {}, "meta_confirmed": False}
         meta = await parse_sols(llm("parser"), state["raw_sols"])
         data = meta.model_dump()
         # Never auto-confirm: the agent must ask the student (one question) and
         # call confirm_metadata_tool, even if the parser extracted candidate values.
-        return {"meta": data, "meta_confirmed": False}
+        return merge_academic(state, data, "enrolment_record")
 
     async def agent(state: AdvisorState) -> dict:
         confirmed = state.get("meta_confirmed", False)
@@ -121,6 +145,9 @@ def build_advisor_graph(
             meta_confirmed=confirmed,
             handbook=state.get("handbook"),
             raw_sols=state["raw_sols"],
+            field_sources=state.get("field_sources"),
+            conflicts=state.get("context_conflicts"),
+            degree_name=COURSE_TITLES.get((state.get("meta") or {}).get("degree_code")),
         )
         response = await agent_llm.ainvoke(
             [SystemMessage(content=system_content), *state["messages"]]

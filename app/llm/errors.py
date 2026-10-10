@@ -29,6 +29,8 @@ class ProviderFailure(StrEnum):
     AUTH = "auth"
     RATE_LIMIT = "rate_limit"
     UNAVAILABLE = "unavailable"
+    MODEL_UNAVAILABLE = "model_unavailable"
+    TIMEOUT = "timeout"
     UNKNOWN = "unknown"
 
 
@@ -52,8 +54,12 @@ def classify(exc: BaseException) -> ProviderFailure:
     while current is not None and id(current) not in seen:
         seen.add(id(current))
         status = _status_of(current)
+        if isinstance(current, TimeoutError) or "timeout" in type(current).__name__.lower() or status in {408, 504}:
+            return ProviderFailure.TIMEOUT
         if status in _AUTH_STATUSES or _says_the_key_is_bad(current):
             return ProviderFailure.AUTH
+        if status == 404:
+            return ProviderFailure.MODEL_UNAVAILABLE
         if status == 429:
             return ProviderFailure.RATE_LIMIT
         if status is not None and status >= 500:

@@ -32,3 +32,10 @@ class LLMRegistry:
                 stop_after_attempt=2,
             )
         return self._models[kind]
+
+    def stamp(self, response):
+        """Keep the selected model on provider-neutral and rendered messages."""
+        if getattr(self._config, "model", None):
+            response.response_metadata.setdefault("model_name", self._config.model)
+            response.response_metadata["requested_model"] = self._config.model
+        return response

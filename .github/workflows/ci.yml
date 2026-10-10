@@ -51,6 +51,10 @@ jobs:
           tests/test_vault_logic.py
           tests/test_enrolment.py
           tests/test_api_auth.py
+          tests/test_chat_context.py
+          tests/test_chat_questions.py
+          tests/test_chat_input.py
+          tests/test_chat_handbook_error.py
           tests/test_profile_update.py
           tests/test_migration_url.py
           tests/eval/test_parser.py

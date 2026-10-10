@@ -9,7 +9,7 @@ from app.agents.state import (
     handbook_matches_current_meta,
     metadata_handbook_key,
 )
-from app.services.handbook_service import fetch_handbook
+from app.services.handbook_service import HandbookUnavailable, fetch_handbook
 
 
 class HandbookNodes:
@@ -32,12 +32,11 @@ class HandbookNodes:
         try:
             content = await fetch_handbook(self._db, degree_code, year, campus)
         except Exception as exc:
-            print("HANDBOOK FETCH ERROR:", repr(exc))
-            return {**HANDBOOK_CLEARED, "planning_requested": False}
+            raise HandbookUnavailable("The course handbook could not be loaded. Ask the backend operator to seed the handbook data, then retry.") from exc
 
         if not content or not str(content).strip():
             print("HANDBOOK FETCH FAILED: empty")
-            return {**HANDBOOK_CLEARED, "planning_requested": False}
+            raise HandbookUnavailable("The course handbook is empty. Refresh the seeded handbook before planning.")
 
         print("HANDBOOK FETCH SUCCESS:", required)
         return {
