@@ -24,9 +24,9 @@ from app.agents.skills import build_skills
 from app.llm.config import LLMConfig
 from app.llm.factory import make_chat_model
 from app.prompts.builder import build_system_prompt
+from app.schemas.student_meta import StudentMeta
 from app.services.chat_context import merge_academic
 from app.services.course_catalog import COURSE_TITLES
-from app.schemas.student_meta import StudentMeta
 from app.services.sols_parser import parse_sols
 
 

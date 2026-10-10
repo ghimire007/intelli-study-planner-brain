@@ -130,8 +130,9 @@ def confirm_metadata_tool(
             degree_code=degree_code,
             year=year,
             campus=campus,
-            major=majors or [],
-        ).model_dump()
+            **({"majors": majors} if majors is not None else {}),
+            **({"major": major} if major is not None else {}),
+        ).model_dump(exclude_unset=True)
     )
 
 

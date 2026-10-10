@@ -17,10 +17,12 @@ from app.services.study_plan import (
     PlanGenerationError,
     merge_record_history,
     plan_sources,
+    record_for,
     render_plan,
     validate_plan,
 )
-from app.schemas.plan_eval import PlanEvalVerdict
+# ERROR
+# from app.schemas.plan_eval import PlanEvalVerdict
 
 
 class Stage2Nodes:
@@ -68,8 +70,7 @@ class Stage2Nodes:
         import json
         import re
 
-        from app.services.enrolment import parse_enrolment
-        record = parse_enrolment(state["raw_sols"])
+        record = record_for(state)
         credited_codes = {r.code for r in record.rows if r.status == "Enrolled" or (r.status == "Complete" and r.grade in {"HD", "D", "C", "P", "PS", "CO", "S", "E"})}
         credited_codes |= {r.code for r in record.specified_credit if r.code}
         recorded_cp = sum(int(catalog[c]["cp"]) for c in credited_codes if c in catalog)
@@ -157,37 +158,44 @@ class Stage2Nodes:
         if not plan:
             return {"plan_feedback": "No plan was generated.", "stage2_retry_count": retries + 1}
 
-        eval_prompt = EVAL_PLAN.replace("{{PLAN}}", plan) + (
-            "\n\nAUTHORITATIVE METADATA:\n"
-            f"{state.get('meta')}\n\n"
-            "AUTHORITATIVE HANDBOOK:\n"
-            f"{state.get('handbook')}\n\n"
-            "CURRENT SOLS:\n"
-            f"{state.get('raw_sols')}\n\n"
-            "REQUIRED/CORE SUBJECTS:\n"
-            f"{state.get('remaining_subjects')}\n\n"
-            "ELECTIVE OPTIONS:\n"
-            f"{state.get('electives')}\n"
-        )
-
-        response = await self._llms.get("parser").ainvoke([
-            SystemMessage(content=(
-                "You are an academic auditor checking a generated study plan against authoritative source data. "
-                "Check subject accuracy, placement, session correctness, credit-point totals, prerequisites, and required output sections. "
-                "Return ONLY JSON."
-            )),
-            HumanMessage(content=eval_prompt),
-        ])
-
         try:
-            feedback = PlanEvalVerdict.model_validate(extract_and_parse_json(response.content)).issues
-            if feedback is None:
-                return {"plan_feedback": None, "stage2_retry_count": 0}
-        except Exception as exc:
-            print("STAGE 2 EVAL ERROR:", repr(exc))
-            feedback = "Failed to parse evaluation output."
+            structured = validate_plan(merge_record_history(plan, state), state)
+            return {"plan": render_plan(structured), "plan_feedback": None, "stage2_retry_count": 0}
+        except PlanGenerationError as exc:
+            return {"plan_feedback": str(exc), "stage2_retry_count": retries + 1}
 
-        return {"plan_feedback": feedback, "stage2_retry_count": retries + 1}
+        # ERROR - old version
+        # eval_prompt = EVAL_PLAN.replace("{{PLAN}}", plan) + (
+        #     "\n\nAUTHORITATIVE METADATA:\n"
+        #     f"{state.get('meta')}\n\n"
+        #     "AUTHORITATIVE HANDBOOK:\n"
+        #     f"{state.get('handbook')}\n\n"
+        #     "CURRENT SOLS:\n"
+        #     f"{state.get('raw_sols')}\n\n"
+        #     "REQUIRED/CORE SUBJECTS:\n"
+        #     f"{state.get('remaining_subjects')}\n\n"
+        #     "ELECTIVE OPTIONS:\n"
+        #     f"{state.get('electives')}\n"
+        # )
+
+        # response = await self._llms.get("parser").ainvoke([
+        #     SystemMessage(content=(
+        #         "You are an academic auditor checking a generated study plan against authoritative source data. "
+        #         "Check subject accuracy, placement, session correctness, credit-point totals, prerequisites, and required output sections. "
+        #         "Return ONLY JSON."
+        #     )),
+        #     HumanMessage(content=eval_prompt),
+        # ])
+
+        # try:
+        #     feedback = PlanEvalVerdict.model_validate(extract_and_parse_json(response.content)).issues
+        #     if feedback is None:
+        #         return {"plan_feedback": None, "stage2_retry_count": 0}
+        # except Exception as exc:
+        #     print("STAGE 2 EVAL ERROR:", repr(exc))
+        #     feedback = "Failed to parse evaluation output."
+
+        # return {"plan_feedback": feedback, "stage2_retry_count": retries + 1}
 
     @staticmethod
     def route_evaluation(state: AdvisorState) -> Literal["stage2_make_plan", "format_output"]:

@@ -173,7 +173,7 @@ class ConversationNodes:
                 prior_meta = updates.get("meta", state.get("meta"))
 
                 if message.name == "confirm_metadata_tool":
-                    parsed = ConfirmedMetadata.model_validate(payload).model_dump()
+                    parsed = ConfirmedMetadata.model_validate(payload).model_dump(exclude_unset=True)
                     sanitized = sanitize_confirmed_metadata(
                         prior_meta=prior_meta,
                         candidate_meta=parsed,
