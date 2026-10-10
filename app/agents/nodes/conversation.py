@@ -112,6 +112,8 @@ class ConversationNodes:
         ):
             system_content += """
                 The user is asking about the existing generated plan. Do not call any plan-change tools. Explain the existing plan instead.
+
+                If the user is asking about specific subjects, you may call `lookup_subjects_tool` or `lookup_major_tool` once with all the subject info to gather correct information. DO NOT assume or make up subject information when answering a question. If you do not have access to the necessary information, output that you are unable to answer that question and direct the user to any relevant UOW handbook links.
             """
 
         response = await self._llms.get(kind).ainvoke(

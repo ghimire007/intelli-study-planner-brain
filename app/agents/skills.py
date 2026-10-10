@@ -189,6 +189,8 @@ def get_elective_priorities_tool(
     when scheduling electives unless session/prereqs rule them out.
     """
     print("!!!!!!!!!!!!!!!! EXECUTION STARTED !!!!!!!!!!!!!!!!")
+    print("Mode: ", mode)
+    print("Interests: ", interests)
     result = get_elective_priorities(
         ElectivePriorityInput(
             course=course,
@@ -301,7 +303,7 @@ lookup_uow_policy_tool = StructuredTool.from_function(
 def request_plan_change_tool(
     change_type: Literal[
         "major",
-        "elective_preference",
+        "elective_interests",
         "course",
         "campus",
         "commencement_year",
@@ -309,7 +311,7 @@ def request_plan_change_tool(
         "general_revision",
     ],
     majors: list[str] | None = None,
-    elective_preference: str | None = None,
+    elective_interests: str | None = None,
     course: str | None = None,
     campus: str | None = None,
     commencement_year: int | None = None,
@@ -325,7 +327,7 @@ def request_plan_change_tool(
     return json.dumps({
         "change_type": change_type,
         "major": majors,
-        "elective_preference": elective_preference,
+        "elective_interests": elective_interests,
         "course": course,
         "campus": campus,
         "commencement_year": commencement_year,

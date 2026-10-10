@@ -7,7 +7,7 @@ from app.schemas.eligibility import StudentEligibilityInput
 
 class ElectivePriorityInput(StudentEligibilityInput):
     mode: Literal["major", "interest"]
-    interests: str | None = None
+    interests: list[str] | None = None
     limit: int = Field(default=25, ge=1, le=100)
 
 

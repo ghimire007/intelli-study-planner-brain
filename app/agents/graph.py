@@ -10,7 +10,7 @@ Our own Alembic-managed tables (chat_session, chat_message, handbook, ...)
 are untouched by this and still own domain data + API-facing history.
 """
 import json
-from typing import Annotated, TypedDict
+from typing import Annotated, TypedDict, Literal
 
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import AIMessage, BaseMessage, SystemMessage, ToolMessage
@@ -41,6 +41,9 @@ class AdvisorState(TypedDict):
     field_sources: dict
     context_conflicts: dict
     context_observations: dict
+
+    elective_mode: Literal["degree", "interest"] | None
+    elective_interests: list[str]
 
 
 def apply_confirm_metadata(prior_meta: dict | None, new_meta: dict) -> dict:

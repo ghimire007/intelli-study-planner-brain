@@ -53,6 +53,12 @@ KNOWN_STATUSES = frozenset(
         "Complete",
         "Enrolled",
         "Withdrawn",
+        "Approved Withdrawal",
+        "Withheld",
+        "Withheld Deferred",
+        "Withheld Supplementary",
+        "Failed",
+        "Provisional",
         "Leave of Absence",
         "Not Counted (Prior Course)",
     }

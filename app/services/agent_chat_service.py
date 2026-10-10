@@ -69,7 +69,8 @@ class AgentChatService:
 
     async def start_session(
         self, raw_sols: str, *, model: str | None = None, input_type: str = "enrolment",
-        context: ChatContext | None = None,
+        context: ChatContext | None = None, 
+        elective_mode: str | None = None, elective_interests: str | None = None
     ) -> tuple[ChatSession, MessageView]:
         session_id = uuid.uuid4()
         prepared, is_record = prepare_first_message(raw_sols, input_type)
@@ -85,6 +86,18 @@ class AgentChatService:
             {
                 "messages": [HumanMessage(content=prepared)],
                 **intake,
+
+                # "messages": initial_messages,
+                # "raw_sols": projected_sols,
+
+                # "meta": None,
+                # "meta_confirmed": False,
+
+                "elective_mode": elective_mode,
+                "elective_interests": elective_interests or [],
+
+                # "conversation_mode": "collecting",
+
                 "handbook": None,
 
                 "electives": None,
@@ -130,6 +143,7 @@ class AgentChatService:
     async def continue_session(
         self, session_id: uuid.UUID, user_message: str, *, model: str | None = None,
         context: ChatContext | None = None,
+        elective_mode: str | None = None, elective_interests: str | None = None
     ) -> MessageView:
         session = await self._owned_session(session_id)
 
@@ -138,6 +152,14 @@ class AgentChatService:
         )
         graph = build_advisor_graph(self._db, get_checkpointer(), llm_config)
         config = {"configurable": {"thread_id": str(session_id)}}
+
+        # may still need: removed from merge
+        # if elective_mode is not None:
+        #     payload["elective_mode"] = elective_mode
+
+        # if elective_interests is not None:
+        #     payload["elective_interests"] = elective_interests
+
         state = await graph.aget_state(config)
         if "raw_sols" not in state.values:
             raise SessionNotFound(

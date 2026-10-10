@@ -10,6 +10,7 @@ class AcademicProfileContext(BaseModel):
     major: str | None = Field(default=None, min_length=1, max_length=120)
     campus: str | None = Field(default=None, min_length=1, max_length=32)
     commencement_year: int | None = Field(default=None, ge=1900, le=2100, strict=True)
+    elective_mode: Literal["degree", "interest"] | None = None
     elective_interests: list[str] | None = Field(default=None, max_length=100)
 
     @field_validator("elective_interests")
@@ -24,7 +25,6 @@ class ChatContext(BaseModel):
     model_config = ConfigDict(extra="forbid")
     profile: AcademicProfileContext | None = None
     enrolment_record: str | None = Field(default=None, min_length=1, max_length=100_000)
-
 
 class ChatRequest(BaseModel):
     message: str = Field(min_length=1, max_length=100_000)
