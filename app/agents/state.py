@@ -12,7 +12,9 @@ from langgraph.graph.message import add_messages
 
 from app.schemas.elective_ranking import ElectivePriorityInput
 from app.schemas.student_meta import StudentMeta
+from app.services.course_rules import load_course_rules
 from app.services.elective_ranking import flatten_ranked_electives, get_elective_priorities
+from app.services.eligibility_service import resolve_major_code
 from app.services.enrolment import UnreadableRecord, parse_enrolment
 
 # CONSTANTS for max retries/loops to keep the model requests per minute < 15 for free API key tiers
@@ -153,7 +155,9 @@ def stage1_electives_from_advisor_state(
 
     completed, planned = sols_codes_for_ranking(state.get("raw_sols"))
 
-    raw_majors = meta.get("majors") or []
+    raw_majors = meta.get("majors")
+    if raw_majors is None:
+        raw_majors = meta.get("major") or []
 
     if isinstance(raw_majors, str):
         raw_majors = [raw_majors]
@@ -181,10 +185,15 @@ def stage1_electives_from_advisor_state(
         or meta.get("interests")
     )
 
+    try:
+        resolved_major = resolve_major_code(major, load_course_rules(str(meta.get("degree_code")), str(meta.get("campus"))))
+    except (FileNotFoundError, ValueError):
+        resolved_major = None
+
     unresolved_major_preference = (
         major
         if major
-        and not re.fullmatch(r"MAJ\d+", major, flags=re.IGNORECASE)
+        and not resolved_major
         and not elective_preference
         else None
     )
@@ -206,7 +215,7 @@ def stage1_electives_from_advisor_state(
     # Metadata must have been confirmed before Stage 1 reaches this node.
     course = str(meta.get("degree_code") or "").strip()
     campus = str(meta.get("campus") or "").strip()
-    session = str(meta.get("session") or "").strip()
+    session = str(meta.get("session") or "Autumn").strip()
 
     if not course or not campus:
         print("STAGE 1 ELECTIVES BLOCKED: confirmed course/campus missing")
@@ -278,6 +287,9 @@ class AdvisorState(TypedDict):
     # Metadata
     meta: StudentMeta | None
     meta_confirmed: bool
+    field_sources: dict
+    context_conflicts: dict
+    context_observations: dict
     planning_requested: bool
     elective_preference: str | None
 
@@ -671,6 +683,11 @@ def sanitize_confirmed_metadata(
         else:
             sanitized[field] = value
 
+    if isinstance(candidate.get("major"), str) and _value_explicitly_stated_by_student(
+        candidate["major"], student_text
+    ):
+        sanitized["major"] = candidate["major"]
+
     candidate_majors = candidate.get("majors")
 
     # Backward compatibility with the old singular field.
@@ -707,7 +724,8 @@ def sanitize_confirmed_metadata(
 
         if sanitized_majors:
             sanitized["majors"] = list(dict.fromkeys(sanitized_majors))
-            sanitized.pop("major", None)
+            if "majors" in candidate:
+                sanitized.pop("major", None)
         else:
             # Do not erase previously confirmed majors merely because
             # the confirmation response omitted or changed them.

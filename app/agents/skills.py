@@ -95,10 +95,11 @@ def make_fetch_handbook_tool(db: AsyncSession):
 
 @tool
 def confirm_metadata_tool(
-    degree_code: str,
-    year: int,
-    campus: str,
+    degree_code: str | None = None,
+    year: int | None = None,
+    campus: str | None = None,
     majors: list[str] | None = None,
+    major: str | None = None,
 ) -> str:
     """Record or switch the student's degree, commencement year,
     campus, and explicitly declared majors.
@@ -110,6 +111,9 @@ def confirm_metadata_tool(
     Call after the student has answered the intake question or
     explicitly corrected their details.
 
+    Pass only explicitly confirmed fields; omitted/null fields retain known values.
+    degree_code must be numeric (e.g. 766). major is a legacy single-major alias.
+
     On first confirmation: do not call fetch_handbook_tool or attempt any
     audit/planning before this has been called.
 
@@ -117,13 +121,18 @@ def confirm_metadata_tool(
     values; the cached handbook is cleared so you must re-fetch it for the
     new program before advising.
     """
+    if degree_code is not None and (not degree_code.isdigit() or not 3 <= len(degree_code) <= 4):
+        raise ValueError("Use a numeric degree code (e.g. 766), not a degree name")
+    if year is not None and not 1900 <= year <= 2100:
+        raise ValueError("Commencement year must be between 1900 and 2100")
     return json.dumps(
         ConfirmedMetadata(
             degree_code=degree_code,
             year=year,
             campus=campus,
-            major=majors or [],
-        ).model_dump()
+            **({"majors": majors} if majors is not None else {}),
+            **({"major": major} if major is not None else {}),
+        ).model_dump(exclude_unset=True)
     )
 
 

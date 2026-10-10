@@ -524,3 +524,102 @@ class TestFlatFailsClosed:
         """"Completed" must not be read as "Complete" with a stray letter dropped."""
         with pytest.raises(UnreadableRecord, match="no row could be read"):
             project(f"2025 Autumn Wollongong CSIT110 6 78 D {status}")
+
+
+def _linked_transfer_record():
+    """SOLS Markdown export: split bold headers, linked codes, two courses."""
+    current = [
+        (2026, "Annual", "CSIT321", 12, "", "", "Enrolled"),
+        (2026, "Autumn", "CSCI235", 6, "63", "P", "Complete"),
+        (2026, "Autumn", "CSCI334", 6, "75", "D", "Complete"),
+        (2026, "Autumn", "CSIT314", 6, "89", "HD", "Complete"),
+        (2026, "Spring", "CSCI356", 6, "", "", "Enrolled"),
+        (2026, "Spring", "CSCI435", 6, "", "", "Enrolled"),
+        (2026, "Spring", "ISIT207", 6, "", "", "Enrolled"),
+    ]
+    previous = [
+        (2025, "Autumn", "CSIT213", 6, "95", "HD", "Complete"),
+        (2025, "Autumn", "CSIT214", 6, "83", "D", "Complete"),
+        (2025, "Autumn", "ISIT219", 6, "92", "HD", "Complete"),
+        (2025, "Autumn", "MATH255", 6, "80", "D", "Complete"),
+        (2025, "Spring", "CSCI203", 6, "75", "D", "Complete"),
+        (2025, "Spring", "CSCI262", 6, "85", "HD", "Complete"),
+        (2025, "Spring", "CSCI318", 6, "80", "D", "Complete"),
+        (2025, "Spring", "CSIT377", 6, "88", "HD", "Complete"),
+        (2024, "Autumn", "CSIT110", 6, "88", "HD", "Complete"),
+        (2024, "Autumn", "CSIT114", 6, "94", "HD", "Complete"),
+        (2024, "Autumn", "CSIT115", 6, "81", "D", "Complete"),
+        (2024, "Autumn", "CSIT123", 6, "89", "HD", "Complete"),
+        (2024, "Spring", "CSIT121", 6, "85", "HD", "Complete"),
+        (2024, "Spring", "CSIT127", 6, "75", "D", "Complete"),
+        (2024, "Spring", "CSIT128", 6, "96", "HD", "Complete"),
+        (2024, "Spring", "CSIT226", 6, "87", "HD", "Complete"),
+    ]
+
+    def section(code, title, status, rows, major=""):
+        header = (
+            f"**Course:**\n\n**{code}**\n\n**{title}**\n\n"
+            f"**Instance:**\n\n**{code}**\n\n"
+            f"**Campus: Wollongong\u00a0\u00a0 Delivery: On Campus\u00a0\u00a0 Status: {status}**\n\n"
+            + major
+        )
+        table = "| Year | Session | Campus/ Delivery | Subject Code | NomCP | Mark | Grade | Status |\n"
+        table += "| ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- |\n"
+        for year, session, subject, cp, mark, grade, row_status in rows:
+            url = "https://solss.uow.edu.au/apir/public_subjectview.subject_info_view?p_subject_id=208727"
+            table += f"| {year} | {session}\u00a0 | Wollongong/ On Campus | [{subject}]({url}) | {cp} | {mark or chr(160)} | {grade or chr(160)} | {row_status} |\n"
+        return header + table
+
+    return section("1802", "Bachelor of Computer Science (Dean's Scholar)", "Active", current) + "\n---\n\n" + section(
+        "766", "Bachelor of Computer Science", "Transfer", previous,
+        "**Major:**\n\n**SENG**\n\n**Software Engineering**\n\n",
+    )
+
+
+def test_linked_transfer_record_preserves_both_histories_and_current_course():
+    from app.services.chat_context import safe_record
+
+    projected = safe_record(_linked_transfer_record())
+    record = parse_enrolment(projected)
+    assert record.course_code == "1802"
+    assert record.campus == "Wollongong"
+    assert record.majors == []  # SENG belongs to the transferred course, not 1802.
+    assert len(record.rows) == 23
+    assert sum(row.status == "Complete" for row in record.rows) == 19
+    assert sum(row.status == "Enrolled" for row in record.rows) == 4
+    assert record.rows[0].code == "CSIT321"
+    assert record.rows[0].nom_cp == 12
+    assert record.rows[-1].code == "CSIT226"
+    assert all(row.campus == "Wollongong" for row in record.rows)
+    assert "https://" not in projected
+    assert "p_subject_id" not in projected
+    assert "Delivery:" not in projected
+
+
+def test_markdown_subject_link_requires_a_valid_code_label():
+    raw = _linked_transfer_record().replace("[CSIT321]", "[Invalid label]", 1)
+    with pytest.raises(UnreadableRecord, match="not a subject code"):
+        parse_enrolment(raw)
+
+
+def test_flat_transfer_record_with_teaching_dates_preserves_all_rows():
+    from app.services.agent_chat_service import prepare_first_message
+    from app.services.chat_context import safe_record
+
+    raw = (pathlib.Path(__file__).parent / "fixtures" / "sols_transfer_flat.txt").read_text()
+    prepared, is_record = prepare_first_message("This is my enrolment record: " + raw, "question")
+    assert is_record
+    record = parse_enrolment(safe_record(prepared))
+    assert record.course_code == "1802"
+    assert record.campus == "Wollongong"
+    assert record.majors == []
+    assert len(record.rows) == 23
+    assert sum(row.status == "Complete" for row in record.rows) == 19
+    assert sum(row.status == "Enrolled" for row in record.rows) == 4
+    subject = next(row for row in record.rows if row.code == "CSIT214")
+    assert subject.grade == "D"
+    assert subject.campus == "Wollongong"
+    assert "03/MAR/25" not in prepared
+    assert "26/JUN/25" not in prepared
+    assert record.rows[0].nom_cp == 12
+    assert record.rows[-1].code == "CSIT226"

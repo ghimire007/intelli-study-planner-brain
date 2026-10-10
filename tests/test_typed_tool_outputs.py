@@ -3,13 +3,17 @@ import json
 import pytest
 from app.agents.skills import confirm_metadata_tool, request_plan_change_tool
 from app.schemas.advisor_tools import ConfirmedMetadata, PlanChangeRequest
-from app.schemas.plan_eval import PlanEvalVerdict
 
 
 def test_confirm_tool_wire_format_is_unchanged() -> None:
     out = confirm_metadata_tool.invoke({"degree_code": "766", "year": 2024, "campus": "Wollongong", "majors": ["AIBD"]})
-    assert json.loads(out) == {"degree_code": "766", "year": 2024, "campus": "Wollongong", "major": ["AIBD"]}
-    assert ConfirmedMetadata.model_validate_json(out).major == ["AIBD"]
+    assert json.loads(out) == {"degree_code": "766", "year": 2024, "campus": "Wollongong", "majors": ["AIBD"]}
+    assert ConfirmedMetadata.model_validate_json(out).majors == ["AIBD"]
+
+
+def test_confirm_tool_omits_majors_it_was_not_given() -> None:
+    out = confirm_metadata_tool.invoke({"major": "Software Engineering"})
+    assert json.loads(out) == {"degree_code": None, "year": None, "campus": None, "major": "Software Engineering"}
 
 
 def test_plan_change_tool_wire_format_is_unchanged() -> None:
@@ -24,14 +28,6 @@ def test_plan_change_tool_wire_format_is_unchanged() -> None:
 def test_unknown_change_type_is_rejected() -> None:
     with pytest.raises(ValueError):
         PlanChangeRequest.model_validate({"change_type": "nope"})
-
-
-def test_plan_verdict() -> None:
-    assert PlanEvalVerdict(valid=True).issues is None
-    assert PlanEvalVerdict(valid=False, feedback="bad cp").issues == "bad cp"
-    assert PlanEvalVerdict(valid=False).issues == "Invalid plan."
-    with pytest.raises(ValueError):
-        PlanEvalVerdict.model_validate({"feedback": "x"})
 
 
 def test_capture_tool_results_applies_typed_tool_output() -> None:

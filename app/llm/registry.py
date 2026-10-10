@@ -73,6 +73,7 @@ MODELS: dict[str, ModelSpec] = {
     spec.name: spec
     for spec in (
         # ── Google ────────────────────────────────────────────────────────────
+        ModelSpec("gemini-3.8-flash", Provider.GEMINI, "Gemini 3.8 Flash"),
         ModelSpec("gemini-3.5-flash", Provider.GEMINI, "Gemini 3.5 Flash", _GEMINI_FLASH),
         # Google may answer a gemini-3.5-flash request as -lite; it comes back in
         # response_metadata under this name. Listed so cost lookups find it —

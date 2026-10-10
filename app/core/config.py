@@ -8,6 +8,8 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     APP_PORT: int = 7777
+    LLM_REQUEST_TIMEOUT_SECONDS: float = 60
+    CHAT_TURN_TIMEOUT_SECONDS: float = 180
     DATABASE_URL: str = ""
     GEMINI_API_KEY: str = ""
     GEMINI_MODEL: str = "gemini-3.5-flash"

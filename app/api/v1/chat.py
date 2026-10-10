@@ -1,4 +1,4 @@
-import time
+import logging
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -18,15 +18,22 @@ from app.schemas.chat import (
     TitleOut,
 )
 from app.services.agent_chat_service import AgentChatService, CredentialRejected
+from app.services.chat_context import InvalidChatContext, SessionNotFound
 from app.services.credential_resolver import CredentialUnreadable, NoCredentialError
 from app.services.handbook_service import HandbookUnavailable
+from app.services.study_plan import PlanGenerationError
 
+logger = logging.getLogger("uvicorn.error")
 router = APIRouter()
 
 
 def _raise_llm_http_error(exc: Exception) -> None:
     """Turn a provider failure into something the student can act on."""
     failure = classify(exc)
+    if failure is ProviderFailure.TIMEOUT:
+        raise HTTPException(status_code=504, detail="Plan generation timed out. Your saved chat is preserved. Retry or select another available model.") from exc
+    if failure is ProviderFailure.MODEL_UNAVAILABLE:
+        raise HTTPException(status_code=422, detail="Your AI provider does not offer the selected model for this key. Select an available model in settings and retry; your saved chat is preserved.") from exc
     if failure is ProviderFailure.RATE_LIMIT:
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
@@ -56,9 +63,9 @@ async def start_session(
     body: ChatRequest,
     service: AgentChatService = Depends(_get_agent_service),
 ):
-    print(f"DEBUG API HIT at {time.time()} | Message: '{body.message}'")
+    logger.debug("Starting chat (input_type=%s)", body.input_type)
     try:
-        session, reply = await service.start_session(body.message, model=body.model)
+        session, reply = await service.start_session(body.message, model=body.model, input_type=body.input_type, context=body.context)
     except (NoCredentialError, CredentialUnreadable) as e:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e)) from e
     except CredentialRejected as e:
@@ -66,9 +73,13 @@ async def start_session(
     except ProviderNotInstalled as e:
         raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail=str(e)) from e
     except HandbookUnavailable as e:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e)
-        ) from e
+        raise HTTPException(status_code=503, detail="The course handbook is unavailable. Please try again later.") from e
+    except PlanGenerationError as e:
+        raise HTTPException(status_code=422, detail=str(e)) from e
+    except InvalidChatContext as e:
+        # The message is sanitized by safe_record; never log the raw record.
+        logger.warning("Chat enrolment validation failed: %s", e)
+        raise HTTPException(status_code=422, detail=str(e)) from e
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e)) from e
     except Exception as e:
@@ -83,19 +94,25 @@ async def continue_session(
     service: AgentChatService = Depends(_get_agent_service),
 ):
     try:
-        reply = await service.continue_session(session_id, body.message, model=body.model)
+        reply = await service.continue_session(session_id, body.message, model=body.model, context=body.context)
     except (NoCredentialError, CredentialUnreadable) as e:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e)) from e
     except CredentialRejected as e:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e)) from e
     except ProviderNotInstalled as e:
         raise HTTPException(status_code=status.HTTP_501_NOT_IMPLEMENTED, detail=str(e)) from e
-    except HandbookUnavailable as e:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e)
-        ) from e
-    except ValueError as e:
+    except SessionNotFound as e:
         raise HTTPException(status_code=404, detail=str(e)) from e
+    except HandbookUnavailable as e:
+        raise HTTPException(status_code=503, detail="The course handbook is unavailable. Please try again later.") from e
+    except PlanGenerationError as e:
+        raise HTTPException(status_code=422, detail=str(e)) from e
+    except InvalidChatContext as e:
+        # The message is sanitized by safe_record; never log the raw record.
+        logger.warning("Chat enrolment validation failed: %s", e)
+        raise HTTPException(status_code=422, detail=str(e)) from e
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e)) from e
     except Exception as e:
         _raise_llm_http_error(e)
     return ContinueSessionOut(session_id=str(session_id), reply=MessageOut.model_validate(reply))
@@ -108,8 +125,12 @@ async def get_history(
 ):
     try:
         session, messages = await service.get_history(session_id)
-    except ValueError as e:
+    except SessionNotFound as e:
         raise HTTPException(status_code=404, detail=str(e)) from e
+    except HandbookUnavailable as e:
+        raise HTTPException(status_code=503, detail="The course handbook is unavailable. Please try again later.") from e
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e)) from e
     return HistoryOut(
         session_id=str(session_id),
         degree_code=session.degree_code,
