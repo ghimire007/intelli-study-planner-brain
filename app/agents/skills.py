@@ -12,6 +12,7 @@ from langchain_core.tools import StructuredTool, tool
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.schemas.advisor_tools import ConfirmedMetadata, PlanChangeRequest
 from app.schemas.elective_ranking import (
     ElectivePriorityInput,
     ElectivePriorityResult,
@@ -125,13 +126,13 @@ def confirm_metadata_tool(
     if year is not None and not 1900 <= year <= 2100:
         raise ValueError("Commencement year must be between 1900 and 2100")
     return json.dumps(
-        {
-            "degree_code": degree_code,
-            "year": year,
-            "campus": campus,
+        ConfirmedMetadata(
+            degree_code=degree_code,
+            year=year,
+            campus=campus,
             **({"majors": majors} if majors is not None else {}),
             **({"major": major} if major is not None else {}),
-        }
+        ).model_dump(exclude_unset=True)
     )
 
 
@@ -322,15 +323,17 @@ def request_plan_change_tool(
     Only pass values explicitly stated by the student or clearly
     established in the immediately preceding conversation.
     """
-    return json.dumps({
-        "change_type": change_type,
-        "major": majors,
-        "elective_preference": elective_preference,
-        "course": course,
-        "campus": campus,
-        "commencement_year": commencement_year,
-        "session": session,
-    })
+    return json.dumps(
+        PlanChangeRequest(
+            change_type=change_type,
+            major=majors,
+            elective_preference=elective_preference,
+            course=course,
+            campus=campus,
+            commencement_year=commencement_year,
+            session=session,
+        ).model_dump()
+    )
 
 
 def build_skills(db: AsyncSession):

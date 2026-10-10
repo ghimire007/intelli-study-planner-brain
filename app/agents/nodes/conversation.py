@@ -21,6 +21,7 @@ from app.agents.state import (
 from app.llm.text import is_evaluation_reply
 from app.prompts.builder import build_system_prompt
 from app.prompts.prompts import SYSTEM_PROMPT
+from app.schemas.advisor_tools import ConfirmedMetadata, PlanChangeRequest
 from app.services.chat_context import merge_academic
 from app.services.course_catalog import COURSE_TITLES
 from app.services.sols_parser import parse_sols
@@ -163,13 +164,14 @@ class ConversationNodes:
                 continue
 
             try:
-                parsed = extract_and_parse_json(message.content)
-                if not isinstance(parsed, dict):
+                payload = extract_and_parse_json(message.content)
+                if not isinstance(payload, dict):
                     raise ValueError(f"{message.name} did not return an object.")
 
                 prior_meta = updates.get("meta", state.get("meta"))
 
                 if message.name == "confirm_metadata_tool":
+                    parsed = ConfirmedMetadata.model_validate(payload).model_dump(exclude_unset=True)
                     sanitized = sanitize_confirmed_metadata(
                         prior_meta=prior_meta,
                         candidate_meta=parsed,
@@ -193,6 +195,7 @@ class ConversationNodes:
                     print("CONFIRMED METADATA RAW:", parsed)
                     print("CONFIRMED METADATA SANITIZED:", sanitized)
                 else:
+                    parsed = PlanChangeRequest.model_validate(payload).model_dump()
                     updates.update(apply_plan_change_request(prior_meta, parsed))
                     print("PLAN CHANGE TOOL RESULT:", parsed)
 
