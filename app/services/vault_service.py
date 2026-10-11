@@ -261,6 +261,22 @@ class VaultService:
             await self._promote_replacement(user.id, provider)
         await self._db.commit()
 
+    async def purge_keys_for_user(self, user: User) -> None:
+        """Drop every stored secret for this user, without committing.
+
+        Account deletion owns the transaction. We must not promote a replacement
+        default, and we must not commit: the caller still has to delete the user
+        row. Secret-store deletes happen first so a failure leaves the SQL rows
+        intact rather than orphaning Infisical entries.
+        """
+        for credential in await self.list_keys(user):
+            try:
+                await store_for(credential.backend).delete(credential)
+            except SecretStoreError as exc:
+                raise VaultError(f"{exc} The account was not deleted.") from exc
+            await self._db.delete(credential)
+        await self._db.flush()
+
     async def verify_stored_key(self, user: User, credential_id: uuid.UUID) -> tuple[bool, str]:
         """Re-check a stored key, updating its status. Returns (ok, message)."""
         credential = await self.get_key(user, credential_id)

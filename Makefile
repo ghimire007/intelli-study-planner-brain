@@ -6,7 +6,7 @@ endif
 
 run-dev:
 	$(PYTHON) -m alembic upgrade head
-	uvicorn app.main:app --reload --port 7777
+	$(PYTHON) -m uvicorn app.main:app --reload --port 7777
 
 # Usage: make migrate msg="add user table"
 migrate:

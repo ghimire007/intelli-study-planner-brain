@@ -1,6 +1,12 @@
+import asyncio
 import logging
+import sys
 from contextlib import asynccontextmanager
 from pathlib import Path
+
+# psycopg async cannot run on Windows' default ProactorEventLoop.
+if sys.platform == "win32":
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
