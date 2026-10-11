@@ -56,10 +56,9 @@ def test_capture_tool_results_applies_typed_tool_output() -> None:
 
 
 def test_elective_interests_change_survives_the_tool_and_capture() -> None:
-    from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
-
     from app.agents.llms import LLMRegistry
     from app.agents.nodes.conversation import ConversationNodes
+    from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 
     out = request_plan_change_tool.invoke({"change_type": "elective_interests", "elective_interests": "game development"})
     assert json.loads(out)["elective_interests"] == "game development"
