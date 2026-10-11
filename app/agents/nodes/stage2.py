@@ -1,4 +1,5 @@
 """Stage 2 nodes: generate the study plan, evaluate it, emit the final message."""
+import html
 from typing import Literal
 
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
@@ -13,16 +14,15 @@ from app.agents.state import (
     handbook_matches_current_meta,
     latest_student_message,
 )
+from app.services.enrolment import UnreadableRecord
+from app.services.plan_message import render_plan_message
 from app.services.study_plan import (
     PlanGenerationError,
     merge_record_history,
     plan_sources,
     record_for,
-    render_plan,
     validate_plan,
 )
-# ERROR
-# from app.schemas.plan_eval import PlanEvalVerdict
 
 
 class Stage2Nodes:
@@ -34,6 +34,15 @@ class Stage2Nodes:
         self._tool_node = ToolNode(planning_tools)
 
     async def make_plan(self, state: AdvisorState) -> dict:
+        try:
+            return await self._generate_plan(state)
+        except (PlanGenerationError, UnreadableRecord) as exc:
+            # Bad academic details are not a server fault and retrying cannot fix them:
+            # go straight to the output node, which tells the student what to confirm.
+            print("STAGE 2 BLOCKED:", exc)
+            return {"plan": None, "plan_feedback": str(exc), "stage2_retry_count": MAX_STAGE2_RETRIES}
+
+    async def _generate_plan(self, state: AdvisorState) -> dict:
         print("NODE: stage2_make_plan")
 
         if not handbook_matches_current_meta(state):
@@ -45,7 +54,6 @@ class Stage2Nodes:
         # A fully enrolled degree needs no speculative future subjects. Validate
         # that fact against every rule instead of asking a provider to echo it.
         try:
-            print("ERROR: stage2.py validate_plan error: ", state.get("plan"))
             validate_plan(merge_record_history('{"plan":[]}', state), state)
         except PlanGenerationError:
             pass
@@ -149,59 +157,25 @@ class Stage2Nodes:
         return "evaluate_stage2"
 
     async def evaluate(self, state: AdvisorState) -> dict:
-        """Evaluate the generated plan against metadata, handbook, SOLS,
-        required subjects and electives."""
+        """Check the generated plan against the handbook, the enrolment record and
+        the degree rules, in code. A passing plan is stored as its validated JSON."""
         print("NODE: evaluate_stage2")
 
         retries = state.get("stage2_retry_count", 0)
         plan = state.get("plan")
 
         if not plan:
-            feedback = "No study plan was generated."
             return {
-                "plan_feedback": feedback,
+                # make_plan may already have said why it could not start.
+                "plan_feedback": state.get("plan_feedback") or "No study plan was generated.",
                 "stage2_retry_count": retries + 1,
             }
 
         try:
-            print("ERROR: stage2.py validate_plan error in evaluate: ", state.get("plan"))
             structured = validate_plan(merge_record_history(plan, state), state)
-            return {"plan": render_plan(structured), "plan_feedback": None, "stage2_retry_count": 0}
-        except PlanGenerationError as exc:
+            return {"plan": structured.model_dump_json(), "plan_feedback": None, "stage2_retry_count": 0}
+        except (PlanGenerationError, UnreadableRecord) as exc:
             return {"plan_feedback": str(exc), "stage2_retry_count": retries + 1}
-
-        # ERROR - old version
-        # eval_prompt = EVAL_PLAN.replace("{{PLAN}}", plan) + (
-        #     "\n\nAUTHORITATIVE METADATA:\n"
-        #     f"{state.get('meta')}\n\n"
-        #     "AUTHORITATIVE HANDBOOK:\n"
-        #     f"{state.get('handbook')}\n\n"
-        #     "CURRENT SOLS:\n"
-        #     f"{state.get('raw_sols')}\n\n"
-        #     "REQUIRED/CORE SUBJECTS:\n"
-        #     f"{state.get('remaining_subjects')}\n\n"
-        #     "ELECTIVE OPTIONS:\n"
-        #     f"{state.get('electives')}\n"
-        # )
-
-        # response = await self._llms.get("parser").ainvoke([
-        #     SystemMessage(content=(
-        #         "You are an academic auditor checking a generated study plan against authoritative source data. "
-        #         "Check subject accuracy, placement, session correctness, credit-point totals, prerequisites, and required output sections. "
-        #         "Return ONLY JSON."
-        #     )),
-        #     HumanMessage(content=eval_prompt),
-        # ])
-
-        # try:
-        #     feedback = PlanEvalVerdict.model_validate(extract_and_parse_json(response.content)).issues
-        #     if feedback is None:
-        #         return {"plan_feedback": None, "stage2_retry_count": 0}
-        # except Exception as exc:
-        #     print("STAGE 2 EVAL ERROR:", repr(exc))
-        #     feedback = "Failed to parse evaluation output."
-
-        # return {"plan_feedback": feedback, "stage2_retry_count": retries + 1}
 
     @staticmethod
     def route_evaluation(state: AdvisorState) -> Literal["stage2_make_plan", "format_output"]:
@@ -214,45 +188,29 @@ class Stage2Nodes:
 
     @staticmethod
     async def format_output(state: AdvisorState) -> dict:
+        """The message the student reads: the plan with its summary, audit result,
+        table and credit summary. A plan that failed validation is still shown, with
+        the problem appended, rather than replaced by an error."""
         print("NODE: format_output")
 
-        structured = state.get("plan")
+        plan = state.get("plan")
         feedback = state.get("plan_feedback")
 
-        if not structured:
-            output = (
+        if not plan:
+            content = (
                 "**Plan generation warning:** "
-                + str(feedback or "No study plan was generated.")
+                + html.escape(str(feedback or "No study plan was generated."), quote=False)
+                + "\n\nOnce that is sorted out, ask me to create your plan again."
             )
-            return {
-                "messages": [AIMessage(content=output)],
-                "planning_requested": False,
-                "conversation_mode": "post_plan",
-            }
+            return {"messages": [AIMessage(content=content)], "planning_requested": False, "conversation_mode": "post_plan"}
 
-        try:
-            validated = validate_plan(structured, state)
-            plan = render_plan(validated)
-        except PlanGenerationError as exc:
-            # Keep the original plan visible if final validation fails.
-            plan = (
-                render_plan(structured)
-                if isinstance(structured, dict)
-                else str(structured)
-            )
-            feedback = feedback or str(exc)
+        content, stored = render_plan_message(plan, state, issue=feedback)
 
-        output = plan
-        if feedback:
-            output = (
-                f"{plan.rstrip()}\n\n"
-                "---\n\n"
-                f"**Plan validation warning:** {feedback}"
-            )
-
-        return {
-            "plan": structured,
-            "messages": [AIMessage(content=output)],
-            "planning_requested": False,
-            "conversation_mode": "post_plan",
-        }
+        last_ai = next((m for m in reversed(state.get("messages", [])) if isinstance(m, AIMessage)), None)
+        # Keep the provider's model and token metadata so history can show who answered and at what cost.
+        message = AIMessage(
+            content=content,
+            response_metadata=dict(last_ai.response_metadata) if last_ai else {},
+            usage_metadata=last_ai.usage_metadata if last_ai else None,
+        )
+        return {"plan": stored, "messages": [message], "planning_requested": False, "conversation_mode": "post_plan"}

@@ -233,8 +233,8 @@ class ConversationNodes:
         self._llms.stamp(response)
         if is_evaluation_reply(response.content):
             if confirmed and state.get("plan"):
-                from app.services.study_plan import render_plan, validate_plan
-                response.content = render_plan(validate_plan(state["plan"], state))
+                from app.services.plan_message import render_plan_message
+                response.content = render_plan_message(state["plan"], state)[0]
             else:
                 if state.get("no_enrolment_history"):
                     response.content = (
