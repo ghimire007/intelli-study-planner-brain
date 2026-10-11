@@ -84,25 +84,43 @@ def plan_sources(state: dict) -> tuple[dict, object, set[str], list[dict]]:
     print("meta.major:", repr(meta.get("major")))
     print("meta.majors:", repr(meta.get("majors")))
     print("rules.major_core keys:", list(rules.major_core.keys()))
-    majors = meta.get("majors")
-    if majors is None:
-        majors = [meta.get("major")] if meta.get("major") else []
-    if isinstance(majors, str):
-        majors = [majors]
-    required = set(rules.core_subjects) | {rules.capstone_code}
-    for major in majors:
-        code = resolve_major_code(major, rules)
-        if code is None:
-            raise PlanGenerationError("Confirm a handbook-listed major (or explicitly confirm no major) before generating a plan.")
-        required.update(rules.major_core[code])
+    
+    majors = meta.get("majors") or []
 
-    # Include major-core subjects only when the student has selected a major.
+    if not majors and meta.get("major"):
+        if isinstance(meta.get("major"), list):
+            majors = meta.get("major")
+        else:
+            majors = [meta.get("major")]
+
+    if rules.major_core and not majors:
+        raise PlanGenerationError(
+            "Confirm a handbook-listed major "
+            "(or explicitly confirm no major) before generating a plan."
+        )
+
+    print("Incoming majors:", repr(majors))
+    print("Available major codes:", list(rules.major_core.keys()))
+
+    for major in majors:
+        print(
+            "Resolving major:",
+            repr(major),
+            "->",
+            repr(resolve_major_code(major, rules)),
+        )
+    
+    required = set(rules.core_subjects) | {rules.capstone_code}
+
     for major in majors:
         code = resolve_major_code(major, rules)
+
         if code is None:
             raise PlanGenerationError(
-                "Confirm a handbook-listed major before generating a plan."
+                f"Major '{major}' could not be matched to a handbook-listed major. "
+                "Confirm the major before generating a plan."
             )
+
         required.update(rules.major_core[code])
     choices = []
 
