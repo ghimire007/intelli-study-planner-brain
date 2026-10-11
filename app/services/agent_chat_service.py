@@ -210,7 +210,6 @@ class AgentChatService:
         if elective_interests is not None:
             payload["elective_interests"] = list(elective_interests)
 
-        changed_record = payload.get("raw_sols") != state.values.get("raw_sols")
         if is_record or wants_plan(user_message):
             payload["planning_requested"] = True
 
