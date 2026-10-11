@@ -260,7 +260,7 @@ def test_get_stage1_elective_list_shape_for_766() -> None:
             session="Autumn",
             campus="Wollongong",
             mode="interest",
-            interests="artificial intelligence",
+            interests=["artificial intelligence"],
             limit=5,
         )
     )

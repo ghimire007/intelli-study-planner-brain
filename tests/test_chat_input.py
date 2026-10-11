@@ -1,7 +1,6 @@
 import pytest
 from app.schemas.chat import ChatRequest
 from app.services.agent_chat_service import prepare_first_message
-from app.services.enrolment import UnreadableRecord
 
 pytestmark = pytest.mark.smoke
 
@@ -12,15 +11,27 @@ def test_question_can_start_without_an_enrolment_record():
     assert not is_record
 
 
-def test_existing_record_clients_remain_strict():
-    assert ChatRequest(message="hello").input_type == "enrolment"
-    with pytest.raises(UnreadableRecord):
+def test_questions_are_the_default_and_explicit_enrolment_input_must_be_a_record():
+    assert ChatRequest(message="hello").input_type == "question"
+    with pytest.raises(ValueError, match="valid SOLS record"):
         prepare_first_message("hello", "enrolment")
 
 
 def test_record_pasted_as_question_does_not_bypass_projection():
-    with pytest.raises(UnreadableRecord):
-        prepare_first_message("Student Name: Example Person\n| Invalid | Table |", "question")
+    # Even when a fragment is not recognised as a record, the identity never reaches the model.
+    fragment, is_record = prepare_first_message("Student Name: Example Person\n| Invalid | Table |", "question")
+    assert not is_record
+    assert "Example Person" not in fragment
+
+    full = (
+        "Student Name: Example Person (1234567)\n"
+        "| Year | Session | Subject Code | Nom CP | Grade | Status |\n"
+        "| 2024 | Autumn | CSIT110 | 6 | HD | Complete |"
+    )
+    projected, is_record = prepare_first_message(full, "question")
+    assert is_record
+    assert "Example Person" not in projected and "1234567" not in projected
+    assert "CSIT110" in projected
 
 
 def test_empty_question_is_rejected():

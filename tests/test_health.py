@@ -19,9 +19,13 @@ def test_cors_origin_list_strips_whitespace_and_slashes() -> None:
     ]
 
 
-def test_lax_cookie_is_the_local_default() -> None:
-    assert Settings().AUTH_COOKIE_SAMESITE == "lax"
-    assert Settings().cookie_misconfigured() is None
+def test_cross_site_secure_cookie_is_the_default() -> None:
+    """The deployed frontend and API are different sites, so the default is SameSite=None,
+    which browsers only honour together with Secure; local HTTP development overrides both."""
+    settings = Settings(_env_file=None)
+    assert settings.AUTH_COOKIE_SAMESITE == "none"
+    assert settings.AUTH_COOKIE_SECURE is True
+    assert settings.cookie_misconfigured() is None
 
 
 def test_samesite_none_without_secure_is_reported() -> None:

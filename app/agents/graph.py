@@ -10,7 +10,7 @@ Our own Alembic-managed tables (chat_session, chat_message, handbook, ...)
 are untouched by this and still own domain data + API-facing history.
 """
 import json
-from typing import Annotated, TypedDict, Literal
+from typing import Annotated, Literal, TypedDict
 
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import AIMessage, BaseMessage, SystemMessage, ToolMessage

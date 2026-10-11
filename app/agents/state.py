@@ -10,13 +10,9 @@ from typing import Annotated, Literal, TypedDict
 from langchain_core.messages import BaseMessage, HumanMessage, ToolMessage
 from langgraph.graph.message import add_messages
 
-from langgraph.graph import END, START, StateGraph
-
 from app.schemas.elective_ranking import ElectivePriorityInput
 from app.schemas.student_meta import StudentMeta
-from app.services.course_rules import load_course_rules
 from app.services.elective_ranking import flatten_ranked_electives, get_elective_priorities
-from app.services.eligibility_service import resolve_major_code
 from app.services.enrolment import UnreadableRecord, parse_enrolment
 
 # CONSTANTS for max retries/loops to keep the model requests per minute < 15 for free API key tiers

@@ -72,9 +72,12 @@ def test_provider_prose_cannot_override_authoritative_names_or_notes():
     assert "Invented" not in result
 
 
-async def test_exhausted_validation_never_publishes_last_draft():
-    with pytest.raises(PlanGenerationError, match="Could not generate"):
-        await Stage2Nodes.format_output({"plan": "incomplete draft", "plan_feedback": "Missing required subjects"})
+async def test_exhausted_validation_shows_the_draft_with_a_warning_instead_of_failing():
+    output = await Stage2Nodes.format_output({"plan": "incomplete draft", "plan_feedback": "Missing required subjects"})
+    content = output["messages"][0].content
+    assert "incomplete draft" in content
+    assert "**Plan validation warning:** Missing required subjects" in content
+    assert "ask Courseo to correct this plan" in content
 
 
 async def test_final_message_preserves_provider_model():

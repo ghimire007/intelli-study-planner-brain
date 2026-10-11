@@ -201,7 +201,7 @@ def get_elective_priorities_tool(
             completed_subjects=completed_subjects,
             planned_subjects=planned_subjects,
             mode=mode,
-            interests=interests,
+            interests=[interests] if interests else None,
             limit=limit,
         )
     )
@@ -253,7 +253,7 @@ def make_lookup_ranked_electives_tool(db: AsyncSession):
                 completed_subjects=completed_subjects,
                 planned_subjects=planned_subjects,
                 mode=mode,
-                interests=interests,
+                interests=[interests] if interests else None,
                 limit=limit,
             )
         )
@@ -329,8 +329,7 @@ def request_plan_change_tool(
         PlanChangeRequest(
             change_type=change_type,
             major=majors,
-            # ERROR: maybe now elective_interests
-            elective_preference=elective_interests,
+            elective_interests=elective_interests,
             course=course,
             campus=campus,
             commencement_year=commencement_year,

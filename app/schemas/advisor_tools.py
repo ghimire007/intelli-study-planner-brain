@@ -20,7 +20,7 @@ class PlanChangeRequest(BaseModel):
 
     change_type: Literal[
         "major",
-        "elective_preference",
+        "elective_interests",
         "course",
         "campus",
         "commencement_year",
@@ -28,7 +28,7 @@ class PlanChangeRequest(BaseModel):
         "general_revision",
     ]
     major: list[str] | None = None
-    elective_preference: str | None = None
+    elective_interests: str | list[str] | None = None
     course: str | None = None
     campus: str | None = None
     commencement_year: int | None = None
