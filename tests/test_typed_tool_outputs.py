@@ -19,7 +19,7 @@ def test_confirm_tool_omits_majors_it_was_not_given() -> None:
 def test_plan_change_tool_wire_format_is_unchanged() -> None:
     out = request_plan_change_tool.invoke({"change_type": "campus", "campus": "Liverpool"})
     assert json.loads(out) == {
-        "change_type": "campus", "major": None, "elective_preference": None, "course": None,
+        "change_type": "campus", "major": None, "elective_interests": None, "course": None,
         "campus": "Liverpool", "commencement_year": None, "session": None,
     }
     assert PlanChangeRequest.model_validate_json(out).campus == "Liverpool"
@@ -53,3 +53,24 @@ def test_capture_tool_results_applies_typed_tool_output() -> None:
     assert out["meta"]["campus"] == "Liverpool"
     assert out["meta"]["degree_code"] == "766"
     assert out["planning_requested"] is True
+
+
+def test_elective_interests_change_survives_the_tool_and_capture() -> None:
+    from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
+
+    from app.agents.llms import LLMRegistry
+    from app.agents.nodes.conversation import ConversationNodes
+
+    out = request_plan_change_tool.invoke({"change_type": "elective_interests", "elective_interests": "game development"})
+    assert json.loads(out)["elective_interests"] == "game development"
+    state = {
+        "messages": [
+            HumanMessage(content="I want electives about game development"),
+            AIMessage(content="", tool_calls=[{"name": "request_plan_change_tool", "args": {}, "id": "1"}]),
+            ToolMessage(content=out, name="request_plan_change_tool", tool_call_id="1"),
+        ],
+        "meta": {"degree_code": "766", "year": 2024, "campus": "Wollongong", "majors": []},
+    }
+    updates = ConversationNodes(LLMRegistry(None, {}), []).capture_tool_results(state)
+    assert updates["planning_requested"] is True
+    assert updates["elective_interests"] == ["game development"]

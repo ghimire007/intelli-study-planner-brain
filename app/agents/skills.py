@@ -329,8 +329,7 @@ def request_plan_change_tool(
         PlanChangeRequest(
             change_type=change_type,
             major=majors,
-            # ERROR: maybe now elective_interests
-            elective_preference=elective_interests,
+            elective_interests=elective_interests,
             course=course,
             campus=campus,
             commencement_year=commencement_year,
