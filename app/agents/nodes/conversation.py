@@ -59,6 +59,14 @@ def looks_like_sols_record(text: str | None) -> bool:
     ) or (has_course_header and has_record_fields)
 
 
+def _apply_record_majors(merged: dict, data: dict) -> None:
+    """A record that lists majors is authoritative for them. One that lists none says
+    nothing: an empty list would mean "explicitly no major" and wipe the student's saved
+    or confirmed major, so it is left alone."""
+    if data.get("majors"):
+        merged["meta"]["majors"] = data["majors"]
+
+
 class ConversationNodes:
     """Intake and chat: parse the SOLS paste, talk to the student, and fold the
     metadata tools the agent calls back into state."""
@@ -94,7 +102,7 @@ class ConversationNodes:
 
             data = meta.model_dump()
             merged = merge_academic(state, data, "enrolment_record")
-            merged["meta"]["majors"] = data.get("majors", [])
+            _apply_record_majors(merged, data)
 
             return {
                 **merged,
@@ -133,7 +141,7 @@ class ConversationNodes:
 
         data = meta.model_dump()
         merged = merge_academic(state, data, "enrolment_record")
-        merged["meta"]["majors"] = data.get("majors", [])
+        _apply_record_majors(merged, data)
         return {**merged, "planning_requested": False, "no_enrolment_history": False}
 
     async def agent(self, state: AdvisorState) -> dict:
