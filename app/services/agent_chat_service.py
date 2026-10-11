@@ -5,6 +5,7 @@ from typing import Literal
 
 from app.agents.graphAPI import build_advisor_graph
 from app.agents.history import MessageView, build_history, latest_reply
+from app.agents.nodes.conversation import looks_like_sols_record
 from app.core.checkpointer import get_checkpointer
 from app.core.config import settings
 from app.llm.config import LLMConfig
@@ -20,15 +21,12 @@ from app.services.pii import scrub_pii
 from app.services.vault_service import VaultService
 from langchain_core.messages import HumanMessage, SystemMessage
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.agents.nodes.conversation import looks_like_sols_record
-
 
 ElectiveMode = Literal["degree", "interest"]
 
 
 def prepare_first_message(
     message: str,
-    *,
     input_type: Literal["enrolment", "question"] = "question",
 ) -> tuple[str, bool]:
     if not message.strip():

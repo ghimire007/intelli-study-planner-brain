@@ -11,6 +11,7 @@ import pytest
 from app.agents import graph as graph_module
 from app.agents import graphAPI as staged_graph_module
 from app.agents.history import _to_view
+from app.agents.nodes.conversation import looks_like_sols_record
 from app.agents.skills import confirm_metadata_tool
 from app.api.v1.chat import _get_agent_service
 from app.main import app
@@ -214,7 +215,9 @@ async def test_real_graph_passes_context_to_selected_mock_llm(monkeypatch, graph
 
 def test_legacy_no_record_checkpoint_can_continue():
     state = intake_context(student(), None, {"raw_sols": "no enrolment yet"})
-    assert state["raw_sols"] == ""
+    # The legacy marker is kept as it was stored: it still means "no record" and is never read as one.
+    assert state["raw_sols"] == "no enrolment yet"
+    assert not looks_like_sols_record(state["raw_sols"])
     assert state["meta"]["degree_code"] == "766"
 
 
@@ -232,8 +235,11 @@ async def test_staged_graph_partial_confirmation_preserves_unverified_profile(mo
     state = intake_context(student(), None, {})
     state.update(messages=[HumanMessage(content="My major is Software Engineering.")], handbook=None)
     result = await graph.ainvoke(state, {"configurable": {"thread_id": str(uuid.uuid4())}})
-    assert result["meta"]["major"] == "Software Engineering"
-    assert result["field_sources"]["major"]["confirmed"]
+    # The plural field is the canonical place a confirmed major is stored.
+    assert result["meta"]["majors"] == ["Software Engineering"]
+    assert "major" not in result["meta"]
+    assert result["field_sources"]["majors"]["confirmed"]
+    assert not result["field_sources"]["degree_code"]["confirmed"]
     assert not result["meta_confirmed"]
     assert not result["planning_requested"]
     assert result["context_observations"] == state["context_observations"]
