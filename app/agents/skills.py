@@ -201,7 +201,7 @@ def get_elective_priorities_tool(
             completed_subjects=completed_subjects,
             planned_subjects=planned_subjects,
             mode=mode,
-            interests=interests,
+            interests=[interests] if interests else None,
             limit=limit,
         )
     )
@@ -253,7 +253,7 @@ def make_lookup_ranked_electives_tool(db: AsyncSession):
                 completed_subjects=completed_subjects,
                 planned_subjects=planned_subjects,
                 mode=mode,
-                interests=interests,
+                interests=[interests] if interests else None,
                 limit=limit,
             )
         )
