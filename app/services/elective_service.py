@@ -34,6 +34,12 @@ from app.services.prerequisite_parser import (
     subject_level_from_code,
 )
 
+from app.services.elective_pools import (
+    ALLOWED_ELECTIVE_LEVELS,
+    resolve_pool_candidates,
+    subject_level,
+)
+
 _PLACEHOLDER_RE = re.compile(r"^(?:elective|tbd)\b", re.IGNORECASE)
 _LEVEL_RE = re.compile(r"\b(100|200|300)\s*-?\s*(?:level|lv)\b", re.IGNORECASE)
 _SESSION_RANK = {"autumn": 0, "spring": 1, "summer": 2}
@@ -104,13 +110,21 @@ def build_eligible_elective_pool(
 
     for code in resolve_pool_candidates(pool, catalog, blocked):
         subject = _lookup(catalog, code)
+
         if subject is None:
             continue
+
         norm = normalize_code(subject.get("code") or code)
-        if _postgraduate_level(subject):
+
+        # Mandatory level restriction, independent of pool configuration.
+        if subject_level(subject) not in ALLOWED_ELECTIVE_LEVELS:
             continue
-        if session is not None and not _offered_in_session(subject, campus, session):
+
+        if session is not None and not _offered_in_session(
+            subject, campus, session
+        ):
             continue
+
         if not _rules_allow(
             subject,
             norm,
@@ -125,7 +139,9 @@ def build_eligible_elective_pool(
             rules=rules,
         ):
             continue
+
         eligible.add(norm)
+
     return eligible
 
 
@@ -202,16 +218,31 @@ def fill_plan_from_subjects(
     prerequisite is actually in place. An empty query ranks nothing.
     """
     catalog = ingest_subjects(records)
-    blocked = _normalize_set(set(forbidden) | set(completed) | set(planned))
+
+    blocked = _normalize_set(
+        set(forbidden) | set(completed) | set(planned)
+    )
+
     for slot in slots:
         if not is_elective_placeholder(slot.code):
             blocked.add(normalize_code(slot.code))
+
     candidates = {
         code
         for code in resolve_pool_candidates(pool, catalog, blocked)
-        if not _postgraduate_level(_lookup(catalog, code) or {})
+        if (
+            (subject := _lookup(catalog, code)) is not None
+            and subject_level(subject) in ALLOWED_ELECTIVE_LEVELS
+        )
     }
-    ranked = rank_subjects_by_keywords(catalog, candidates, query, limit)
+
+    ranked = rank_subjects_by_keywords(
+        catalog,
+        candidates,
+        query,
+        limit,
+    )
+
     return fill_elective_slots(
         slots,
         [code for code, _score in ranked],
@@ -224,8 +255,11 @@ def fill_plan_from_subjects(
 
 
 def _postgraduate_level(subject: dict) -> bool:
-    level = _subject_level_value(subject)
-    return level is not None and level >= 800
+    """Reject postgraduate subjects and subjects with unknown levels."""
+    return (
+        subject_level(subject)
+        not in ALLOWED_ELECTIVE_LEVELS
+    )
 
 
 def _normalize_set(codes: set[str]) -> set[str]:
@@ -358,9 +392,15 @@ def _first_fit(
 
     for code in ranked_codes:
         subject = _lookup(catalog, code)
+
         if subject is None:
             continue
+
         norm = normalize_code(subject.get("code") or code)
+
+        if subject_level(subject) not in ALLOWED_ELECTIVE_LEVELS:
+            continue
+
         if norm in used:
             continue
         if wanted_level is not None and _subject_level_value(subject) != wanted_level:
