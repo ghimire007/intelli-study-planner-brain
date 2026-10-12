@@ -76,15 +76,34 @@ def _subject_tokens(subject: dict) -> set[str]:
     return tokens
 
 
+# def keyword_overlap_score(subject: dict, query: str) -> float:
+#     """Fraction of query tokens found in the subject title + description."""
+#     # subject_text = f"{subject.get('title') or ''} {subject.get('description') or ''}"
+#     subject_tokens = _subject_tokens(subject)
+#     query_tokens = _tokenize(query)
+#     if not subject_tokens or not query_tokens:
+#         return 0.0
+#     overlap = len(subject_tokens & query_tokens)
+#     return overlap / len(query_tokens)
+
 def keyword_overlap_score(subject: dict, query: str) -> float:
-    """Fraction of query tokens found in the subject title + description."""
-    # subject_text = f"{subject.get('title') or ''} {subject.get('description') or ''}"
-    subject_tokens = _subject_tokens(subject)
+    """Score subject relevance, prioritising title matches."""
     query_tokens = _tokenize(query)
-    if not subject_tokens or not query_tokens:
+    if not query_tokens:
         return 0.0
-    overlap = len(subject_tokens & query_tokens)
-    return overlap / len(query_tokens)
+
+    title_tokens = _tokenize(subject.get("title") or "")
+    description_tokens = _tokenize(subject.get("description") or "")
+
+    title_matches = title_tokens & query_tokens
+    description_matches = description_tokens & query_tokens
+
+    # Title matches are stronger evidence than description mentions.
+    title_score = len(title_matches) / len(query_tokens)
+    description_score = len(description_matches) / len(query_tokens)
+
+    return min(1.0, title_score + 0.2 * description_score)
+
 
 
 def rank_subjects_by_keywords(

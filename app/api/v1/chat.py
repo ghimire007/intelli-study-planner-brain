@@ -27,6 +27,10 @@ router = APIRouter()
 def _raise_llm_http_error(exc: Exception) -> None:
     """Turn a provider failure into something the student can act on."""
     failure = classify(exc)
+    if failure is ProviderFailure.TIMEOUT:
+        raise HTTPException(status_code=504, detail="Plan generation timed out. Your saved chat is preserved. Retry or select another available model.") from exc
+    if failure is ProviderFailure.MODEL_UNAVAILABLE:
+        raise HTTPException(status_code=422, detail="Your AI provider does not offer the selected model for this key. Select an available model in settings and retry; your saved chat is preserved.") from exc
     if failure is ProviderFailure.RATE_LIMIT:
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
@@ -114,8 +118,16 @@ async def continue_session(
             session_id, 
             body.message, 
             model=body.model,
-            elective_mode=body.context.profile.elective_mode if body.context else None,
-            elective_interests=body.context.profile.elective_interests if body.context else None
+            elective_mode=(
+                body.context.profile.elective_mode
+                if body.context and body.context.profile
+                else None
+            ),
+            elective_interests=(
+                body.context.profile.elective_interests
+                if body.context and body.context.profile
+                else None
+            ),
         )
     except (NoCredentialError, CredentialUnreadable) as e:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e)) from e

@@ -389,7 +389,7 @@ OVERALL COMPLETED RULE:
 - Remaining in plan: N CP
 - **Total applicable: 144 CP**
 
-Include a brief paragraph on what electives you have recommended and why. 
+Include a brief paragraph on what electives you have recommended and why. Also include what elective preference and any listed interests used.  
 
 *Disclaimer: This study plan is a suggested guide based on current handbook rules and your SOLS record. Double-check all requirements against the official handbook.
  <a href="{{course_handbook_link}}" target="_blank">UOW Course Handbook</a>.*

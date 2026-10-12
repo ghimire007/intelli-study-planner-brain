@@ -1,6 +1,8 @@
 import re
 import uuid
 
+from typing import Literal
+
 from app.agents.graphAPI import build_advisor_graph
 from app.agents.history import MessageView, build_history, latest_reply
 from app.core.checkpointer import get_checkpointer
@@ -16,7 +18,22 @@ from app.services.pii import scrub_pii
 from app.services.vault_service import VaultService
 from langchain_core.messages import HumanMessage, SystemMessage
 from sqlalchemy.ext.asyncio import AsyncSession
+from app.schemas.chat import ChatContext
 
+ElectiveMode = Literal["degree", "interest"]
+
+def _context_elective_preferences(
+    context: ChatContext | None,
+    elective_mode: ElectiveMode | None,
+    elective_interests: list[str] | None,
+) -> tuple[ElectiveMode | None, list[str] | None]:
+    """Use explicit arguments first, falling back to preferences in the profile context."""
+    profile = context.profile if context is not None else None
+    if elective_mode is None and profile is not None:
+        elective_mode = profile.elective_mode
+    if elective_interests is None and profile is not None:
+        elective_interests = profile.elective_interests
+    return elective_mode, list(elective_interests) if elective_interests is not None else None
 
 class CredentialRejected(Exception):
     """The provider refused the key mid-conversation; it has been marked invalid."""
@@ -45,8 +62,13 @@ class AgentChatService:
         self._resolver = CredentialResolver(db)
 
     async def start_session(
-        self, raw_sols: str, *, model: str | None = None, 
-        elective_mode: str | None = None, elective_interests: str | None = None
+        self,
+        raw_sols: str,
+        *,
+        model: str | None = None,
+        context: ChatContext | None = None,
+        elective_mode: ElectiveMode | None = None,
+        elective_interests: list[str] | None = None,
     ) -> tuple[ChatSession, MessageView]:
         session_id = uuid.uuid4()
 
@@ -56,6 +78,10 @@ class AgentChatService:
         # rather than falling back to the raw text. The state key stays
         # `raw_sols` so existing checkpoints keep loading.
         # projected = project(raw_sols)
+
+        elective_mode, elective_interests = _context_elective_preferences(
+            context, elective_mode, elective_interests
+        )
 
         cleaned_sols = raw_sols.strip() if raw_sols else ""
 
@@ -177,8 +203,14 @@ class AgentChatService:
         return session, reply
 
     async def continue_session(
-        self, session_id: uuid.UUID, user_message: str, *, model: str | None = None,
-        elective_mode: str | None = None, elective_interests: str | None = None
+        self,
+        session_id: uuid.UUID,
+        user_message: str,
+        *,
+        model: str | None = None,
+        context: ChatContext | None = None,
+        elective_mode: ElectiveMode | None = None,
+        elective_interests: list[str] | None = None,
     ) -> MessageView:
         session = await self._owned_session(session_id)
 
