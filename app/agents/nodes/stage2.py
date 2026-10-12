@@ -17,12 +17,9 @@ from app.services.study_plan import (
     PlanGenerationError,
     merge_record_history,
     plan_sources,
-    record_for,
     render_plan,
     validate_plan,
 )
-# ERROR
-# from app.schemas.plan_eval import PlanEvalVerdict
 
 
 class Stage2Nodes:
@@ -45,7 +42,6 @@ class Stage2Nodes:
         # A fully enrolled degree needs no speculative future subjects. Validate
         # that fact against every rule instead of asking a provider to echo it.
         try:
-            print("ERROR: stage2.py validate_plan error: ", state.get("plan"))
             validate_plan(merge_record_history('{"plan":[]}', state), state)
         except PlanGenerationError:
             pass
@@ -57,10 +53,10 @@ class Stage2Nodes:
         content_prompt = (
             "Authoritative metadata:\n"
             f"{state.get('meta')}\n\n"
-            # "Authoritative handbook:\n"
-            # f"{state.get('handbook')}\n\n"
-            # "Current SOLS:\n"
-            # f"{state.get('raw_sols')}\n\n"
+            "Authoritative handbook:\n"
+            f"{state.get('handbook')}\n\n"
+            "Current SOLS:\n"
+            f"{state.get('raw_sols')}\n\n"
             "Required/core subjects:\n"
             f"{state.get('remaining_subjects')}\n\n"
             "Elective choices:\n"
@@ -71,7 +67,8 @@ class Stage2Nodes:
         import json
         import re
 
-        record = record_for(state)
+        from app.services.enrolment import parse_enrolment
+        record = parse_enrolment(state["raw_sols"])
         credited_codes = {r.code for r in record.rows if r.status == "Enrolled" or (r.status == "Complete" and r.grade in {"HD", "D", "C", "P", "PS", "CO", "S", "E"})}
         credited_codes |= {r.code for r in record.specified_credit if r.code}
         recorded_cp = sum(int(catalog[c]["cp"]) for c in credited_codes if c in catalog)
@@ -157,51 +154,13 @@ class Stage2Nodes:
         plan = state.get("plan")
 
         if not plan:
-            feedback = "No study plan was generated."
-            return {
-                "plan_feedback": feedback,
-                "stage2_retry_count": retries + 1,
-            }
+            return {"plan_feedback": "No plan was generated.", "stage2_retry_count": retries + 1}
 
         try:
-            print("ERROR: stage2.py validate_plan error in evaluate: ", state.get("plan"))
             structured = validate_plan(merge_record_history(plan, state), state)
             return {"plan": render_plan(structured), "plan_feedback": None, "stage2_retry_count": 0}
         except PlanGenerationError as exc:
             return {"plan_feedback": str(exc), "stage2_retry_count": retries + 1}
-
-        # ERROR - old version
-        # eval_prompt = EVAL_PLAN.replace("{{PLAN}}", plan) + (
-        #     "\n\nAUTHORITATIVE METADATA:\n"
-        #     f"{state.get('meta')}\n\n"
-        #     "AUTHORITATIVE HANDBOOK:\n"
-        #     f"{state.get('handbook')}\n\n"
-        #     "CURRENT SOLS:\n"
-        #     f"{state.get('raw_sols')}\n\n"
-        #     "REQUIRED/CORE SUBJECTS:\n"
-        #     f"{state.get('remaining_subjects')}\n\n"
-        #     "ELECTIVE OPTIONS:\n"
-        #     f"{state.get('electives')}\n"
-        # )
-
-        # response = await self._llms.get("parser").ainvoke([
-        #     SystemMessage(content=(
-        #         "You are an academic auditor checking a generated study plan against authoritative source data. "
-        #         "Check subject accuracy, placement, session correctness, credit-point totals, prerequisites, and required output sections. "
-        #         "Return ONLY JSON."
-        #     )),
-        #     HumanMessage(content=eval_prompt),
-        # ])
-
-        # try:
-        #     feedback = PlanEvalVerdict.model_validate(extract_and_parse_json(response.content)).issues
-        #     if feedback is None:
-        #         return {"plan_feedback": None, "stage2_retry_count": 0}
-        # except Exception as exc:
-        #     print("STAGE 2 EVAL ERROR:", repr(exc))
-        #     feedback = "Failed to parse evaluation output."
-
-        # return {"plan_feedback": feedback, "stage2_retry_count": retries + 1}
 
     @staticmethod
     def route_evaluation(state: AdvisorState) -> Literal["stage2_make_plan", "format_output"]:
@@ -214,45 +173,22 @@ class Stage2Nodes:
 
     @staticmethod
     async def format_output(state: AdvisorState) -> dict:
+        """Publish only the complete plan that passed deterministic validation."""
         print("NODE: format_output")
 
-        structured = state.get("plan")
-        feedback = state.get("plan_feedback")
-
-        if not structured:
-            output = (
-                "**Plan generation warning:** "
-                + str(feedback or "No study plan was generated.")
+        if state.get("plan_feedback") or not state.get("plan"):
+            raise PlanGenerationError(
+                "Could not generate a verified complete plan. "
+                + str(state.get("plan_feedback") or "Confirm the required academic information and retry.")
             )
-            return {
-                "messages": [AIMessage(content=output)],
-                "planning_requested": False,
-                "conversation_mode": "post_plan",
-            }
-
-        try:
-            validated = validate_plan(structured, state)
-            plan = render_plan(validated)
-        except PlanGenerationError as exc:
-            # Keep the original plan visible if final validation fails.
-            plan = (
-                render_plan(structured)
-                if isinstance(structured, dict)
-                else str(structured)
-            )
-            feedback = feedback or str(exc)
-
-        output = plan
-        if feedback:
-            output = (
-                f"{plan.rstrip()}\n\n"
-                "---\n\n"
-                f"**Plan validation warning:** {feedback}"
-            )
+        # Revalidate even recovered checkpoints; a formatted draft is not proof of validity.
+        plan = render_plan(validate_plan(state["plan"], state))
+        last_ai = next((m for m in reversed(state.get("messages", [])) if isinstance(m, AIMessage)), None)
+        metadata = dict(last_ai.response_metadata) if last_ai else {}
 
         return {
-            "plan": structured,
-            "messages": [AIMessage(content=output)],
+            "plan": plan,
+            "messages": [AIMessage(content=plan, response_metadata=metadata, usage_metadata=last_ai.usage_metadata if last_ai else None)],
             "planning_requested": False,
             "conversation_mode": "post_plan",
         }

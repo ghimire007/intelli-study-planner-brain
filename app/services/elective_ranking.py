@@ -121,23 +121,13 @@ def _major_query(course: str, major_code: str) -> str:
     return f"{major.get('title') or ''} {major.get('description') or ''}"
 
 
-def _build_query(student: ElectivePriorityInput) -> str:
+def _build_query(student: ElectivePriorityInput, major_code: str | None) -> str:
     if student.mode == "interest":
-        interests = student.interests or []
+        return (student.interests or "").strip()
+    if not major_code:
+        return ""
+    return _major_query(student.course, major_code)
 
-        if isinstance(interests, list):
-            return ", ".join(
-                str(interest).strip()
-                for interest in interests
-                if str(interest).strip()
-            )
-
-        return str(interests).strip()
-
-    if student.mode == "major":
-        return (student.major or "").strip()
-
-    return ""
 
 def _forbidden_codes(
     rules,
@@ -224,7 +214,10 @@ def get_elective_priorities(student: ElectivePriorityInput) -> ElectivePriorityR
     print("student.major:", repr(student.major))
     print("resolved major_code:", repr(major_code))
 
-    query = _build_query(student)
+    query = _build_query(
+        student,
+        major_code,
+    )
 
     print("query:", repr(query))
 

@@ -86,30 +86,18 @@ def intake_context(user, context: ChatContext | None, prior: dict, record: str |
     }, "saved_profile")
     if context and context.profile:
         state = merge_academic(state, context.profile.model_dump(), "client_hint")
-
-    # Preserve the existing SOLS record unless a new record is supplied. 
-    supplied = ( record if record is not None else context.enrolment_record if context else None ) 
-    if supplied is not None and supplied.strip(): 
-        projected = safe_record(supplied) 
-        state = merge_academic( state, record_values(projected), "enrolment_record", ) 
-        state["raw_sols"] = projected 
-        state["no_enrolment_history"] = False 
-        
-    elif prior.get("raw_sols") and prior["raw_sols"] != "no enrolment yet": 
-        state["raw_sols"] = safe_record(prior["raw_sols"]) 
-        
-    else: 
-        # An empty record does not, by itself, prove the student has no enrolment history. 
-        state["raw_sols"] = prior.get("raw_sols", "") 
-        
-    # Preserve the one-time SOLS prompt and no-history decision.
-    state["sols_prompted"] = prior.get("sols_prompted", False) 
-    state["no_enrolment_history"] = state.get( "no_enrolment_history", prior.get("no_enrolment_history", False), ) 
-    
-    # Never accept a title as a code, even from a legacy saved profile. 
-    code = state["meta"].get("degree_code") 
-    if code is not None and not re.fullmatch(r"\d{3,4}", str(code)): 
-        state["meta"].pop("degree_code", None) 
-        state["meta_confirmed"] = False 
-        
+    supplied = record if record is not None else (context.enrolment_record if context else None)
+    if supplied is not None:
+        projected = safe_record(supplied)
+        state = merge_academic(state, record_values(projected), "enrolment_record")
+        state["raw_sols"] = projected
+    elif prior.get("raw_sols") and prior["raw_sols"] != "no enrolment yet":
+        state["raw_sols"] = safe_record(prior["raw_sols"])
+    else:
+        state["raw_sols"] = ""
+    # Never accept a title as a code, even from a legacy saved profile.
+    code = state["meta"].get("degree_code")
+    if code is not None and not re.fullmatch(r"\d{3,4}", str(code)):
+        state["meta"].pop("degree_code", None)
+        state["meta_confirmed"] = False
     return state

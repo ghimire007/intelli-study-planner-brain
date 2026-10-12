@@ -19,12 +19,6 @@ class User(Base):
     commencement_year: Mapped[int | None] = mapped_column(Integer, nullable=True)
     campus: Mapped[str | None] = mapped_column(String(32), nullable=True)
     major: Mapped[str | None] = mapped_column(String(120), nullable=True)
-    elective_mode: Mapped[str] = mapped_column(
-        String(20),
-        default="degree",
-        server_default="degree",
-        nullable=False,
-    )
     elective_interests: Mapped[list[str]] = mapped_column(
         JSON, default=list, server_default=text("'[]'"), nullable=False
     )
