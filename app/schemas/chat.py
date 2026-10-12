@@ -10,7 +10,6 @@ class AcademicProfileContext(BaseModel):
     major: str | None = Field(default=None, min_length=1, max_length=120)
     campus: str | None = Field(default=None, min_length=1, max_length=32)
     commencement_year: int | None = Field(default=None, ge=1900, le=2100, strict=True)
-    elective_mode: Literal["degree", "interest"] | None = None
     elective_interests: list[str] | None = Field(default=None, max_length=100)
 
     @field_validator("elective_interests")
@@ -26,9 +25,10 @@ class ChatContext(BaseModel):
     profile: AcademicProfileContext | None = None
     enrolment_record: str | None = Field(default=None, min_length=1, max_length=100_000)
 
+
 class ChatRequest(BaseModel):
     message: str = Field(min_length=1, max_length=100_000)
-    input_type: Literal["enrolment", "question"] = "question"
+    input_type: Literal["enrolment", "question"] = "enrolment"
     #: Which model to answer with. None uses the session's model, then the
     #: server default. The provider — and so the key — follows from the model.
     model: str | None = None

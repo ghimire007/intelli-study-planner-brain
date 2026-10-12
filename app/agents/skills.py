@@ -12,7 +12,6 @@ from langchain_core.tools import StructuredTool, tool
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.schemas.advisor_tools import ConfirmedMetadata, PlanChangeRequest
 from app.schemas.elective_ranking import (
     ElectivePriorityInput,
     ElectivePriorityResult,
@@ -126,13 +125,13 @@ def confirm_metadata_tool(
     if year is not None and not 1900 <= year <= 2100:
         raise ValueError("Commencement year must be between 1900 and 2100")
     return json.dumps(
-        ConfirmedMetadata(
-            degree_code=degree_code,
-            year=year,
-            campus=campus,
+        {
+            "degree_code": degree_code,
+            "year": year,
+            "campus": campus,
             **({"majors": majors} if majors is not None else {}),
             **({"major": major} if major is not None else {}),
-        ).model_dump(exclude_unset=True)
+        }
     )
 
 
@@ -190,8 +189,6 @@ def get_elective_priorities_tool(
     when scheduling electives unless session/prereqs rule them out.
     """
     print("!!!!!!!!!!!!!!!! EXECUTION STARTED !!!!!!!!!!!!!!!!")
-    print("Mode: ", mode)
-    print("Interests: ", interests)
     result = get_elective_priorities(
         ElectivePriorityInput(
             course=course,
@@ -304,7 +301,7 @@ lookup_uow_policy_tool = StructuredTool.from_function(
 def request_plan_change_tool(
     change_type: Literal[
         "major",
-        "elective_interests",
+        "elective_preference",
         "course",
         "campus",
         "commencement_year",
@@ -312,7 +309,7 @@ def request_plan_change_tool(
         "general_revision",
     ],
     majors: list[str] | None = None,
-    elective_interests: str | None = None,
+    elective_preference: str | None = None,
     course: str | None = None,
     campus: str | None = None,
     commencement_year: int | None = None,
@@ -325,18 +322,15 @@ def request_plan_change_tool(
     Only pass values explicitly stated by the student or clearly
     established in the immediately preceding conversation.
     """
-    return json.dumps(
-        PlanChangeRequest(
-            change_type=change_type,
-            major=majors,
-            # ERROR: maybe now elective_interests
-            elective_preference=elective_interests,
-            course=course,
-            campus=campus,
-            commencement_year=commencement_year,
-            session=session,
-        ).model_dump()
-    )
+    return json.dumps({
+        "change_type": change_type,
+        "major": majors,
+        "elective_preference": elective_preference,
+        "course": course,
+        "campus": campus,
+        "commencement_year": commencement_year,
+        "session": session,
+    })
 
 
 def build_skills(db: AsyncSession):

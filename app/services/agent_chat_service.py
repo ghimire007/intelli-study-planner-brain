@@ -1,7 +1,6 @@
 import asyncio
 import re
 import uuid
-from typing import Literal
 
 from app.agents.graphAPI import build_advisor_graph
 from app.agents.history import MessageView, build_history, latest_reply
@@ -20,59 +19,26 @@ from app.services.pii import scrub_pii
 from app.services.vault_service import VaultService
 from langchain_core.messages import HumanMessage, SystemMessage
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.agents.nodes.conversation import looks_like_sols_record
 
 
-ElectiveMode = Literal["degree", "interest"]
-
-
-def prepare_first_message(
-    message: str,
-    *,
-    input_type: Literal["enrolment", "question"] = "question",
-) -> tuple[str, bool]:
+def prepare_first_message(message: str, input_type: str = "enrolment") -> tuple[str, bool]:
+    """Route ordinary prose to the LLM; never send a detected raw record unprojected."""
     if not message.strip():
         raise ValueError("Enter a message before sending.")
-
-    looks_like_record = looks_like_sols_record(message)
-
-    if looks_like_record:
+    looks_like_record = bool(re.search(
+        r"(?im)subject\s*code\s*nom(?:inal)?\s*cp|^\s*enrolment history(?:\s*:|[ \t]*$|\s+year\b)|subject\s*code\s*[|\t]|nom(?:inal)?\s*cp\s*[|\t]|"
+        r"^\s*(?:\|?\s*year\s*[|\t]|(?:19|20)\d{2}\s+(?:Autumn|Spring|Summer)\s+)",
+        message,
+    )) or bool(re.search(r"(?im)^\s*student(?: name| number| id)?\s*:", message)
+               and ("|" in message or "\t" in message))
+    if input_type == "enrolment" or looks_like_record:
         return safe_record(message), True
-
-    if input_type == "enrolment":
-        # Do not silently interpret arbitrary prose as a SOLS record.
-        raise ValueError(
-            "The enrolment submission does not look like a valid SOLS record."
-        )
-
     return scrub_pii(message), False
 
 
 def wants_plan(message: str) -> bool:
     """Recognise explicit generation/revision requests without replanning explanations."""
-    return bool(
-        re.search(
-            r"\b(?:create|generate|build|make|revise|update|change|modify|adjust|regenerate)"
-            r"\b.{0,100}\b(?:plan|schedule)\b|"
-            r"\b(?:plan|schedule)\b.{0,100}\b(?:revise|update|change|modify|adjust)\b",
-            message,
-            re.I | re.S,
-        )
-    )
-
-
-def _context_elective_preferences(
-    context: ChatContext | None,
-    elective_mode: ElectiveMode | None,
-    elective_interests: list[str] | None,
-) -> tuple[ElectiveMode | None, list[str] | None]:
-    """Use explicit arguments first, falling back to preferences in the profile context."""
-    profile = context.profile if context is not None else None
-    if elective_mode is None and profile is not None:
-        elective_mode = profile.elective_mode
-    if elective_interests is None and profile is not None:
-        elective_interests = profile.elective_interests
-    return elective_mode, list(elective_interests) if elective_interests is not None else None
+    return bool(re.search(r"\b(?:create|generate|build|make|revise|update|change|modify|adjust|regenerate)\b.{0,100}\b(?:plan|schedule)\b|\b(?:plan|schedule)\b.{0,100}\b(?:revise|update|change|modify|adjust)\b", message, re.I | re.S))
 
 
 class CredentialRejected(Exception):
@@ -82,13 +48,17 @@ class CredentialRejected(Exception):
 class AgentChatService:
     """LangGraph-backed chat, scoped to one signed-in student.
 
-    Conversational state, parsed SOLS metadata, handbook data, elective preferences,
-    and per-message cost/token metadata live in the LangGraph Postgres checkpointer,
-    keyed by thread_id = str(session.id). ChatSession remains the indexable row
-    that owns the session and records its model and credential.
+    Everything conversational — messages, parsed SOLS meta, handbook, per-message
+    cost/token metadata — lives entirely in the LangGraph Postgres checkpointer,
+    keyed by thread_id = str(session.id). We keep no ChatMessage rows: history
+    and cost accounting are both reconstructed from checkpoint state on read
+    (see app/agents/history.py). ChatSession itself stays — it's the thin,
+    indexable row that owns the session (who it belongs to, which model and
+    credential it runs on) and gives the API something to 404 against.
 
     The student's decrypted API key is resolved per request and handed to
-    build_advisor_graph. It is never placed in AdvisorState.
+    build_advisor_graph, which keeps it in a closure. It is never placed in
+    AdvisorState, because the checkpointer persists state to Postgres.
     """
 
     def __init__(self, db: AsyncSession, user: User) -> None:
@@ -98,61 +68,49 @@ class AgentChatService:
         self._resolver = CredentialResolver(db)
 
     async def start_session(
-        self,
-        raw_sols: str,
-        *,
-        model: str | None = None,
-        input_type: str = "question",
+        self, raw_sols: str, *, model: str | None = None, input_type: str = "enrolment",
         context: ChatContext | None = None,
-        elective_mode: ElectiveMode | None = None,
-        elective_interests: list[str] | None = None,
     ) -> tuple[ChatSession, MessageView]:
         session_id = uuid.uuid4()
-        prepared, is_record = prepare_first_message(raw_sols, input_type=input_type)
-        elective_mode, elective_interests = _context_elective_preferences(
-            context, elective_mode, elective_interests
-        )
+        prepared, is_record = prepare_first_message(raw_sols, input_type)
 
-        intake = intake_context(
-            self._user, context, {}, prepared if is_record else None
-        )
+        intake = intake_context(self._user, context, {}, prepared if is_record else None)
         llm_config = await self._resolver.resolve(self._user, requested_model=model)
         graph = build_advisor_graph(self._db, get_checkpointer(), llm_config)
 
-        initial_state = {
-            "messages": [HumanMessage(content=prepared)],
-            **intake,
-            "elective_mode": elective_mode,
-            "elective_interests": elective_interests or [],
-            "handbook": None,
-            "electives": None,
-            "remaining_subjects": None,
-            "electives_feedback": None,
-            "remaining_feedback": None,
-            "plan": None,
-            "plan_feedback": None,
-            "retry_count": 0,
-            "stage1_retry_count": 0,
-            "stage2_retry_count": 0,
-            "stage2_tool_loop_count": 0,
-            "planning_requested": bool(is_record or wants_plan(raw_sols)),
-            "sols_prompted": False,
-            "no_enrolment_history": False,
-            "conversation_mode": "collecting",
-            "current_stage": None,
-        }
-
+        # Invoke the graph with initial state
         await self._invoke(
             graph,
             llm_config,
-            initial_state,
+            {
+                "messages": [HumanMessage(content=prepared)],
+                **intake,
+                "handbook": None,
+
+                "electives": None,
+                "remaining_subjects": None,
+
+                "electives_feedback": None,
+                "remaining_feedback": None,
+
+                "plan": None,
+                "plan_feedback": None,
+
+                "retry_count": 0,
+                "stage1_retry_count": 0,
+                "stage2_retry_count": 0,
+                "stage2_tool_loop_count": 0,
+
+                "planning_requested": bool(is_record or wants_plan(raw_sols)),
+                "conversation_mode": "collecting",
+                "current_stage": None,
+            },
             {"configurable": {"thread_id": str(session_id)}},
         )
 
-        state = await graph.aget_state(
-            {"configurable": {"thread_id": str(session_id)}}
-        )
+        state = await graph.aget_state({"configurable": {"thread_id": str(session_id)}})
         meta = state.values.get("meta") or {}
+
         session = ChatSession(
             id=session_id,
             degree_code=meta.get("degree_code") or "UNKNOWN",
@@ -166,58 +124,39 @@ class AgentChatService:
 
         reply = await latest_reply(graph, str(session_id), fallback_model=llm_config.model)
         if reply is None:
-            raise ValueError(
-                "The advisor returned no response. Confirm the academic details and retry."
-            )
+            raise ValueError("The advisor returned no response. Confirm the academic details and retry.")
         return session, reply
 
     async def continue_session(
-        self,
-        session_id: uuid.UUID,
-        user_message: str,
-        *,
-        model: str | None = None,
+        self, session_id: uuid.UUID, user_message: str, *, model: str | None = None,
         context: ChatContext | None = None,
-        elective_mode: ElectiveMode | None = None,
-        elective_interests: list[str] | None = None,
     ) -> MessageView:
         session = await self._owned_session(session_id)
+
         llm_config = await self._resolver.resolve(
             self._user, requested_model=model, session=session
         )
         graph = build_advisor_graph(self._db, get_checkpointer(), llm_config)
         config = {"configurable": {"thread_id": str(session_id)}}
-
         state = await graph.aget_state(config)
         if "raw_sols" not in state.values:
             raise SessionNotFound(
                 f"Session {session_id} has no conversation state — it may be stale or was never started"
             )
 
-        prepared, is_record = prepare_first_message(user_message, input_type="question")
+        prepared, is_record = prepare_first_message(user_message, "question")
         payload = {
-            **intake_context(
-                self._user, context, state.values, prepared if is_record else None
-            ),
+            **intake_context(self._user, context, state.values, prepared if is_record else None),
             "messages": [HumanMessage(content=prepared)],
         }
-
-        elective_mode, elective_interests = _context_elective_preferences(
-            context, elective_mode, elective_interests
-        )
-        # Only overwrite persisted preferences when the request supplies a value.
-        # An explicitly supplied [] clears the previously saved interests.
-        if elective_mode is not None:
-            payload["elective_mode"] = elective_mode
-        if elective_interests is not None:
-            payload["elective_interests"] = list(elective_interests)
-
         changed_record = payload.get("raw_sols") != state.values.get("raw_sols")
-        if is_record or wants_plan(user_message):
-            payload["planning_requested"] = True
-
+        if is_record or changed_record or wants_plan(user_message):
+            payload.update(planning_requested=True)
+        # Replayed client context must not clear the existing plan on every question.
         await self._invoke(graph, llm_config, payload, config)
 
+        # A student may switch models mid-conversation; keep the session in step
+        # so the next turn resolves the same way without being asked again.
         if session.model != llm_config.model or session.credential_id != llm_config.credential_id:
             session.provider = llm_config.provider.value
             session.model = llm_config.model
@@ -226,27 +165,28 @@ class AgentChatService:
 
         reply = await latest_reply(graph, str(session_id), fallback_model=llm_config.model)
         if reply is None:
-            raise ValueError(
-                "The advisor returned no response. Confirm the academic details and retry."
-            )
+            raise ValueError("The advisor returned no response. Confirm the academic details and retry.")
         return reply
 
     async def get_history(self, session_id: uuid.UUID) -> tuple[ChatSession, list[MessageView]]:
         session = await self._owned_session(session_id)
+
+        # No key needed to read back what was already said.
         graph = build_advisor_graph(self._db, get_checkpointer())
-        state = await graph.aget_state(
-            {"configurable": {"thread_id": str(session_id)}}
-        )
+        state = await graph.aget_state({"configurable": {"thread_id": str(session_id)}})
         if "raw_sols" not in state.values:
             raise SessionNotFound(
                 f"Session {session_id} has no conversation state — it may be stale or was never started"
             )
+
         messages = await build_history(graph, str(session_id), fallback_model=session.model)
         return session, messages
 
     async def _owned_session(self, session_id: uuid.UUID) -> ChatSession:
         session = await self._db.get(ChatSession, session_id)
-        # Sessions without an owner cannot be proven to belong to this user.
+        # Sessions predating logins have user_id NULL: unreadable, because we
+        # cannot prove whose they are. Same 404 either way — holding a session
+        # UUID must not confirm that it exists.
         if session is None or session.user_id != self._user.id:
             raise SessionNotFound(f"Session {session_id} not found")
         return session
@@ -257,40 +197,42 @@ class AgentChatService:
             async with asyncio.timeout(settings.CHAT_TURN_TIMEOUT_SECONDS):
                 await graph.ainvoke(payload, config=config)
         except Exception as exc:
-            if (
-                classify(exc) is ProviderFailure.AUTH
-                and llm_config.credential_id is not None
-            ):
+            if classify(exc) is ProviderFailure.AUTH and llm_config.credential_id is not None:
                 await self._vault.mark_rejected(
-                    llm_config.credential_id,
-                    f"{llm_config.provider} rejected the key in chat",
+                    llm_config.credential_id, f"{llm_config.provider} rejected the key in chat"
                 )
                 raise CredentialRejected(
                     f"Your {PROVIDER_LABELS[llm_config.provider]} key was rejected. "
-                    "Update it in your key settings and try again."
+                    f"Update it in your key settings and try again."
                 ) from exc
             raise
 
         if llm_config.credential_id is not None:
             await self._vault.touch_used(llm_config.credential_id)
 
+
     async def generate_title(self, session_id: uuid.UUID) -> str:
-        """Generate a short title from the chat's opening context and latest reply."""
+        # Retrieve history or opening messages for context
         _session, messages = await self.get_history(session_id)
         if not messages:
             return "New Chat"
 
+        # Get the initial prompt/reply pair
         real_user_msgs = [
             m.content for m in messages
-            if m.role == "user"
-            and m.content.strip().lower() not in ("hello", "no enrolment yet")
+            if m.role == "user" and m.content.strip().lower() not in ("hello", "no enrolment yet")
         ]
+
+        # Fallback to the last available user message if all were generic greetings
         user_context = real_user_msgs[-1] if real_user_msgs else messages[0].content
+
+        # Get the latest assistant response for context
         assistant_msgs = [m.content for m in messages if m.role == "assistant"]
         assistant_context = assistant_msgs[-1] if assistant_msgs else ""
 
         llm_config = await self._resolver.resolve(self._user)
         model = make_chat_model(llm_config)
+
         prompt = [
             SystemMessage(
                 content=(
@@ -301,15 +243,14 @@ class AgentChatService:
                 )
             ),
             HumanMessage(
-                content=(
-                    f"Student input: {user_context[:1200]}\n\n"
-                    f"Assistant reply: {assistant_context[:1200]}"
-                )
+                content=f"Student input: {user_context[:1200]}\n\nAssistant reply: {assistant_context[:1200]}"
             ),
         ]
-        res = await model.ainvoke(prompt)
-        raw_text = ""
 
+        res = await model.ainvoke(prompt)
+
+        # extract text from res.content
+        raw_text = ""
         if isinstance(res.content, str):
             raw_text = res.content
         elif isinstance(res.content, list):

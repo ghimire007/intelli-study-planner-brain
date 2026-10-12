@@ -8,7 +8,7 @@ from collections import defaultdict
 from app.services.course_rules import SCRAPED_DIR, load_course_rules
 from app.services.elective_pools import load_elective_pools, resolve_pool_candidates
 from app.services.eligibility_service import resolve_major_code
-from app.services.enrolment import EnrolmentRecord, parse_enrolment
+from app.services.enrolment import parse_enrolment
 from app.services.prerequisite_parser import (
     expand_held,
     normalize_code,
@@ -79,11 +79,6 @@ def plan_sources(state: dict) -> tuple[dict, object, set[str], list[dict]]:
         course = json.loads((SCRAPED_DIR / f"course_{rules.course}.json").read_text())
     except (KeyError, FileNotFoundError, ValueError) as exc:
         raise PlanGenerationError("Course rules are unavailable. Confirm your degree code and campus, then load its handbook.") from exc
-    print("PLAN SOURCES METADATA:")
-    print("meta:", meta)
-    print("meta.major:", repr(meta.get("major")))
-    print("meta.majors:", repr(meta.get("majors")))
-    print("rules.major_core keys:", list(rules.major_core.keys()))
     majors = meta.get("majors")
     if majors is None:
         majors = [meta.get("major")] if meta.get("major") else []
@@ -95,15 +90,8 @@ def plan_sources(state: dict) -> tuple[dict, object, set[str], list[dict]]:
         if code is None:
             raise PlanGenerationError("Confirm a handbook-listed major (or explicitly confirm no major) before generating a plan.")
         required.update(rules.major_core[code])
-
-    # Include major-core subjects only when the student has selected a major.
-    for major in majors:
-        code = resolve_major_code(major, rules)
-        if code is None:
-            raise PlanGenerationError(
-                "Confirm a handbook-listed major before generating a plan."
-            )
-        required.update(rules.major_core[code])
+    if rules.major_core and not majors:
+        raise PlanGenerationError("Confirm your major before generating a complete degree plan.")
     choices = []
 
     def walk(nodes):
@@ -117,20 +105,10 @@ def plan_sources(state: dict) -> tuple[dict, object, set[str], list[dict]]:
     return catalog, rules, required, choices
 
 
-def record_for(state: dict) -> EnrolmentRecord:
-    """The student's record; a student with no enrolment yet has an empty one."""
-    raw = state.get("raw_sols")
-    if not raw or raw == "no enrolment yet":
-        return EnrolmentRecord(
-            course_code=None, campus=None, majors=[], rows=[], specified_credit=[], unspecified_credit=[]
-        )
-    return parse_enrolment(raw)
-
-
 def merge_record_history(text: str, state: dict) -> str:
     """Build immutable history in code; a provider proposes future placements only."""
     draft = parse_plan(text, allow_empty=True)
-    record = record_for(state)
+    record = parse_enrolment(state["raw_sols"])
     catalog, _, _, _ = plan_sources(state)
     historical_keys = {(str(r.year), r.session, r.code) for r in record.rows}
     locked_codes = {r.code for r in record.rows if r.status == "Enrolled" or (r.status == "Complete" and r.grade in PASS_GRADES)}
@@ -196,9 +174,11 @@ def validate_plan(text: str, state: dict) -> StudyPlan:
     """Use source facts for names/notes, preserve the record, and reject unsafe drafts."""
     if not state.get("meta_confirmed") or state.get("context_conflicts") or not state.get("handbook_valid"):
         raise PlanGenerationError("Confirm the conflicting or missing academic details and load the handbook before planning.")
+    if not state.get("raw_sols"):
+        raise PlanGenerationError("Add your complete SOLS enrolment record before generating a personalised plan.")
     draft = parse_plan(text)
     catalog, rules, required, choices = plan_sources(state)
-    record = record_for(state)
+    record = parse_enrolment(state["raw_sols"])
     if record.unspecified_credit:
         raise PlanGenerationError("This record has unspecified credit. Confirm how that credit satisfies degree requirements before planning.")
     history = {(str(r.year), r.session, r.code): r for r in record.rows}

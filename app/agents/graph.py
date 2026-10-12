@@ -10,7 +10,7 @@ Our own Alembic-managed tables (chat_session, chat_message, handbook, ...)
 are untouched by this and still own domain data + API-facing history.
 """
 import json
-from typing import Annotated, TypedDict, Literal
+from typing import Annotated, TypedDict
 
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import AIMessage, BaseMessage, SystemMessage, ToolMessage
@@ -24,7 +24,6 @@ from app.agents.skills import build_skills
 from app.llm.config import LLMConfig
 from app.llm.factory import make_chat_model
 from app.prompts.builder import build_system_prompt
-from app.schemas.student_meta import StudentMeta
 from app.services.chat_context import merge_academic
 from app.services.course_catalog import COURSE_TITLES
 from app.services.sols_parser import parse_sols
@@ -36,18 +35,15 @@ class AdvisorState(TypedDict):
     # plain dict (SOLSMeta.model_dump()), not the pydantic model itself — the
     # checkpointer's msgpack serializer only supports plain JSON-ish types and
     # warns (soon: errors) on arbitrary custom classes.
-    meta: StudentMeta | None
+    meta: dict | None
     meta_confirmed: bool
     handbook: str | None
     field_sources: dict
     context_conflicts: dict
     context_observations: dict
 
-    elective_mode: Literal["degree", "interest"] | None
-    elective_interests: list[str]
 
-
-def apply_confirm_metadata(prior_meta: StudentMeta | None, new_meta: StudentMeta) -> dict:
+def apply_confirm_metadata(prior_meta: dict | None, new_meta: dict) -> dict:
     """Apply confirmed meta; clear handbook when degree/year/campus change.
 
     Mid-chat degree (or year/campus) switches must invalidate the cached
