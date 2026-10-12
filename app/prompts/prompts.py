@@ -306,7 +306,7 @@ STRICT LEDGER LOCK: You are strictly forbidden from adding any subject to HISTOR
 
 
 ### STAGE 2: SESSION SCRATCHPAD
-- Mandatory Inventory Verification: In the "Remaining Needed" field for the first session scratchpad, you MUST list every single UNCOMPLETED SUBJECT INVENTORY code INDIVIDUALLY. You are strictly forbidden from grouping remaining requirements under generic placeholders or credit point sums until every mandatory handbook code has been explicitly assigned to a future session. Once you have made the list DOUBLE CHECK ALL SUBJECT LISTED IN THE GIVEN HANDBOOK UNDER CORE AND MAJOR ARE LISTED. ADD THE CP OF EACH SUBJECT TO GET THE TOTAL. IF THE TOTAL + HISTORICAL_COMPLETED != 144 RECHECK THE LIST.  
+- Mandatory Inventory Verification: In the "Remaining Needed" field for the first session scratchpad, you MUST list every single uncompleted Core code, Major/No-Major code, and Major/Elective code INDIVIDUALLY. You are strictly forbidden from grouping remaining requirements under generic placeholders or credit point sums until every mandatory handbook code has been explicitly assigned to a future session. Once you have made the list DOUBLE CHECK ALL SUBJECT LISTED IN THE GIVEN HANDBOOK UNDER CORE AND MAJOR ARE LISTED. ADD THE CP OF EACH SUBJECT TO GET THE TOTAL. IF THE TOTAL + HISTORICAL_COMPLETED != 144 RECHECK THE LIST.  
 STRICT CARRY-FORWARD RULE: In every session scratchpad, Remaining Needed MUST equal [Previous Session Remaining Needed] minus [Previous Session Selected]. If an eligible subject is not selected due to the 4-subject cap or term mismatch, it MUST remain in Remaining Needed for all subsequent sessions until it is scheduled.
 SESSION INVENTORY STATUS: At the end of every session block, write: Unscheduled Subjects Remaining: [List remaining codes] (Count: X)
 TERMINATION RULE: You cannot end Stage 2 until Unscheduled Subjects Remaining Count = 0. If subjects remain and no more standard sessions exist, you MUST automatically create additional sessions (e.g., Autumn 2029) to schedule them.
@@ -328,25 +328,6 @@ Required Format Per Subject:
 - VERDICT: [ELIGIBLE (All 5 conditions must be PASS) / INELIGIBLE]
 YOU CANNOT BEGIN THE SELECTION UNTIL 4 ELIGIBLE SUBJECTS ARE FOUND OR THERE ARE NO MORE SUBJECTS TO EVALUATE.
 - Selection: [Selected Codes from ELIGIBLE subjects ONLY. (Max 4)] | Session CP Added: [X] | Total current CP = Completed Cp Prior + Session CP Added
-
-### Elective selection
-After all sessions are mapped: 
-For EVERY elective placeholder you must find an eligible elective to recommend. 
-(Mandatory: Output this block for EVERY elective placeholder. Do NOT skip or use '...'. FOLLOW THIS TEMPLATE EXACTLY. Failure to out only of the filters is a CRITICAL ERROR.)
-#### Elective placeholder [title]:
-- Current session: List the current session the elective placeholder is in.
-- Remaining generated electives: [Explicitly list ALL Elective choices codes in the given order.]
-- Remove any Elective choices codes that are already in the plan.
-For EVERY code listed in Remaining generated electives until you find an eligible match, you MUST output a dedicated line evaluating all 5 conditions. 
-REQUIRED FORMAT TO OUTPUT FOR EACH ELECTIVE SUBJECT, FAILURE TO OUTPUT THIS EXACT FORMAT IS A CRITICAL ERROR:
-[ELECTIVE_CODE]:
-- [1/5] Availability: [Code]: [Autumn/Spring] == current session? [PASS/FAIL]
-- [2/5] Prereq (Subjects): [Code] (Session N): Prereqs [failed subjects do not count] (Session N-1 or earlier), Prereqs Met? [PASS/FAIL]
-- [3/5] Coreq (Subjects): [Code] (Session N): Coreqs [failed subjects do not count] (Session N or earlier), Coreqs Met? [PASS/FAIL]
-- [4/5] Prereq (CP Level): [Code] J CP total (Session N): Subject1 S CP (Session N-1 or earlier) + … + Subject2 S CP (Session N-1 or earlier) = J CP? [PASS/FAIL]
-- [5/5] Coreq (CP Level): [Code] J CP total (Session N): Subject1 S CP (Session N or earlier) + … + Subject2 S CP (Session N or earlier) = J CP? [PASS/FAIL]
-- VERDICT: [ELIGIBLE (All 5 conditions must be PASS) / INELIGIBLE]
-IF AN ELECTIVE PASSES ALL 5 CONDITIONS, REPLACE THE ELECTIVE PLACEHOLDER WITH THE ELIGIBLE ELECTIVE. Then remove this elective subject from Remaining generated electives. If all electives has been evaluated and none pass, leave the placeholder and move on to fill the next placeholder if one exists. 
 
 ### STEP 10: MACRO & TOOL AUDIT
 - Tool Term Match: Call `lookup_subjects_tool` once for every subject in plan. Explicitly write the following FOR EVERY SUBJECT with the sessions listed:
