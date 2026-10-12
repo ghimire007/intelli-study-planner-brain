@@ -158,6 +158,8 @@ class AgentChatService:
                 "elective_mode": elective_mode,
                 "elective_interests": elective_interests or [],
 
+                "pending_elective_action": None,
+
                 "conversation_mode": "collecting",
 
                 "handbook": None,
@@ -213,6 +215,10 @@ class AgentChatService:
         elective_interests: list[str] | None = None,
     ) -> MessageView:
         session = await self._owned_session(session_id)
+
+        elective_mode, elective_interests = _context_elective_preferences(
+            context, elective_mode, elective_interests
+        )
 
         llm_config = await self._resolver.resolve(
             self._user, requested_model=model, session=session

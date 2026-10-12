@@ -276,6 +276,8 @@ class AdvisorState(TypedDict):
     elective_mode: Literal["degree", "interest"] | None
     elective_interests: list[str]
 
+    pending_elective_action: Literal["recommend", "populate_plan"] | None
+
     conversation_mode: Literal[
         "collecting",
         "planning",

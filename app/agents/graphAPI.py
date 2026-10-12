@@ -1,9 +1,18 @@
-"""Advisor LangGraph: wires the node groups in app/agents/nodes/ into a StateGraph.
+"""
+Advisor LangGraph: wires the node groups in app/agents/nodes/ into a StateGraph.
 
-    ConversationNodes  parse_input -> agent <-> tools
-    HandbookNodes      ensure_handbook / handbook_missing
-    Stage1Nodes        start_planning -> [rank electives ∥ generate core] -> join -> evaluate
-    Stage2Nodes        make_plan <-> tools -> evaluate -> format_output
+ConversationNodes:
+    parse_input -> agent <-> tools
+    agent -> fetch_elective_list (when requested)
+
+HandbookNodes:
+    ensure_handbook / handbook_missing
+
+Stage1Nodes:
+    start_planning -> generate core -> evaluate
+
+Stage2Nodes:
+    make_plan <-> tools -> evaluate -> format_output
 
 State and shared helpers live in app/agents/state.py.
 """
@@ -60,8 +69,8 @@ class AdvisorGraph:
         # Stage 1: two parallel branches meeting at a deferred join.
         graph.add_node("start_planning", stage1.start_planning)
         graph.add_node("fetch_elective_list", stage1.fetch_elective_list)
+        graph.add_node("populate_plan_electives", stage1.populate_plan_electives)
         graph.add_node("stage1_review_must_includes", stage1.generate_core_subjects)
-        graph.add_node("join_stage1", stage1.join, defer=True)
         graph.add_node("eval_stage1_lists", stage1.evaluate)
 
         # Stage 2.
@@ -72,15 +81,18 @@ class AdvisorGraph:
         graph.add_node("format_output", stage2.format_output)
 
         # Parse whatever metadata the paste carries, then let the agent decide:
-        # call a tool, fetch the handbook, start planning, or end the turn
+        # call a tool, fetch the handbook, start planning, recommend electives or end the turn
         # (which surfaces the agent's question to the student).
         graph.add_edge(START, "parse_input")
         graph.add_edge("parse_input", "agent")
         graph.add_conditional_edges(
-            "agent", conversation.route_after_agent,
+            "agent",
+            conversation.route_after_agent,
             {
                 "tools": "tools",
                 "ensure_handbook": "ensure_handbook",
+                "fetch_elective_list": "fetch_elective_list",
+                "populate_plan_electives": "populate_plan_electives",
                 "start_planning": "start_planning",
                 END: END,
             },
@@ -91,24 +103,24 @@ class AdvisorGraph:
         # Handbook gate: planning only proceeds with the matching handbook.
         graph.add_conditional_edges(
             "ensure_handbook", handbook.route_after_fetch,
-            {"start_planning": "start_planning", "handbook_missing": "handbook_missing"},
+            {
+                "start_planning": "start_planning",
+                "fetch_elective_list": "fetch_elective_list",
+                "populate_plan_electives": "populate_plan_electives",
+                "handbook_missing": "handbook_missing",
+            },
         )
         graph.add_edge("handbook_missing", END)
 
-        # Stage 1 fan-out: both branches run in the same superstep and meet at
-        # the deferred join.
-        graph.add_edge("start_planning", "fetch_elective_list")
+        # Electives are fetched only when requested by the agent.
+        graph.add_edge("fetch_elective_list", END)
+        # update the plan with the electives if a plan exists
+        graph.add_edge("populate_plan_electives", END)
+
+        # Stage 1: generate and evaluate the core subjects sequentially.
         graph.add_edge("start_planning", "stage1_review_must_includes")
-        graph.add_edge("fetch_elective_list", "join_stage1")
-        graph.add_edge("stage1_review_must_includes", "join_stage1")
-        graph.add_conditional_edges(
-            "join_stage1", stage1.route_join_barrier,
-            {
-                "eval_stage1_lists": "eval_stage1_lists",
-                "stage2_make_plan": "stage2_make_plan",
-                END: END,
-            },
-        )
+        graph.add_edge("stage1_review_must_includes", "eval_stage1_lists")
+
         # A failed evaluation reruns only the core branch, which meets the
         # join again on its own.
         graph.add_conditional_edges(

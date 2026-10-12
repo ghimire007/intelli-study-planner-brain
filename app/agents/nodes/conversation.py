@@ -1,4 +1,5 @@
 """Intake and chat nodes: parse the SOLS paste, talk to the student, fold metadata tools."""
+import re
 import time
 from typing import Literal
 
@@ -17,6 +18,7 @@ from app.agents.state import (
     latest_student_message,
     latest_tool_batch,
     sanitize_confirmed_metadata,
+    _message_text
 )
 from app.llm.text import is_evaluation_reply
 from app.prompts.builder import build_system_prompt
@@ -27,6 +29,32 @@ from app.services.sols_parser import parse_sols
 class ConversationNodes:
     """Intake and chat: parse the SOLS paste, talk to the student, and fold the
     metadata tools the agent calls back into state."""
+
+    @staticmethod
+    def user_requested_electives(state: AdvisorState) -> bool:
+        """Detect explicit requests for elective recommendations or selection."""
+        message = latest_student_message(state).strip().lower()
+
+        patterns = (
+            r"\belectives?\b",
+            r"\belective subjects?\b",
+            r"\brecommend .{0,40}subjects?\b",
+            r"\bsuggest .{0,40}subjects?\b",
+        )
+
+        return any(re.search(pattern, message) for pattern in patterns)
+
+    @staticmethod
+    def requested_elective_action(
+        state: AdvisorState,
+    ) -> Literal["recommend", "populate_plan"] | None:
+        if not ConversationNodes.user_requested_electives(state):
+            return None
+
+        if state.get("plan"):
+            return "populate_plan"
+
+        return "recommend"
 
     def __init__(self, llms: LLMRegistry, confirm_tools: list) -> None:
         self._llms = llms
@@ -60,6 +88,11 @@ class ConversationNodes:
         confirmed, full planning/conversation model afterwards."""
         print("NODE: agent")
 
+        pending_action = state.get("pending_elective_action")
+
+        if pending_action is None:
+            pending_action = self.requested_elective_action(state)
+
         confirmed = bool(state.get("meta_confirmed"))
         kind = "full" if confirmed else "confirm"
         print("agent: invoking", kind)
@@ -74,6 +107,17 @@ class ConversationNodes:
             raw_sols=state.get("raw_sols"),
         )
         system_content += f"""
+            ELECTIVE REQUEST RULES:
+            - A request to recommend electives is not a plan-change request.
+            - Do not call request_plan_change_tool merely because the student asks for elective recommendations.
+            - Use the dedicated elective workflow for elective recommendations.
+            - Only call request_plan_change_tool to change saved preferences when the student explicitly asks to change those preferences.
+            - If changing elective interests, elective_interests must be a list of strings. Never submit null for this field.
+            - Do not call fetch_handbook_tool or lookup_ranked_electives_tool.
+            - Handbook fetching is handled by ensure_handbook.
+            - Elective retrieval is handled by fetch_elective_list.
+            - If pending_elective_action is set and metadata is confirmed, do not make additional tool calls. Let the application workflow handle the request.
+
             PLAN CHANGE RULES:
 
             You must distinguish between:
@@ -112,6 +156,10 @@ class ConversationNodes:
         prompt = [SystemMessage(content=system_content), *messages]
         model = self._llms.get(kind)
         response = await model.ainvoke(prompt)
+        print("AGENT RESPONSE TYPE:", type(response).__name__)
+        print("AGENT TOOL CALLS:", getattr(response, "tool_calls", []))
+        print("AGENT RESPONSE TEXT:", _message_text(response)[:500])
+
         if not response.tool_calls and is_evaluation_reply(response.content):
             # Retry only accidental verdicts; normal chat and tool routing stay intact.
             response = await model.ainvoke([
@@ -124,7 +172,16 @@ class ConversationNodes:
             ])
             if not response.tool_calls and is_evaluation_reply(response.content):
                 response.content = "I couldn't produce a chat reply. Please try your message again."
-        return {"messages": [response]}
+
+
+        updates = {"messages": [response]}
+
+        if pending_action is not None:
+            updates["pending_elective_action"] = pending_action
+
+        return updates
+
+
 
     async def run_tools(self, state: AdvisorState) -> dict:
         print("NODE: tools")
@@ -141,6 +198,8 @@ class ConversationNodes:
 
         batch = latest_tool_batch(state)
         updates: dict = {}
+
+        print("TOOL RESULT:", batch)
 
         for message in batch:
             if message.name not in {"confirm_metadata_tool", "request_plan_change_tool"}:
@@ -174,7 +233,7 @@ class ConversationNodes:
     @staticmethod
     def route_after_agent(
         state: AdvisorState,
-    ) -> Literal["tools", "ensure_handbook", "start_planning", END]:
+    ) -> Literal["tools", "ensure_handbook", "fetch_elective_list", "populate_plan_electives", "start_planning", END]:
         """The LLM may request conversational tools; it does not control the
         handbook gate."""
         messages = state.get("messages", [])
@@ -182,11 +241,29 @@ class ConversationNodes:
 
         if isinstance(last, AIMessage) and last.tool_calls:
             return "tools"
+        
         if not state.get("meta_confirmed"):
             return END
+
+        pending = state.get("pending_elective_action")
+
+        if pending is not None:
+            if not handbook_matches_current_meta(state):
+                print("ROUTE: handbook required for elective request")
+                return "ensure_handbook"
+
+            if pending == "populate_plan":
+                return "populate_plan_electives"
+
+            if pending == "recommend":
+                return "fetch_elective_list"
+
+        
         if not state.get("planning_requested"):
             return END
+        
         if not handbook_matches_current_meta(state):
             print("ROUTE: handbook missing/stale")
             return "ensure_handbook"
+        
         return "start_planning"

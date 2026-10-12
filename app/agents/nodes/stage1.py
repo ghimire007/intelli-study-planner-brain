@@ -18,7 +18,7 @@ import asyncio
 import json
 from typing import Literal
 
-from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
 from langgraph.graph import END
 
 from app.agents.llms import LLMRegistry
@@ -26,12 +26,13 @@ from app.agents.state import (
     MAX_STAGE1_RETRIES,
     PLANNING_RESET,
     AdvisorState,
+    _message_text,
     extract_and_parse_json,
     handbook_matches_current_meta,
     stage1_electives_from_advisor_state,
 )
 from app.prompts.builder import build_system_prompt
-from app.prompts.prompts import EVAL_SUBJECTS_ELECTIVES, SUBJECT_GENERATION_PROMPT
+from app.prompts.prompts import EVAL_SUBJECTS_ELECTIVES, SUBJECT_GENERATION_PROMPT, POPULATE_ELECTIVES_IN_PLAN
 
 
 class Stage1Nodes:
@@ -55,8 +56,7 @@ class Stage1Nodes:
             **PLANNING_RESET,
         }
 
-    @staticmethod
-    async def fetch_elective_list(state: AdvisorState) -> dict:
+    async def fetch_elective_list(self, state: AdvisorState) -> dict:
         """Rank electives from handbook data, with no model call.
 
         Reads the course's scraped elective pools, subject catalog and course
@@ -73,7 +73,161 @@ class Stage1Nodes:
         # CPU-bound and synchronous: run it off the event loop so the core
         # branch's model call keeps making progress in parallel.
         electives = await asyncio.to_thread(stage1_electives_from_advisor_state, state)
-        return {"electives": electives}
+
+        response = await self._llms.get("full").ainvoke([
+            SystemMessage(content=(
+                "You are a university course planning assistant."
+                "Explain the supplied elective recommendations clearly. Give each elective its own succinct paragraph of general information as well as why it relates to the given elective request."
+                "Use only the supplied results. Do not invent subjects, eligibility claims, prerequisites, or availability. "
+                "If no electives are available, explain that clearly."
+            )),
+            HumanMessage(content=electives),
+        ])
+
+        return {
+            "messages": [
+                AIMessage(content=_message_text(response).strip())
+            ],
+            "electives": electives,
+            "pending_elective_action": None,
+            "electives_feedback": None,
+        }
+
+    
+    async def populate_plan_electives(self, state: AdvisorState) -> dict:
+        """Add valid elective candidates to the existing plan without rebuilding it."""
+        print("NODE: populate_plan_electives")
+        print("PLANNNNNN: ", state.get('plan'))
+
+        if not handbook_matches_current_meta(state):
+            print("POPULATE ELECTIVES BLOCKED: handbook invalid")
+            return {}
+
+        current_plan = state.get("plan")
+        if not current_plan:
+            print("POPULATE ELECTIVES BLOCKED: no existing plan")
+            return {
+                "pending_elective_action": "recommend",
+            }
+
+        # Obtain candidates from the deterministic elective-ranking service.
+        candidates = await asyncio.to_thread(
+            stage1_electives_from_advisor_state,
+            state,
+        )
+
+        if not candidates:
+            print("POPULATE ELECTIVES: no valid elective candidates")
+            return {
+                "electives_feedback": (
+                    "No valid elective candidates were available. "
+                    "The existing plan has not been changed."
+                ),
+                "pending_elective_action": None,
+            }
+
+        # Preserve the current plan and give the model its exact contents.
+        if isinstance(current_plan, str):
+            current_plan_text = current_plan
+        else:
+            current_plan_text = json.dumps(
+                current_plan,
+                ensure_ascii=False,
+                indent=2,
+            )
+
+        candidates_text = json.dumps(
+            candidates,
+            ensure_ascii=False,
+            indent=2,
+            default=str,
+        )
+
+        prompt = build_system_prompt(
+            prompt=POPULATE_ELECTIVES_IN_PLAN,
+            meta=state.get("meta"),
+            meta_confirmed=state.get("meta_confirmed", False),
+            handbook=state.get("handbook"),
+            raw_sols=state.get("raw_sols"),
+        )
+
+        prompt += f"""
+
+EXISTING PLAN — SOURCE OF TRUTH:
+{current_plan_text}
+
+VALID ELECTIVE CANDIDATES:
+{candidates_text}
+
+TASK:
+Update the existing plan by filling its eligible elective slots using
+only subjects from VALID ELECTIVE CANDIDATES.
+
+RULES:
+1. Return the COMPLETE updated plan in the same JSON schema as the existing plan.
+2. Preserve all existing core and major subjects, their sessions, years,
+   credit points, and other plan fields unless an update is strictly necessary
+   to accommodate an elective.
+3. Do not rebuild or replace the degree plan.
+4. Do not add a subject that is absent from VALID ELECTIVE CANDIDATES.
+5. Do not duplicate subjects already present in the plan.
+6. Respect the degree's elective credit-point requirements and available slots.
+7. Respect prerequisites and handbook session availability.
+8. If there are insufficient valid candidates, leave unfilled slots unchanged.
+9. Return JSON only. Do not include markdown fences or explanatory prose.
+"""
+
+        feedback = state.get("electives_feedback")
+        if feedback:
+            prompt += f"""
+
+                ISSUES TO CORRECT:
+                {feedback}
+                """
+
+        response = await self._llms.get("full").ainvoke([
+            SystemMessage(content=(
+                "You are an academic course planning assistant updating an "
+                "existing university degree plan. Preserve the existing plan "
+                "and follow the supplied candidate list. Return the complete "
+                "updated plan as JSON only. Do not call tools."
+            )),
+            HumanMessage(content=prompt),
+        ])
+
+        response_text = _message_text(response).strip()
+
+        try:
+            updated_plan = extract_and_parse_json(response_text)
+
+            if not isinstance(updated_plan, (dict, list)):
+                raise ValueError(
+                    "Updated plan must be a JSON object or array."
+                )
+
+            updated_plan_text = json.dumps(
+                updated_plan,
+                ensure_ascii=False,
+            )
+
+        except (ValueError, TypeError, json.JSONDecodeError) as exc:
+            print("POPULATE ELECTIVES: invalid plan JSON:", repr(exc))
+            return {
+                "electives_feedback": (
+                    "The updated plan could not be parsed as valid JSON. "
+                    "The existing plan has not been changed."
+                ),
+                "pending_elective_action": None,
+            }
+
+        print("POPULATE ELECTIVES: updated plan parsed successfully")
+
+        return {
+            "plan": updated_plan_text,
+            "messages": [response],
+            "electives_feedback": None,
+            "pending_elective_action": None,
+        }
 
     async def generate_core_subjects(self, state: AdvisorState) -> dict:
         """Ask the model for the required/core subjects, folding in evaluator

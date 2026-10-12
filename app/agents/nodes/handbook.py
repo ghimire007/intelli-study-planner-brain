@@ -49,10 +49,21 @@ class HandbookNodes:
         }
 
     @staticmethod
-    def route_after_fetch(state: AdvisorState) -> Literal["start_planning", "handbook_missing"]:
-        if handbook_matches_current_meta(state):
-            return "start_planning"
-        return "handbook_missing"
+    def route_after_fetch(
+        state: AdvisorState,
+    ) -> Literal["start_planning", "fetch_elective_list", "populate_plan_electives", "handbook_missing"]:
+        if not handbook_matches_current_meta(state):
+            return "handbook_missing"
+
+        pending = state.get("pending_elective_action")
+
+        if pending == "populate_plan":
+            return "populate_plan_electives"
+
+        if pending == "recommend":
+            return "fetch_elective_list"
+
+        return "start_planning"
 
     @staticmethod
     async def handbook_missing(state: AdvisorState) -> dict:

@@ -6,6 +6,7 @@ Walking the cause chain and reading whichever status attribute exists keeps this
 working for a provider whose package isn't even installed.
 """
 from enum import StrEnum
+import asyncio
 
 _STATUS_ATTRS = ("status_code", "code", "http_status")
 _AUTH_STATUSES = {401, 403}
@@ -22,12 +23,25 @@ _BAD_KEY_MARKERS = (
     "api key expired",
     "api_key_expired",
     "invalid authentication",
+    "incorrect api key",
+)
+
+_MODEL_UNAVAILABLE_MARKERS = (
+    "model not found",
+    "model_not_found",
+    "model is not available",
+    "model unavailable",
+    "does not exist",
+    "unknown model",
+    "unsupported model",
 )
 
 
 class ProviderFailure(StrEnum):
     AUTH = "auth"
     RATE_LIMIT = "rate_limit"
+    TIMEOUT = "timeout"
+    MODEL_UNAVAILABLE = "model_unavailable"
     UNAVAILABLE = "unavailable"
     UNKNOWN = "unknown"
 
@@ -39,24 +53,63 @@ def _status_of(exc: BaseException) -> int | None:
             return value
     return None
 
+def _exception_chain(exc: BaseException):
+    """Yield wrapped exceptions without following cycles."""
+    seen: set[int] = set()
+    current: BaseException | None = exc
+
+    while current is not None and id(current) not in seen:
+        seen.add(id(current))
+        yield current
+
+        current = current.__cause__ or current.__context__
+
 
 def _says_the_key_is_bad(exc: BaseException) -> bool:
     message = str(exc).lower()
     return any(marker in message for marker in _BAD_KEY_MARKERS)
 
+def _says_model_is_unavailable(exc: BaseException) -> bool:
+    message = str(exc).lower()
+    return any(
+        marker in message
+        for marker in _MODEL_UNAVAILABLE_MARKERS
+    )
 
 def classify(exc: BaseException) -> ProviderFailure:
-    """Walk the exception chain and report the first meaningful failure."""
-    seen: set[int] = set()
-    current: BaseException | None = exc
-    while current is not None and id(current) not in seen:
-        seen.add(id(current))
+    """Classify provider errors, including common wrapped exceptions."""
+
+    chain = list(_exception_chain(exc))
+
+    # Explicit timeout types are more reliable than status codes.
+    for current in chain:
+        if isinstance(current, (TimeoutError, asyncio.TimeoutError)):
+            return ProviderFailure.TIMEOUT
+
+        # Supports some SDK-specific timeout classes without importing
+        # optional provider packages.
+        if "timeout" in type(current).__name__.lower():
+            return ProviderFailure.TIMEOUT
+
+    # Prefer authentication and rate-limit signals before generic
+    # provider availability errors.
+    for current in chain:
         status = _status_of(current)
+
         if status in _AUTH_STATUSES or _says_the_key_is_bad(current):
             return ProviderFailure.AUTH
+
         if status == 429:
             return ProviderFailure.RATE_LIMIT
+
+    # Model errors require more than a generic 400 or 404 status.
+    for current in chain:
+        status = _status_of(current)
+
+        if _says_model_is_unavailable(current):
+            return ProviderFailure.MODEL_UNAVAILABLE
+
         if status is not None and status >= 500:
             return ProviderFailure.UNAVAILABLE
-        current = current.__cause__ or current.__context__
+
     return ProviderFailure.UNKNOWN

@@ -174,6 +174,56 @@ Respond strictly in JSON with this structure:
 {{remaining_subjects}}
 """.strip()
 
+POPULATE_ELECTIVES_IN_PLAN = """
+You are updating an existing UOW degree study plan.
+
+You will receive:
+- Confirmed student and degree metadata.
+- The current study plan.
+- A list of valid elective candidates selected from handbook data.
+
+Your task is to fill the existing plan's elective requirements.
+
+Requirements:
+1. Treat the supplied current plan as the source of truth.
+2. Preserve the plan's existing structure and all existing core and major subjects.
+3. Select electives only from the supplied valid elective candidates.
+4. Do not duplicate subjects already included in the plan.
+5. Respect course rules, elective credit-point requirements,
+   prerequisites, and subject availability in each session.
+6. Change only what is necessary to fill eligible elective slots.
+7. Do not invent subject codes, titles, credit points, or availability.
+8. If a requirement cannot be satisfied with the supplied candidates,
+   leave it unfilled rather than inventing a subject.
+9. Return the complete updated plan using exactly the same JSON schema
+   as the supplied current plan.
+10. Return valid JSON only, without markdown or commentary.
+""".strip()
+# You are an academic advisor for the University of Wollongong (UOW).
+
+# Your job is to replace all elective placeholders in the given plan with valid electives. 
+
+# Call the `lookup_subjects_tool` once to find the most relevant electives based on the given elective_mode and/or elective_interests. 
+# Organise these subjects in a ranked list. These are the candidate elective subjects. 
+
+# For each elective placeholder evaluate each subject down the ranked list until a valid elective is found. Follow this process exactly: 
+# (Mandatory: Output this block for EVERY session needed starting from the session following the given enrolment. Do NOT skip or use '...'. FOLLOW THIS TEMPLATE EXACTLY. Skipping Filter 1 or Filter 2 is A CRITICAL ERROR)
+# #### Elective placeholder X:
+# - Filter Protocol (EVALUATE EVERY ELECTIVE CANDIDATE INDIVIDUALLY):
+# You MUST output a dedicated line evaluating all 5 conditions UNTIL an ELIGIBLE ELECTIVE IS FOUND OR THERE ARE NO MORE ELECTIVES TO EVALUATE. Shorthand phrases like "[Evaluated against...]" or grouped summaries are STRICTLY BANNED.
+# PREREQUISITE DEPENDENCY VERIFICATION RULE: When evaluating Prereqs Met? for any candidate elective S in Session N: Condition: Prereq(S) is met IF AND ONLY IF Prereq(S) is in HISTORICAL_COMPLETED OR CURRENTLY_ENROLLED OR Planned Subjects in Sessions prior to N. If Prereq(S) is NOT present in that explicit set, Prereqs Met? MUST evaluate to FAIL, regardless of degree level or handbook standard pathways.
+# Required Format Per Subject:
+# [SUBJECT_CODE]:
+# - [1/5] Availability: [Code]: [Autumn/Spring] == current session? [PASS/FAIL]
+# - [2/5] Prereq (Subjects): [Code] (Session N): Prereqs [failed subjects do not count] (Session N-1 or earlier), Prereqs Met? [PASS/FAIL]
+# - [3/5] Coreq (Subjects): [Code] (Session N): Coreqs [failed subjects do not count] (Session N or earlier), Coreqs Met? [PASS/FAIL]
+# - [4/5] Prereq (CP Level): [Code] J CP total (Session N): Subject1 S CP (Session N-1 or earlier) + … + Subject2 S CP (Session N-1 or earlier) = J CP? [PASS/FAIL]
+# - [5/5] Coreq (CP Level): [Code] J CP total (Session N): Subject1 S CP (Session N or earlier) + … + Subject2 S CP (Session N or earlier) = J CP? [PASS/FAIL]
+# - VERDICT: [ELIGIBLE (All 5 conditions must be PASS) / INELIGIBLE]
+# - Selection: Replace the current elective placeholder with the first valid elective.
+# This valid elective CANNOT be used again. 
+# Repeat this until no more elective placeholders exist in the plan or there are no more electives to evaluate. If there are no more electives to evaluate, leave the remaining elective placeholders. 
+
 ## evaluator optimiser pattern 
 ### stage 2 make the plan
 SYSTEM_PROMPT_V1 = """
