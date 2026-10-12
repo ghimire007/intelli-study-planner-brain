@@ -18,6 +18,7 @@ from app.agents.state import (
     latest_tool_batch,
     sanitize_confirmed_metadata,
 )
+from app.llm.text import is_evaluation_reply
 from app.prompts.builder import build_system_prompt
 from app.prompts.prompts import SYSTEM_PROMPT
 from app.services.sols_parser import parse_sols
@@ -98,9 +99,31 @@ class ConversationNodes:
                 If the user is asking about specific subjects, you may call `lookup_subjects_tool` or `lookup_major_tool` once with all the subject info to gather correct information. DO NOT assume or make up subject information when answering a question. If you do not have access to the necessary information, output that you are unable to answer that question and direct the user to any relevant UOW handbook links.
             """
 
-        response = await self._llms.get(kind).ainvoke(
-            [SystemMessage(content=system_content), *state.get("messages", [])]
-        )
+        # Older checkpoints can contain evaluator JSON. Keep it out of the
+        # conversational prompt while retaining every tool call and its result.
+        messages = [
+            message for message in state.get("messages", [])
+            if not (
+                isinstance(message, AIMessage)
+                and not message.tool_calls
+                and is_evaluation_reply(message.content)
+            )
+        ]
+        prompt = [SystemMessage(content=system_content), *messages]
+        model = self._llms.get(kind)
+        response = await model.ainvoke(prompt)
+        if not response.tool_calls and is_evaluation_reply(response.content):
+            # Retry only accidental verdicts; normal chat and tool routing stay intact.
+            response = await model.ainvoke([
+                *prompt,
+                SystemMessage(content=(
+                    "Answer the student's latest message conversationally. "
+                    "Do not return an internal evaluator verdict with valid/feedback fields. "
+                    "Use the available tools if needed."
+                )),
+            ])
+            if not response.tool_calls and is_evaluation_reply(response.content):
+                response.content = "I couldn't produce a chat reply. Please try your message again."
         return {"messages": [response]}
 
     async def run_tools(self, state: AdvisorState) -> dict:
