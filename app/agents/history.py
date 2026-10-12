@@ -16,7 +16,7 @@ from langgraph.graph.state import CompiledStateGraph
 
 from app.llm.pricing import compute_cost
 from app.llm.registry import UnknownModelError, provider_for
-from app.llm.text import as_text
+from app.llm.text import as_text, is_evaluation_reply
 
 
 @dataclass
@@ -53,6 +53,8 @@ def _to_view(
         return MessageView(id=idx, role="user", content=as_text(message.content), created_at=created_at)
 
     if isinstance(message, AIMessage):
+        if is_evaluation_reply(message.content):
+            return None
         content = as_text(message.content)
         if not content:
             return None  # tool-call-only turn — internal plumbing, not user-facing
