@@ -1,4 +1,4 @@
-"""Wiring of the advisor StateGraph around Stage 1's parallel branches.
+"""Wiring of the advisor StateGraph around Stage 1.
 
 The real Stage1Nodes routers, join and start_planning run. Only the nodes that
 would call a model or a tool are replaced, so no database, checkpointer or LLM
@@ -6,20 +6,18 @@ is needed.
 """
 from __future__ import annotations
 
-import asyncio
 import json
-import time
 from pathlib import Path
 
 import pytest
 from app.agents.graphAPI import AdvisorGraph
 from app.agents.llms import LLMRegistry
 from app.agents.nodes.stage1 import Stage1Nodes
+from langchain_core.messages import AIMessage
 from langgraph.graph import END
 
 pytestmark = pytest.mark.smoke
 
-BRANCH_SECONDS = 0.15
 META = {"degree_code": "766", "year": 2024, "campus": "Wollongong", "session": "Spring"}
 HANDBOOK_OK = {
     "meta": META,
@@ -64,7 +62,7 @@ class FakeHandbook:
 
 
 class ScriptedStage1(Stage1Nodes):
-    """Real start_planning, join and routers; scripted branches and verdicts.
+    """Real start_planning and routers; scripted core generation and verdicts.
 
     verdicts: one core_ok flag per evaluation.
     """
@@ -72,26 +70,11 @@ class ScriptedStage1(Stage1Nodes):
     def __init__(self, verdicts: list[bool] | None = None):
         super().__init__(LLMRegistry(None, {}))
         self.calls: list[str] = []
-        self.spans: dict[str, tuple[float, float]] = {}
         self._verdicts = list(verdicts or [True])
 
-    async def _branch(self, name: str) -> None:
-        self.calls.append(name)
-        started = time.perf_counter()
-        await asyncio.sleep(BRANCH_SECONDS)
-        self.spans.setdefault(name, (started, time.perf_counter()))
-
-    async def fetch_elective_list(self, state):
-        await self._branch("electives")
-        return {"electives": json.dumps({"subjects": ["CSIT314"]})}
-
     async def generate_core_subjects(self, state):
-        await self._branch("core")
+        self.calls.append("core")
         return {"remaining_subjects": "{}", "remaining_feedback": None}
-
-    def join(self, state):
-        self.calls.append("join")
-        return {}
 
     async def evaluate(self, state):
         self.calls.append("eval")
@@ -144,38 +127,27 @@ async def _run(stage1: ScriptedStage1, retries: int = 2, monkeypatch=None):
     return await graph.compile().ainvoke({"messages": [], **HANDBOOK_OK})
 
 
-async def test_branches_overlap_and_join_once() -> None:
+async def test_stage1_runs_core_then_evaluator_then_plan() -> None:
     stage1 = ScriptedStage1()
     out = await _run(stage1)
 
     assert out["conversation_mode"] == "post_plan"
-    assert sorted(stage1.calls[:2]) == ["core", "electives"]
-    assert stage1.calls[2:] == ["join", "eval", "plan"]
-
-    electives_start, _ = stage1.spans["electives"]
-    _, core_end = stage1.spans["core"]
-    assert electives_start < core_end - BRANCH_SECONDS / 2
+    assert stage1.calls == ["core", "eval", "plan"]
 
 
-async def test_core_retry_does_not_rerun_electives(monkeypatch) -> None:
+async def test_core_retry_reruns_only_core(monkeypatch) -> None:
     stage1 = ScriptedStage1(verdicts=[False, True])
     await _run(stage1, retries=3, monkeypatch=monkeypatch)
 
-    assert stage1.calls.count("electives") == 1
-    assert stage1.calls.count("core") == 2
-    # The deferred join still fires when the core branch reruns alone.
-    assert stage1.calls.count("join") == 2
-    assert stage1.calls[-3:] == ["join", "eval", "plan"]
+    assert stage1.calls == ["core", "eval", "core", "eval", "plan"]
 
 
-async def test_final_pass_skips_the_evaluator() -> None:
-    # Default budget of 2 passes: the second pass goes straight to Stage 2.
-    stage1 = ScriptedStage1(verdicts=[False])
+async def test_retry_limit_goes_to_stage2_despite_failing_verdict() -> None:
+    # Default budget of 2 passes: a second failing verdict still goes to Stage 2.
+    stage1 = ScriptedStage1(verdicts=[False, False])
     await _run(stage1)
 
-    assert stage1.calls.count("core") == 2
-    assert stage1.calls.count("eval") == 1
-    assert stage1.calls[-2:] == ["join", "plan"]
+    assert stage1.calls == ["core", "eval", "core", "eval", "plan"]
 
 
 # Router and real-node checks.
@@ -191,21 +163,36 @@ def test_join_ends_when_handbook_is_invalid() -> None:
     assert Stage1Nodes.route_join_barrier({"meta": META}) == END
 
 
-async def test_ranker_path_makes_no_model_call() -> None:
-    """The registry has no key, so any model call would raise."""
+class _ExplainerModel:
+    async def ainvoke(self, messages):
+        return AIMessage(content="EXPLAINED")
+
+
+class _ExplainerRegistry:
+    def get(self, role):
+        return _ExplainerModel()
+
+
+async def test_elective_list_is_ranked_from_data_and_only_explained_by_the_model() -> None:
+    """The subjects come from the ranker; the model only writes the explanation."""
     record = Path(__file__).resolve().parents[1] / "app" / "test_records" / "almost_graduated.md"
-    out = await Stage1Nodes.fetch_elective_list(
-        {**HANDBOOK_OK, "raw_sols": record.read_text(), "meta": {**META, "major": "AIBD — Artificial Intelligence and Big Data"}}
+    out = await Stage1Nodes(_ExplainerRegistry()).fetch_elective_list(
+        {
+            **HANDBOOK_OK,
+            "raw_sols": record.read_text(),
+            "elective_mode": "interest",
+            "elective_interests": ["artificial intelligence"],
+        }
     )
     assert json.loads(out["electives"])["subjects"]
+    assert out["messages"][0].content == "EXPLAINED"
 
 
-def test_stage1_nodes_and_deferred_join() -> None:
+def test_stage1_nodes() -> None:
     graph = AdvisorGraph(db=None, checkpointer=None).build()
     assert {
-        "fetch_elective_list", "stage1_review_must_includes", "join_stage1", "eval_stage1_lists",
+        "fetch_elective_list", "populate_plan_electives", "stage1_review_must_includes", "eval_stage1_lists",
     } <= set(graph.nodes)
-    assert graph.nodes["join_stage1"].defer is True
     assert ("handbook_missing", END) in graph.edges
     assert ("format_output", END) in graph.edges
 

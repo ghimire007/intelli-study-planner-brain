@@ -94,11 +94,10 @@ def make_fetch_handbook_tool(db: AsyncSession):
 
 @tool
 def confirm_metadata_tool(
-    degree_code: str | None = None,
-    year: int | None = None,
-    campus: str | None = None,
+    degree_code: str,
+    year: int,
+    campus: str,
     majors: list[str] | None = None,
-    major: str | None = None,
 ) -> str:
     """Record or switch the student's degree, commencement year,
     campus, and explicitly declared majors.
@@ -110,9 +109,6 @@ def confirm_metadata_tool(
     Call after the student has answered the intake question or
     explicitly corrected their details.
 
-    Pass only explicitly confirmed fields; omitted/null fields retain known values.
-    degree_code must be numeric (e.g. 766). major is a legacy single-major alias.
-
     On first confirmation: do not call fetch_handbook_tool or attempt any
     audit/planning before this has been called.
 
@@ -120,17 +116,12 @@ def confirm_metadata_tool(
     values; the cached handbook is cleared so you must re-fetch it for the
     new program before advising.
     """
-    if degree_code is not None and (not degree_code.isdigit() or not 3 <= len(degree_code) <= 4):
-        raise ValueError("Use a numeric degree code (e.g. 766), not a degree name")
-    if year is not None and not 1900 <= year <= 2100:
-        raise ValueError("Commencement year must be between 1900 and 2100")
     return json.dumps(
         {
             "degree_code": degree_code,
             "year": year,
             "campus": campus,
-            **({"majors": majors} if majors is not None else {}),
-            **({"major": major} if major is not None else {}),
+            "major": majors or [],
         }
     )
 
@@ -177,7 +168,7 @@ def get_elective_priorities_tool(
     completed_subjects: list[str] = [],  # noqa: B006 (tool schema; never mutated)
     planned_subjects: list[str] = [],  # noqa: B006 (tool schema; never mutated)
     major: str | None = None,
-    interests: str | None = None,
+    interests: list[str] | None = None,
     limit: int = 25,
 ) -> str:
     """Return ranked elective shortlists per handbook pool for planning.
@@ -189,6 +180,8 @@ def get_elective_priorities_tool(
     when scheduling electives unless session/prereqs rule them out.
     """
     print("!!!!!!!!!!!!!!!! EXECUTION STARTED !!!!!!!!!!!!!!!!")
+    print("Mode: ", mode)
+    print("Interests: ", interests)
     result = get_elective_priorities(
         ElectivePriorityInput(
             course=course,
@@ -230,7 +223,7 @@ def make_lookup_ranked_electives_tool(db: AsyncSession):
         completed_subjects: list[str],
         planned_subjects: list[str],
         major: str | None = None,
-        interests: str | None = None,
+        interests: list[str] | None = None,
         limit: int = 25,
     ) -> str:
         """Rank elective shortlists and return official handbook cards for those codes.
@@ -301,7 +294,7 @@ lookup_uow_policy_tool = StructuredTool.from_function(
 def request_plan_change_tool(
     change_type: Literal[
         "major",
-        "elective_preference",
+        "elective_interests",
         "course",
         "campus",
         "commencement_year",
@@ -309,7 +302,7 @@ def request_plan_change_tool(
         "general_revision",
     ],
     majors: list[str] | None = None,
-    elective_preference: str | None = None,
+    elective_interests: list[str] | None = None,
     course: str | None = None,
     campus: str | None = None,
     commencement_year: int | None = None,
@@ -325,7 +318,7 @@ def request_plan_change_tool(
     return json.dumps({
         "change_type": change_type,
         "major": majors,
-        "elective_preference": elective_preference,
+        "elective_interests": elective_interests,
         "course": course,
         "campus": campus,
         "commencement_year": commencement_year,

@@ -9,7 +9,7 @@ from app.agents.state import (
     handbook_matches_current_meta,
     metadata_handbook_key,
 )
-from app.services.handbook_service import HandbookUnavailable, fetch_handbook
+from app.services.handbook_service import fetch_handbook
 
 
 class HandbookNodes:
@@ -32,11 +32,12 @@ class HandbookNodes:
         try:
             content = await fetch_handbook(self._db, degree_code, year, campus)
         except Exception as exc:
-            raise HandbookUnavailable("The course handbook could not be loaded. Ask the backend operator to seed the handbook data, then retry.") from exc
+            print("HANDBOOK FETCH ERROR:", repr(exc))
+            return {**HANDBOOK_CLEARED, "planning_requested": False}
 
         if not content or not str(content).strip():
             print("HANDBOOK FETCH FAILED: empty")
-            raise HandbookUnavailable("The course handbook is empty. Refresh the seeded handbook before planning.")
+            return {**HANDBOOK_CLEARED, "planning_requested": False}
 
         print("HANDBOOK FETCH SUCCESS:", required)
         return {
@@ -48,10 +49,21 @@ class HandbookNodes:
         }
 
     @staticmethod
-    def route_after_fetch(state: AdvisorState) -> Literal["start_planning", "handbook_missing"]:
-        if handbook_matches_current_meta(state):
-            return "start_planning"
-        return "handbook_missing"
+    def route_after_fetch(
+        state: AdvisorState,
+    ) -> Literal["start_planning", "fetch_elective_list", "populate_plan_electives", "handbook_missing"]:
+        if not handbook_matches_current_meta(state):
+            return "handbook_missing"
+
+        pending = state.get("pending_elective_action")
+
+        if pending == "populate_plan":
+            return "populate_plan_electives"
+
+        if pending == "recommend":
+            return "fetch_elective_list"
+
+        return "start_planning"
 
     @staticmethod
     async def handbook_missing(state: AdvisorState) -> dict:

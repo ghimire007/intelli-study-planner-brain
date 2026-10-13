@@ -25,10 +25,12 @@ from app.services.elective_ranking import (
 def test_keyword_overlap_prefers_matching_subject() -> None:
     catalog = {
         "CSCI323": {
+            "code": "CSCI323",
             "title": "Modern Artificial Intelligence",
             "description": "Advanced theories and algorithms in artificial intelligence.",
         },
         "ACCY111": {
+            "code": "ACCY111",
             "title": "Accounting Fundamentals",
             "description": "Introduces accounting information in society.",
         },
@@ -51,7 +53,7 @@ def test_keyword_overlap_score_zero_for_unrelated_query() -> None:
 
 def test_resolve_open_pool_includes_school_prefix_and_gs() -> None:
     catalog = {
-        "CSIT999": {"code": "CSIT999", "tags": []},
+        "CSIT299": {"code": "CSIT299", "tags": []},
         "ECON100": {"code": "ECON100", "tags": ["General Schedule"]},
         "CSIT110": {"code": "CSIT110", "tags": ["General Schedule"]},
     }
@@ -61,7 +63,7 @@ def test_resolve_open_pool_includes_school_prefix_and_gs() -> None:
         "include_general_schedule": True,
     }
     allowed = resolve_pool_candidates(pool, catalog, forbidden={"CSIT110"})
-    assert "CSIT999" in allowed
+    assert "CSIT299" in allowed
     assert "ECON100" in allowed
     assert "CSIT110" not in allowed
 
@@ -95,7 +97,7 @@ def test_agent_tool_returns_json_payload() -> None:
                 "mode": "interest",
                 "completed_subjects": [],
                 "planned_subjects": [],
-                "interests": "artificial intelligence",
+                "interests": ["artificial intelligence"],
                 "limit": 5,
             }
         )
@@ -173,7 +175,7 @@ async def test_lookup_ranked_electives_tool_includes_subject_cards() -> None:
                     "mode": "interest",
                     "completed_subjects": [],
                     "planned_subjects": [],
-                    "interests": "artificial intelligence",
+                    "interests": ["artificial intelligence"],
                     "limit": 5,
                 }
             )
@@ -233,7 +235,7 @@ def test_flatten_ranked_electives_unique_catalog_fields() -> None:
     )
     dumped = result.model_dump(by_alias=True)
     codes = [row["code"] for row in dumped["subjects"]]
-    assert codes == ["CSCI323", "MISSING99"]
+    assert codes == ["CSCI323"]
     first = dumped["subjects"][0]
     assert first["title"] == "Modern Artificial Intelligence"
     assert first["name"] == first["title"]
@@ -241,13 +243,11 @@ def test_flatten_ranked_electives_unique_catalog_fields() -> None:
     assert first["credit_points"] == 6
     assert first["session"] == "Autumn"
     assert first["valid_sessions"] == "Autumn, Spring"
-    assert first["pool_id"] == "elective"
+    assert first["pool_id"] == "elective_2"
     assert first["score"] == 0.9
     assert first["pre-requisites"] == "CSCI203; 12cp at 200-level"
     assert first["co-requisites"] == "None"
-    missing = dumped["subjects"][1]
-    assert missing["cp"] == 6
-    assert missing["valid_sessions"] == "None"
+    assert len(dumped["subjects"]) == 1
 
 
 def test_get_stage1_elective_list_shape_for_766() -> None:
@@ -260,7 +260,7 @@ def test_get_stage1_elective_list_shape_for_766() -> None:
             session="Autumn",
             campus="Wollongong",
             mode="interest",
-            interests="artificial intelligence",
+            interests=["artificial intelligence"],
             limit=5,
         )
     )

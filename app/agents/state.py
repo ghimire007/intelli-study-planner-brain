@@ -11,9 +11,7 @@ from langchain_core.messages import BaseMessage, HumanMessage, ToolMessage
 from langgraph.graph.message import add_messages
 
 from app.schemas.elective_ranking import ElectivePriorityInput
-from app.services.course_rules import load_course_rules
 from app.services.elective_ranking import flatten_ranked_electives, get_elective_priorities
-from app.services.eligibility_service import resolve_major_code
 from app.services.enrolment import UnreadableRecord, parse_enrolment
 
 # CONSTANTS for max retries/loops to keep the model requests per minute < 15 for free API key tiers
@@ -132,6 +130,7 @@ def sols_codes_for_ranking(
         if row.status == "Complete":
             completed.append(row.code)
 
+# add provisional to planned?
         elif row.status == "Enrolled":
             planned.append(row.code)
 
@@ -149,14 +148,13 @@ def stage1_electives_from_advisor_state(
     """
     Deterministically generate Stage 1 elective candidates.
     """
+    print("1111111\n AdvisorState: ", state.get("elective_interests"))
 
     meta = state.get("meta") or {}
 
     completed, planned = sols_codes_for_ranking(state.get("raw_sols"))
 
-    raw_majors = meta.get("majors")
-    if raw_majors is None:
-        raw_majors = meta.get("major") or []
+    raw_majors = meta.get("majors") or []
 
     if isinstance(raw_majors, str):
         raw_majors = [raw_majors]
@@ -179,42 +177,32 @@ def stage1_electives_from_advisor_state(
     # Keep the existing single-major ranking interface for now.
     major = ranking_majors[0] if ranking_majors else None
 
-    elective_preference = (
-        state.get("elective_preference")
-        or meta.get("interests")
-    )
+    elective_mode = state.get("elective_mode", "degree")
+    elective_interests = state.get("elective_interests") or []
 
-    try:
-        resolved_major = resolve_major_code(major, load_course_rules(str(meta.get("degree_code")), str(meta.get("campus"))))
-    except (FileNotFoundError, ValueError):
-        resolved_major = None
+    # elective_interests = list(
+    #     dict.fromkeys(
+    #         str(interest).strip()
+    #         for interest in elective_interests
+    #         if interest and str(interest).strip()
+    #     )
+    # )
 
-    unresolved_major_preference = (
-        major
-        if major
-        and not resolved_major
-        and not elective_preference
-        else None
-    )
+    print("interests: ", elective_interests)
 
-    mode = (
-        "interest"
-        if elective_preference or unresolved_major_preference
-        else ("major" if major else "interest")
-    )
+    if elective_mode == "interest" and not elective_interests:
+        print("STAGE 1: interest mode selected but no interests supplied")
+        return json.dumps({
+            "mode": "interest",
+            "pools": [],
+        })
 
-    if unresolved_major_preference:
-        elective_preference = unresolved_major_preference
-
-        print(
-            "UNRESOLVED MAJOR TREATED AS KEYWORD PREFERENCE:",
-            unresolved_major_preference
-        )
+    mode = "interest" if elective_mode == "interest" else "major"
 
     # Metadata must have been confirmed before Stage 1 reaches this node.
     course = str(meta.get("degree_code") or "").strip()
     campus = str(meta.get("campus") or "").strip()
-    session = str(meta.get("session") or "Autumn").strip()
+    session = str(meta.get("session") or "").strip()
 
     if not course or not campus:
         print("STAGE 1 ELECTIVES BLOCKED: confirmed course/campus missing")
@@ -235,7 +223,7 @@ def stage1_electives_from_advisor_state(
         planned_subjects=planned,
         mode=mode,
         interests=(
-            elective_preference
+            elective_interests
             if mode == "interest"
             else None
         ),
@@ -246,12 +234,10 @@ def stage1_electives_from_advisor_state(
 
     #debugging
     print("ELECTIVE INPUT:")
-    print("  meta:", meta)
+    print("  elective_mode:", elective_mode)
+    print("  elective_interests:", elective_interests)
     print("  major:", major)
-    print("  raw_major:", raw_majors)
-    print("  elective_preference:", elective_preference)
-    print("  mode:", mode)
-    print("  interests:", student.interests)
+    print("  raw_majors:", raw_majors)
     print("  completed:", completed)
     print("  planned:", planned)
 
@@ -286,11 +272,11 @@ class AdvisorState(TypedDict):
     # Metadata
     meta: dict | None
     meta_confirmed: bool
-    field_sources: dict
-    context_conflicts: dict
-    context_observations: dict
     planning_requested: bool
-    elective_preference: str | None
+    elective_mode: Literal["degree", "interest"] | None
+    elective_interests: list[str]
+
+    pending_elective_action: Literal["recommend", "populate_plan"] | None
 
     conversation_mode: Literal[
         "collecting",
@@ -682,11 +668,6 @@ def sanitize_confirmed_metadata(
         else:
             sanitized[field] = value
 
-    if isinstance(candidate.get("major"), str) and _value_explicitly_stated_by_student(
-        candidate["major"], student_text
-    ):
-        sanitized["major"] = candidate["major"]
-
     candidate_majors = candidate.get("majors")
 
     # Backward compatibility with the old singular field.
@@ -723,8 +704,7 @@ def sanitize_confirmed_metadata(
 
         if sanitized_majors:
             sanitized["majors"] = list(dict.fromkeys(sanitized_majors))
-            if "majors" in candidate:
-                sanitized.pop("major", None)
+            sanitized.pop("major", None)
         else:
             # Do not erase previously confirmed majors merely because
             # the confirmation response omitted or changed them.
@@ -804,7 +784,6 @@ def apply_confirm_metadata(
         "meta_confirmed": True,
         "planning_requested": True,
         "conversation_mode": "planning",
-        "elective_preference": None,
 
         # Invalidate generated planning data.
         "electives": None,
@@ -848,7 +827,7 @@ def apply_plan_change_request(
 
     allowed_types = {
         "major",
-        "elective_preference",
+        "elective_interests",
         "course",
         "campus",
         "commencement_year",
@@ -892,24 +871,41 @@ def apply_plan_change_request(
         meta["majors"] = list(dict.fromkeys(majors))
         meta.pop("major", None)
 
-    elif change_type == "elective_preference":
-        value = request.get("elective_preference")
+    elif change_type == "elective_interests":
+        value = request.get("elective_interests")
 
-        if not value or not str(value).strip():
+        if isinstance(value, str):
+            value = [value]
+
+        if not isinstance(value, list):
             print(
-                "PLAN CHANGE REJECTED: elective preference missing",
+                "PLAN CHANGE REJECTED: elective_interests must be a list"
             )
             return {}
 
+        interests = [
+            str(interest).strip()
+            for interest in value
+            if interest and str(interest).strip()
+        ]
+
+        if not interests:
+            print(
+                "PLAN CHANGE REJECTED: elective interests missing"
+            )
+            return {}
+
+        interests = list(dict.fromkeys(interests))
+
         print(
-            "PLAN CHANGE APPLIED: elective_preference",
-            value,
+            "PLAN CHANGE APPLIED: elective_interests",
+            interests,
         )
 
         return {
             "planning_requested": True,
             "conversation_mode": "planning",
-            "elective_preference": str(value).strip(),
+            "elective_interests": interests,
             "electives": None,
             "remaining_subjects": None,
             "remaining_feedback": None,
@@ -985,7 +981,6 @@ def apply_plan_change_request(
         "meta_confirmed": True,
         "planning_requested": True,
         "conversation_mode": "planning",
-        "elective_preference": None,
         "electives": None,
         "remaining_subjects": None,
         "remaining_feedback": None,

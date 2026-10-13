@@ -16,7 +16,7 @@ from langgraph.graph.state import CompiledStateGraph
 
 from app.llm.pricing import compute_cost
 from app.llm.registry import UnknownModelError, provider_for
-from app.llm.text import as_text
+from app.llm.text import as_text, is_evaluation_reply
 
 
 @dataclass
@@ -28,7 +28,6 @@ class MessageView:
     created_at: datetime
     provider: str | None = None
     model: str | None = None
-    requested_model: str | None = None
     tokens_in: int | None = None
     tokens_out: int | None = None
     cached_tokens: int | None = None
@@ -54,7 +53,7 @@ def _to_view(
         return MessageView(id=idx, role="user", content=as_text(message.content), created_at=created_at)
 
     if isinstance(message, AIMessage):
-        if message.additional_kwargs.get("courseo_internal"):
+        if is_evaluation_reply(message.content):
             return None
         content = as_text(message.content)
         if not content:
@@ -64,8 +63,6 @@ def _to_view(
         tokens_out = usage.get("output_tokens")
         cached = (usage.get("input_token_details") or {}).get("cache_read", 0)
         model = message.response_metadata.get("model_name") or fallback_model
-        if message.response_metadata.get("generation_source") == "validated_enrolment_record":
-            model = None  # No provider call was needed for this complete record.
         return MessageView(
             id=idx,
             role="assistant",
@@ -73,7 +70,6 @@ def _to_view(
             created_at=created_at,
             provider=_provider_of(model),
             model=model,
-            requested_model=message.response_metadata.get("requested_model"),
             tokens_in=tokens_in,
             tokens_out=tokens_out,
             cached_tokens=cached or None,
@@ -125,3 +121,4 @@ async def latest_reply(
             return view
 
     return None
+
