@@ -1,6 +1,5 @@
 import re
 import uuid
-
 from typing import Literal
 
 from app.agents.graphAPI import build_advisor_graph
@@ -12,13 +11,13 @@ from app.llm.factory import make_chat_model
 from app.llm.registry import PROVIDER_LABELS
 from app.models.auth import User
 from app.models.session import ChatSession
+from app.schemas.chat import ChatContext
 from app.services.credential_resolver import CredentialResolver
 from app.services.enrolment import UnreadableRecord, project
 from app.services.pii import scrub_pii
 from app.services.vault_service import VaultService
 from langchain_core.messages import HumanMessage, SystemMessage
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.schemas.chat import ChatContext
 
 ElectiveMode = Literal["degree", "interest"]
 

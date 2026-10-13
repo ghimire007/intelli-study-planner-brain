@@ -18,7 +18,7 @@ import asyncio
 import json
 from typing import Literal
 
-from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langgraph.graph import END
 
 from app.agents.llms import LLMRegistry
@@ -32,7 +32,11 @@ from app.agents.state import (
     stage1_electives_from_advisor_state,
 )
 from app.prompts.builder import build_system_prompt
-from app.prompts.prompts import EVAL_SUBJECTS_ELECTIVES, SUBJECT_GENERATION_PROMPT, POPULATE_ELECTIVES_IN_PLAN
+from app.prompts.prompts import (
+    EVAL_SUBJECTS_ELECTIVES,
+    POPULATE_ELECTIVES_IN_PLAN,
+    SUBJECT_GENERATION_PROMPT,
+)
 
 
 class Stage1Nodes:
@@ -93,7 +97,7 @@ class Stage1Nodes:
             "electives_feedback": None,
         }
 
-    
+
     async def populate_plan_electives(self, state: AdvisorState) -> dict:
         """Add valid elective candidates to the existing plan without rebuilding it."""
         print("NODE: populate_plan_electives")

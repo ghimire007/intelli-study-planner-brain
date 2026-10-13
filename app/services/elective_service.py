@@ -17,7 +17,11 @@ import re
 from dataclasses import dataclass
 
 from app.services.course_rules import CourseRules
-from app.services.elective_pools import resolve_pool_candidates
+from app.services.elective_pools import (
+    ALLOWED_ELECTIVE_LEVELS,
+    resolve_pool_candidates,
+    subject_level,
+)
 from app.services.elective_ranking import rank_subjects_by_keywords
 from app.services.eligibility_service import (
     _exclusion_blocked,
@@ -32,12 +36,6 @@ from app.services.prerequisite_parser import (
     expressions_satisfied,
     normalize_code,
     subject_level_from_code,
-)
-
-from app.services.elective_pools import (
-    ALLOWED_ELECTIVE_LEVELS,
-    resolve_pool_candidates,
-    subject_level,
 )
 
 _PLACEHOLDER_RE = re.compile(r"^(?:elective|tbd)\b", re.IGNORECASE)

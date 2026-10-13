@@ -1,17 +1,13 @@
-import time
+import logging
 import uuid
+from typing import NoReturn
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-import logging
-from typing import NoReturn
-from app.llm.errors import ProviderFailure, classify
-
-logger = logging.getLogger(__name__)
-
 from app.api.deps import get_current_user
 from app.core.database import get_db
+from app.llm.errors import ProviderFailure, classify
 from app.llm.factory import ProviderNotInstalled
 from app.models.auth import User
 from app.schemas.chat import (
@@ -25,6 +21,8 @@ from app.schemas.chat import (
 from app.services.agent_chat_service import AgentChatService, CredentialRejected
 from app.services.credential_resolver import CredentialUnreadable, NoCredentialError
 from app.services.handbook_service import HandbookUnavailable
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 

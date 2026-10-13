@@ -5,8 +5,8 @@ under different attribute names, and LangChain wraps them a layer or two deep.
 Walking the cause chain and reading whichever status attribute exists keeps this
 working for a provider whose package isn't even installed.
 """
-from enum import StrEnum
 import asyncio
+from enum import StrEnum
 
 _STATUS_ATTRS = ("status_code", "code", "http_status")
 _AUTH_STATUSES = {401, 403}

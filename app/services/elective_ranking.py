@@ -16,19 +16,17 @@ from app.schemas.elective_ranking import (
 )
 from app.schemas.eligibility import StudentEligibilityInput
 from app.services.course_rules import load_course_rules
-from app.services.elective_pools import load_elective_pools, resolve_pool_candidates
-from app.services.eligibility_service import get_eligible_subjects, resolve_major_code
-from app.services.prerequisite_parser import normalize_code
-from app.services.subject_catalog import load_subject_catalog
-
-SEEDS_DIR = Path(__file__).resolve().parent.parent.parent / "seeds"
-
 from app.services.elective_pools import (
     ALLOWED_ELECTIVE_LEVELS,
     load_elective_pools,
     resolve_pool_candidates,
     subject_level,
 )
+from app.services.eligibility_service import get_eligible_subjects, resolve_major_code
+from app.services.prerequisite_parser import normalize_code
+from app.services.subject_catalog import load_subject_catalog
+
+SEEDS_DIR = Path(__file__).resolve().parent.parent.parent / "seeds"
 
 _STOPWORDS = frozenset(
     """

@@ -10,6 +10,7 @@ from langgraph.prebuilt import ToolNode
 from app.agents.llms import LLMRegistry
 from app.agents.state import (
     AdvisorState,
+    _message_text,
     apply_confirm_metadata,
     apply_plan_change_request,
     extract_and_parse_json,
@@ -18,7 +19,6 @@ from app.agents.state import (
     latest_student_message,
     latest_tool_batch,
     sanitize_confirmed_metadata,
-    _message_text
 )
 from app.llm.text import is_evaluation_reply
 from app.prompts.builder import build_system_prompt
@@ -241,7 +241,7 @@ class ConversationNodes:
 
         if isinstance(last, AIMessage) and last.tool_calls:
             return "tools"
-        
+
         if not state.get("meta_confirmed"):
             return END
 
@@ -258,12 +258,12 @@ class ConversationNodes:
             if pending == "recommend":
                 return "fetch_elective_list"
 
-        
+
         if not state.get("planning_requested"):
             return END
-        
+
         if not handbook_matches_current_meta(state):
             print("ROUTE: handbook missing/stale")
             return "ensure_handbook"
-        
+
         return "start_planning"
