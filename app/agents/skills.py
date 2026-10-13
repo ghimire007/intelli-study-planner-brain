@@ -168,7 +168,7 @@ def get_elective_priorities_tool(
     completed_subjects: list[str] = [],  # noqa: B006 (tool schema; never mutated)
     planned_subjects: list[str] = [],  # noqa: B006 (tool schema; never mutated)
     major: str | None = None,
-    interests: str | None = None,
+    interests: list[str] | None = None,
     limit: int = 25,
 ) -> str:
     """Return ranked elective shortlists per handbook pool for planning.
@@ -223,7 +223,7 @@ def make_lookup_ranked_electives_tool(db: AsyncSession):
         completed_subjects: list[str],
         planned_subjects: list[str],
         major: str | None = None,
-        interests: str | None = None,
+        interests: list[str] | None = None,
         limit: int = 25,
     ) -> str:
         """Rank elective shortlists and return official handbook cards for those codes.
@@ -302,7 +302,7 @@ def request_plan_change_tool(
         "general_revision",
     ],
     majors: list[str] | None = None,
-    elective_interests: str | None = None,
+    elective_interests: list[str] | None = None,
     course: str | None = None,
     campus: str | None = None,
     commencement_year: int | None = None,
