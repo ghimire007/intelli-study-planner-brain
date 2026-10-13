@@ -272,7 +272,7 @@ RULES:
     @staticmethod
     def route_join_barrier(
         state: AdvisorState,
-    ) -> Literal["eval_stage1_lists", "stage2_make_plan", END]:
+    ) -> Literal["eval_stage1_lists", "stage2_make_plan", "__end__"]:
         if not handbook_matches_current_meta(state):
             print("STAGE 1 STOPPED: handbook invalid")
             return END

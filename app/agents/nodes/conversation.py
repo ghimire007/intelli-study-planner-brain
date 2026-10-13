@@ -233,7 +233,7 @@ class ConversationNodes:
     @staticmethod
     def route_after_agent(
         state: AdvisorState,
-    ) -> Literal["tools", "ensure_handbook", "fetch_elective_list", "populate_plan_electives", "start_planning", END]:
+    ) -> Literal["tools", "ensure_handbook", "fetch_elective_list", "populate_plan_electives", "start_planning", "__end__"]:
         """The LLM may request conversational tools; it does not control the
         handbook gate."""
         messages = state.get("messages", [])
