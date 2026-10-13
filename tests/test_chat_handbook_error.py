@@ -45,3 +45,30 @@ def test_provider_timeout_is_actionable_and_preserves_chat():
         _raise_llm_http_error(TimeoutError())
     assert caught.value.status_code == 504
     assert "saved chat is preserved" in caught.value.detail
+
+
+async def test_handbook_ref_returns_degree_year_campus():
+    service = AsyncMock()
+    service.get_handbook_ref.return_value = {"degree_code": "766", "year": 2024, "campus": "Wollongong"}
+    app.dependency_overrides[_get_agent_service] = lambda: service
+    try:
+        async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test") as client:
+            response = await client.get(f"/api/v1/chat/{uuid.uuid4()}/handbook")
+        assert response.status_code == 200
+        assert response.json() == {"degree_code": "766", "year": 2024, "campus": "Wollongong"}
+    finally:
+        app.dependency_overrides.clear()
+
+
+async def test_handbook_ref_unknown_session_is_404():
+    from app.services.chat_context import SessionNotFound
+
+    service = AsyncMock()
+    service.get_handbook_ref.side_effect = SessionNotFound("nope")
+    app.dependency_overrides[_get_agent_service] = lambda: service
+    try:
+        async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test") as client:
+            response = await client.get(f"/api/v1/chat/{uuid.uuid4()}/handbook")
+        assert response.status_code == 404
+    finally:
+        app.dependency_overrides.clear()
