@@ -182,6 +182,26 @@ class AgentChatService:
         messages = await build_history(graph, str(session_id), fallback_model=session.model)
         return session, messages
 
+    async def get_handbook_ref(self, session_id: uuid.UUID) -> dict:
+        """Degree, year and campus the conversation currently resolves to.
+
+        Any field may be None while the student has not yet given enough detail.
+        """
+        await self._owned_session(session_id)
+        graph = build_advisor_graph(self._db, get_checkpointer())
+        state = await graph.aget_state({"configurable": {"thread_id": str(session_id)}})
+        if "raw_sols" not in state.values:
+            raise SessionNotFound(
+                f"Session {session_id} has no conversation state — it may be stale or was never started"
+            )
+        meta = state.values.get("meta") or {}
+        year = meta.get("year")
+        return {
+            "degree_code": meta.get("degree_code") or None,
+            "year": int(year) if str(year or "").isdigit() else None,
+            "campus": meta.get("campus") or None,
+        }
+
     async def _owned_session(self, session_id: uuid.UUID) -> ChatSession:
         session = await self._db.get(ChatSession, session_id)
         # Sessions predating logins have user_id NULL: unreadable, because we

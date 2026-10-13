@@ -12,6 +12,7 @@ from app.models.auth import User
 from app.schemas.chat import (
     ChatRequest,
     ContinueSessionOut,
+    HandbookRefOut,
     HistoryOut,
     MessageOut,
     StartSessionOut,
@@ -137,6 +138,17 @@ async def get_history(
         model=session.model,
         messages=[MessageOut.model_validate(m) for m in messages if m.role != "system"],
     )
+
+
+@router.get("/{session_id}/handbook", response_model=HandbookRefOut)
+async def get_handbook_ref(
+    session_id: uuid.UUID,
+    service: AgentChatService = Depends(_get_agent_service),
+):
+    try:
+        return HandbookRefOut(**await service.get_handbook_ref(session_id))
+    except SessionNotFound as e:
+        raise HTTPException(status_code=404, detail=str(e)) from e
 
 
 @router.post("/{session_id}/title", response_model=TitleOut)

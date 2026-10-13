@@ -68,5 +68,11 @@ class HistoryOut(BaseModel):
     messages: list[MessageOut]
 
 
+class HandbookRefOut(BaseModel):
+    degree_code: str | None = None
+    year: int | None = None
+    campus: str | None = None
+
+
 class TitleOut(BaseModel):
     title: str
