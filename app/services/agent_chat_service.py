@@ -102,18 +102,29 @@ class AgentChatService:
             protected_sols = scrub_pii(raw_sols)
 
             looks_like_sols = bool(
+                # Recognise actual SOLS header fields at the start of a line.
                 re.search(
-                    r"\b(?:Student|Course|Campus|Major|Effective Date|"
-                    r"Year\s+Session|Subject Code|Status|Enrolment History)\b",
+                    r"(?im)^\s*(?:"
+                    r"Student\b|"
+                    r"Course\b|"
+                    r"Campus\b|"
+                    r"Major(?:\s+\d+)?\s*:|"
+                    r"Effective Date\b|"
+                    r"Year\s+Session\b|"
+                    r"Subject Code\b|"
+                    r"Status\b|"
+                    r"Enrolment History\b"
+                    r")",
                     protected_sols,
-                    re.IGNORECASE,
                 )
+                # Recognise enrolment table rows.
                 or re.search(
                     r"\b(?:19|20)\d{2}\s+"
-                    r"(?:Annual|Autumn|Spring)\b",
+                    r"(?:Annual|Autumn|Spring|Summer|Winter)\b",
                     protected_sols,
                     re.IGNORECASE,
                 )
+                # Recognise subject codes.
                 or re.search(
                     r"\b[A-Z]{2,4}\d{3}[A-Z]?\b",
                     protected_sols,
