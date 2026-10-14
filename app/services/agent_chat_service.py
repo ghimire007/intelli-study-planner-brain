@@ -16,7 +16,8 @@ from app.services.credential_resolver import CredentialResolver
 from app.services.enrolment import UnreadableRecord, project
 from app.services.pii import scrub_pii
 from app.services.vault_service import VaultService
-from langchain_core.messages import HumanMessage, SystemMessage
+from app.services.wam import WamResult, summarise_for_chat
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from sqlalchemy.ext.asyncio import AsyncSession
 
 ElectiveMode = Literal["degree", "interest"]
@@ -286,6 +287,22 @@ class AgentChatService:
 
         messages = await build_history(graph, str(session_id), fallback_model=session.model)
         return session, messages
+
+    async def record_wam(self, session_id: uuid.UUID, result: WamResult) -> None:
+        """Add the WAM summary to this conversation so follow-up questions can use it.
+
+        Written as an assistant message, so it shows in the history the student
+        sees and is in context on their next turn. No LLM call and no key are
+        needed, the same as reading history.
+        """
+        await self._owned_session(session_id)
+
+        graph = build_advisor_graph(self._db, get_checkpointer())
+        await graph.aupdate_state(
+            {"configurable": {"thread_id": str(session_id)}},
+            {"messages": [AIMessage(content=summarise_for_chat(result))]},
+            as_node="format_output",  # a node that ends the run, so nothing is left pending
+        )
 
     async def _owned_session(self, session_id: uuid.UUID) -> ChatSession:
         session = await self._db.get(ChatSession, session_id)
