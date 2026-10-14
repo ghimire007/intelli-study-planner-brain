@@ -47,12 +47,14 @@ def _with_wam(projected: str, raw_record: str) -> str:
     holds the projected record and every prompt reads it, so the advisor sees
     the WAM and a newly pasted record replaces it. A record whose marks cannot
     be read must not block planning, so that case is noted instead of raised.
-    The reason is logged, not shown: it may quote a mark.
+    The reason is logged, not shown: it may quote a mark. Any failure at all,
+    not only an unreadable record, degrades to that note: the WAM is a bonus
+    and must never stop the student getting a plan.
     """
     try:
         note = describe_for_prompt(calculate_wam(raw_record))
-    except UnreadableRecord as exc:
-        logger.info("WAM not calculated: %s", exc)
+    except Exception:
+        logger.warning("WAM not calculated", exc_info=True)
         note = "WAM: could not be calculated from this record (marks missing or unreadable)."
     return f"{projected}\n\n{note}"
 

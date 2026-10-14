@@ -1,13 +1,16 @@
 """WAM follows the UOW rule, and the mark never reaches the LLM projection."""
+import pathlib
 import types
 import uuid
 from decimal import Decimal
 
 import pytest
+from app.agents.nodes.conversation import ConversationNodes
 from app.services import agent_chat_service
 from app.services.agent_chat_service import AgentChatService, _with_wam
 from app.services.enrolment import UnreadableRecord, parse_enrolment, project
 from app.services.wam import calculate_wam
+from langchain_core.messages import AIMessage
 
 pytestmark = pytest.mark.smoke
 
@@ -191,6 +194,14 @@ def test_unreadable_marks_do_not_block_planning_and_the_reason_is_not_shown():
     assert "95" not in text
 
 
+def test_a_bug_in_the_calculator_never_blocks_planning(monkeypatch):
+    def boom(raw):
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr(agent_chat_service, "calculate_wam", boom)
+    assert "could not be calculated" in _with_wam(project(GOOD), GOOD)
+
+
 def test_record_with_no_final_marks_says_so():
     enrolled = _record("2026 | Spring | Wollongong/On Campus | CSIT121 | 6 |  |  | Enrolled")
     assert "not available yet" in _with_wam(project(enrolled), enrolled)
@@ -254,3 +265,54 @@ async def test_pasting_a_new_record_mid_chat_replaces_the_wam(service):
     newer = _record("2024 | Autumn | Wollongong/On Campus | CSIT110 | 6 | 90 | HD | Complete")
     await svc.continue_session(uuid.uuid4(), newer)
     assert "90.00" in graph.payload["raw_sols"]
+
+
+class _RecordingModel:
+    def __init__(self):
+        self.sent = []
+
+    async def ainvoke(self, messages):
+        self.sent = messages
+        return AIMessage(content="ok")
+
+
+class _RecordingRegistry:
+    def __init__(self):
+        self.model = _RecordingModel()
+
+    def get(self, kind):
+        return self.model
+
+
+RECORDS = sorted((pathlib.Path(__file__).parents[1] / "app" / "test_records").glob("*.md"))
+
+
+@pytest.mark.parametrize("path", [pytest.param(p, id=p.stem) for p in RECORDS])
+async def test_the_model_is_sent_the_wam_and_no_mark_for_every_repo_record(service, path):
+    """Start a session on each fixture, then read what the chat model is actually sent."""
+    svc, graph = service
+    raw = path.read_text()
+    await svc.start_session(raw)
+
+    registry = _RecordingRegistry()
+    state = {
+        **graph.payload,
+        "meta": {"degree_code": "766", "year": 2024, "campus": "Wollongong", "majors": []},
+        "meta_confirmed": True,
+        "handbook": "HANDBOOK",
+    }
+    await ConversationNodes(registry, confirm_tools=[]).agent(state)
+    prompt = "\n".join(str(m.content) for m in registry.model.sent)
+
+    result = calculate_wam(raw)
+    if result.wam is None:
+        assert "WAM: not available yet" in prompt
+    else:
+        assert f"{result.wam} across {result.total_credit_points} credit points" in prompt
+
+    rows = parse_enrolment(raw, keep_marks=True).rows
+    assert "| Mark |" not in prompt
+    credit_values = {str(row.nom_cp) for row in rows}
+    for row in rows:
+        if row.mark is not None and str(row.mark) not in credit_values:
+            assert f"| {row.mark} |" not in prompt, f"{row.code} mark reached the model"

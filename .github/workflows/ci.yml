@@ -50,6 +50,7 @@ jobs:
           tests/test_registry.py
           tests/test_vault_logic.py
           tests/test_enrolment.py
+          tests/test_wam.py
           tests/test_api_auth.py
           tests/test_profile_update.py
           tests/test_migration_url.py
