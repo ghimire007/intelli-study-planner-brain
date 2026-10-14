@@ -135,3 +135,50 @@ async def test_linked_endpoint_requires_login():
             "/api/v1/wam/6f1c1f0e-0000-4000-8000-000000000000", json={"enrolment_record": "x"}
         )
     assert response.status_code == 401
+
+
+@pytest.mark.parametrize(
+    ("row", "message"),
+    [
+        ("2024 | Autumn | Wollongong/On Campus | CSIT110 | 6 |  | HD | Complete", "no mark"),
+        ("2024 | Autumn | Wollongong/On Campus | CSIT110 | 6 | 95 | F | Failed", "do not match"),
+        ("2024 | Autumn | Wollongong/On Campus | CSIT110 | 6 | 30 | HD | Complete", "do not match"),
+        ("2024 | Autumn | Wollongong/On Campus | CSIT110 | 6 | N/A | HD | Complete", "Could not read mark"),
+        ("2024 | Autumn | Wollongong/On Campus | CSIT110 | 6 | 80D |  | Complete", "Could not read mark"),
+    ],
+    ids=["grade-without-mark", "pass-mark-on-fail", "fail-mark-on-pass-grade", "non-numeric", "glued-to-grade"],
+)
+def test_corrupted_rows_are_refused_not_averaged_around(row, message):
+    good = "2024 | Autumn | Wollongong/On Campus | CSIT114 | 6 | 70 | C | Complete"
+    with pytest.raises(UnreadableRecord, match=message):
+        calculate_wam(_record(good, row))
+
+
+def test_whole_mark_column_missing_is_refused():
+    raw = (
+        "| Year | Session | Campus/Delivery | Subject Code | Nom CP | Grade | Status |\n|---|---|---|---|---|---|---|\n"
+        "| 2024 | Autumn | Wollongong/On Campus | CSIT110 | 6 | HD | Complete |"
+    )
+    with pytest.raises(UnreadableRecord, match="no mark"):
+        calculate_wam(raw)
+
+
+def test_ungraded_results_need_no_mark():
+    result = calculate_wam(_record(
+        "2024 | Autumn | Wollongong/On Campus | AAAA101 | 6 | 70 | C | Complete",
+        "2024 | Autumn | Wollongong/On Campus | AAAA102 | 6 |  | S | Complete",
+    ))
+    assert (result.wam, result.total_credit_points) == (Decimal("70.00"), 6)
+
+
+def test_a_record_pasted_twice_is_not_double_counted():
+    row = "2024 | Autumn | Wollongong/On Campus | AAAA101 | 6 | 80 | D | Complete"
+    assert calculate_wam(_record(row, row)).total_credit_points == 6
+
+
+def test_conflicting_duplicates_are_refused():
+    with pytest.raises(UnreadableRecord, match="appears twice"):
+        calculate_wam(_record(
+            "2024 | Autumn | Wollongong/On Campus | AAAA101 | 6 | 80 | D | Complete",
+            "2024 | Autumn | Wollongong/On Campus | AAAA101 | 6 | 76 | D | Complete",
+        ))
