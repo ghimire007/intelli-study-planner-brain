@@ -1,12 +1,13 @@
 """WAM follows the UOW rule, and the mark never reaches the LLM projection."""
+import types
 import uuid
 from decimal import Decimal
 
-import httpx
 import pytest
-from app.main import app
+from app.services import agent_chat_service
+from app.services.agent_chat_service import AgentChatService, _with_wam
 from app.services.enrolment import UnreadableRecord, parse_enrolment, project
-from app.services.wam import calculate_wam, summarise_for_chat
+from app.services.wam import calculate_wam
 
 pytestmark = pytest.mark.smoke
 
@@ -92,49 +93,7 @@ def test_mark_never_reaches_the_llm_projection_or_a_dump():
     assert "83" not in project(raw)
 
 
-def test_chat_summary_has_the_wam_but_no_subject_level_data():
-    result = calculate_wam(_record(
-        "2024 | Autumn | Wollongong/On Campus | CSIT110 | 6 | 83 | D | Complete",
-        "2024 | Autumn | Wollongong/On Campus | CSIT114 | 6 | 61 | P | Complete",
-    ))
-    summary = summarise_for_chat(result)
-    assert "72.00" in summary
-    assert "12 credit points" in summary
-    for leaked in ("CSIT110", "CSIT114", "83", "61"):
-        assert leaked not in summary
 
-
-async def test_linked_endpoint_records_summary_on_the_owned_session(monkeypatch):
-    from app.api.deps import get_current_user
-    from app.core.database import get_db
-
-    calls = []
-
-    async def fake_record(self, session_id, result):
-        calls.append((session_id, result.wam))
-
-    monkeypatch.setattr("app.services.agent_chat_service.AgentChatService.record_wam", fake_record)
-    app.dependency_overrides[get_current_user] = lambda: object()
-    app.dependency_overrides[get_db] = lambda: None
-    try:
-        async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test") as client:
-            response = await client.post(
-                "/api/v1/wam/6f1c1f0e-0000-4000-8000-000000000000",
-                json={"enrolment_record": _record(
-                    "2024 | Autumn | Wollongong/On Campus | AAAA101 | 6 | 80 | D | Complete")},
-            )
-    finally:
-        app.dependency_overrides.clear()
-    assert response.status_code == 200
-    assert calls == [(uuid.UUID("6f1c1f0e-0000-4000-8000-000000000000"), Decimal("80.00"))]
-
-
-async def test_linked_endpoint_requires_login():
-    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test") as client:
-        response = await client.post(
-            "/api/v1/wam/6f1c1f0e-0000-4000-8000-000000000000", json={"enrolment_record": "x"}
-        )
-    assert response.status_code == 401
 
 
 @pytest.mark.parametrize(
@@ -211,41 +170,87 @@ def test_an_implausible_credit_point_weight_is_refused():
         calculate_wam(_record("2024 | Autumn | Wollongong/On Campus | AAAA101 | 100 | 80 | D | Complete"))
 
 
-async def test_endpoint_rejects_oversized_and_empty_records(monkeypatch):
-    from app.api.deps import get_current_user
-    from app.core.database import get_db
-
-    app.dependency_overrides[get_current_user] = lambda: object()
-    app.dependency_overrides[get_db] = lambda: None
-    url = "/api/v1/wam/6f1c1f0e-0000-4000-8000-000000000000"
-    try:
-        async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test") as client:
-            huge = await client.post(url, json={"enrolment_record": "x" * 200_001})
-            empty = await client.post(url, json={"enrolment_record": ""})
-            missing = await client.post(url, json={})
-            bad_id = await client.post("/api/v1/wam/not-a-uuid", json={"enrolment_record": "x"})
-    finally:
-        app.dependency_overrides.clear()
-    assert [huge.status_code, empty.status_code, missing.status_code, bad_id.status_code] == [422] * 4
+GOOD = _record(
+    "2024 | Autumn | Wollongong/On Campus | CSIT110 | 6 | 83 | D | Complete",
+    "2024 | Autumn | Wollongong/On Campus | CSIT114 | 6 | 61 | P | Complete",
+)
 
 
-async def test_linked_endpoint_404s_for_a_session_that_is_not_the_callers(monkeypatch):
-    from app.api.deps import get_current_user
-    from app.core.database import get_db
+def test_prompt_record_carries_the_wam_but_no_marks_or_grade_derived_detail():
+    text = _with_wam(project(GOOD), GOOD)
+    assert "72.00" in text
+    assert "12 credit points" in text
+    assert "83" not in text.replace("72.00", "")
+    assert "61" not in text
 
-    async def not_owned(self, session_id, result):
-        raise ValueError(f"Session {session_id} not found")
 
-    monkeypatch.setattr("app.services.agent_chat_service.AgentChatService.record_wam", not_owned)
-    app.dependency_overrides[get_current_user] = lambda: object()
-    app.dependency_overrides[get_db] = lambda: None
-    try:
-        async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test") as client:
-            response = await client.post(
-                "/api/v1/wam/6f1c1f0e-0000-4000-8000-000000000000",
-                json={"enrolment_record": _record(
-                    "2024 | Autumn | Wollongong/On Campus | AAAA101 | 6 | 80 | D | Complete")},
-            )
-    finally:
-        app.dependency_overrides.clear()
-    assert response.status_code == 404
+def test_unreadable_marks_do_not_block_planning_and_the_reason_is_not_shown():
+    corrupt = _record("2024 | Autumn | Wollongong/On Campus | CSIT110 | 6 | 95 | F | Failed")
+    text = _with_wam(project(corrupt), corrupt)
+    assert "could not be calculated" in text
+    assert "95" not in text
+
+
+def test_record_with_no_final_marks_says_so():
+    enrolled = _record("2026 | Spring | Wollongong/On Campus | CSIT121 | 6 |  |  | Enrolled")
+    assert "not available yet" in _with_wam(project(enrolled), enrolled)
+
+
+class _FakeGraph:
+    def __init__(self):
+        self.payload = None
+        self.state = types.SimpleNamespace(values={"meta": {"degree_code": "766"}})
+
+    async def ainvoke(self, payload, config=None):
+        self.payload = payload
+
+    async def aget_state(self, config):
+        return self.state
+
+
+class _FakeResolver:
+    async def resolve(self, user, requested_model=None, session=None):
+        from app.llm.config import LLMConfig
+        from app.llm.registry import Provider
+        return LLMConfig(provider=Provider.GEMINI, model="gemini-test", api_key="k", credential_id=None)
+
+
+@pytest.fixture
+def service(monkeypatch):
+    graph = _FakeGraph()
+    monkeypatch.setattr(agent_chat_service, "build_advisor_graph", lambda *a, **k: graph)
+    monkeypatch.setattr(agent_chat_service, "get_checkpointer", lambda: None)
+
+    async def latest(*a, **k):
+        return None
+
+    monkeypatch.setattr(agent_chat_service, "latest_reply", latest)
+
+    class _Db:
+        def add(self, row):
+            pass
+
+        async def commit(self):
+            pass
+
+        async def get(self, model, key):
+            return types.SimpleNamespace(user_id="u", model="gemini-test", credential_id=None, provider="gemini")
+
+    svc = AgentChatService(db=_Db(), user=types.SimpleNamespace(id="u"))
+    svc._resolver = _FakeResolver()
+    return svc, graph
+
+
+async def test_start_session_puts_the_wam_in_state_and_marks_nowhere(service):
+    svc, graph = service
+    await svc.start_session(GOOD)
+    assert "72.00" in graph.payload["raw_sols"]
+    sent = graph.payload["raw_sols"] + "".join(m.content for m in graph.payload["messages"])
+    assert "83" not in sent.replace("72.00", "")
+
+
+async def test_pasting_a_new_record_mid_chat_replaces_the_wam(service):
+    svc, graph = service
+    newer = _record("2024 | Autumn | Wollongong/On Campus | CSIT110 | 6 | 90 | HD | Complete")
+    await svc.continue_session(uuid.uuid4(), newer)
+    assert "90.00" in graph.payload["raw_sols"]

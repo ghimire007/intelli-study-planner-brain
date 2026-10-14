@@ -118,18 +118,16 @@ def calculate_wam(raw_sols: str) -> WamResult:
     return WamResult(wam=wam, total_credit_points=total_cp)
 
 
-def summarise_for_chat(result: WamResult) -> str:
-    """The note a chat session gets after a WAM run: the WAM and credit points only.
+def describe_for_prompt(result: WamResult) -> str:
+    """The line the advisor reads about the student's WAM: the WAM and credit points only.
 
     No subject codes and no individual marks or grades. The WAM and credit total
     carry no personal identifiers, so the advisor may use them in follow-ups.
     """
     if result.wam is None:
-        return (
-            "I ran the WAM calculator on your record, but none of your subjects have a "
-            "final mark yet, so there is no WAM to report."
-        )
+        return "WAM: not available yet (no subject in this record has a final mark)."
     return (
-        f"I calculated your UOW WAM: {result.wam} across {result.total_credit_points} credit points. "
-        "WAMs are truncated, not rounded up, and this is a guide only."
+        f"WAM (calculated by the server from the student's marks): {result.wam} across "
+        f"{result.total_credit_points} credit points. WAMs are truncated, not rounded up, and this is a "
+        "guide only. You do not have the individual marks or grades; do not estimate or recalculate the WAM."
     )

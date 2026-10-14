@@ -1,3 +1,4 @@
+import logging
 import re
 import uuid
 from typing import Literal
@@ -16,8 +17,8 @@ from app.services.credential_resolver import CredentialResolver
 from app.services.enrolment import UnreadableRecord, project
 from app.services.pii import scrub_pii
 from app.services.vault_service import VaultService
-from app.services.wam import WamResult, summarise_for_chat
-from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
+from app.services.wam import calculate_wam, describe_for_prompt
+from langchain_core.messages import HumanMessage, SystemMessage
 from sqlalchemy.ext.asyncio import AsyncSession
 
 ElectiveMode = Literal["degree", "interest"]
@@ -34,6 +35,27 @@ def _context_elective_preferences(
     if elective_interests is None and profile is not None:
         elective_interests = profile.elective_interests
     return elective_mode, list(elective_interests) if elective_interests is not None else None
+
+logger = logging.getLogger(__name__)
+
+
+def _with_wam(projected: str, raw_record: str) -> str:
+    """Append the server-calculated WAM to the projected record kept in state.
+
+    The WAM is worked out from the unprojected paste, before its marks are
+    dropped, and nothing but the WAM and its credit total comes back out. State
+    holds the projected record and every prompt reads it, so the advisor sees
+    the WAM and a newly pasted record replaces it. A record whose marks cannot
+    be read must not block planning, so that case is noted instead of raised.
+    The reason is logged, not shown: it may quote a mark.
+    """
+    try:
+        note = describe_for_prompt(calculate_wam(raw_record))
+    except UnreadableRecord as exc:
+        logger.info("WAM not calculated: %s", exc)
+        note = "WAM: could not be calculated from this record (marks missing or unreadable)."
+    return f"{projected}\n\n{note}"
+
 
 class CredentialRejected(Exception):
     """The provider refused the key mid-conversation; it has been marked invalid."""
@@ -133,6 +155,7 @@ class AgentChatService:
                     raise
 
                 initial_messages.append(HumanMessage(content=projected_sols))
+                projected_sols = _with_wam(projected_sols, raw_sols)
                 planning_requested = True
 
             else:
@@ -251,7 +274,7 @@ class AgentChatService:
             print("continue_session: SOLS record detected")
             payload = {
                 "messages": [ HumanMessage(content=projected) ],
-                "raw_sols": projected,
+                "raw_sols": _with_wam(projected, user_message),
                 "planning_requested": True,
                 "plan": None,
             }
@@ -287,22 +310,6 @@ class AgentChatService:
 
         messages = await build_history(graph, str(session_id), fallback_model=session.model)
         return session, messages
-
-    async def record_wam(self, session_id: uuid.UUID, result: WamResult) -> None:
-        """Add the WAM summary to this conversation so follow-up questions can use it.
-
-        Written as an assistant message, so it shows in the history the student
-        sees and is in context on their next turn. No LLM call and no key are
-        needed, the same as reading history.
-        """
-        await self._owned_session(session_id)
-
-        graph = build_advisor_graph(self._db, get_checkpointer())
-        await graph.aupdate_state(
-            {"configurable": {"thread_id": str(session_id)}},
-            {"messages": [AIMessage(content=summarise_for_chat(result))]},
-            as_node="format_output",  # a node that ends the run, so nothing is left pending
-        )
 
     async def _owned_session(self, session_id: uuid.UUID) -> ChatSession:
         session = await self._db.get(ChatSession, session_id)
