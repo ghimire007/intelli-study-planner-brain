@@ -182,3 +182,70 @@ def test_conflicting_duplicates_are_refused():
             "2024 | Autumn | Wollongong/On Campus | AAAA101 | 6 | 80 | D | Complete",
             "2024 | Autumn | Wollongong/On Campus | AAAA101 | 6 | 76 | D | Complete",
         ))
+
+
+def test_complete_subject_with_no_mark_and_no_grade_is_refused():
+    with pytest.raises(UnreadableRecord, match="neither a mark nor a grade"):
+        calculate_wam(_record(
+            "2024 | Autumn | Wollongong/On Campus | AAAA101 | 6 | 70 | C | Complete",
+            "2024 | Autumn | Wollongong/On Campus | AAAA102 | 6 |  |  | Complete",
+        ))
+
+
+def test_failed_subject_with_no_mark_and_no_grade_is_refused():
+    with pytest.raises(UnreadableRecord, match="neither a mark nor a grade"):
+        calculate_wam(_record("2024 | Autumn | Wollongong/On Campus | AAAA101 | 6 |  |  | Failed"))
+
+
+@pytest.mark.parametrize("grade", ["WH", "WD", "WS", "ND", "IPC", "IPR"])
+def test_results_that_are_not_final_are_not_counted(grade):
+    result = calculate_wam(_record(
+        "2024 | Autumn | Wollongong/On Campus | AAAA101 | 6 | 70 | C | Complete",
+        f"2024 | Autumn | Wollongong/On Campus | AAAA102 | 6 | 20 | {grade} | Complete",
+    ))
+    assert (result.wam, result.total_credit_points) == (Decimal("70.00"), 6)
+
+
+def test_an_implausible_credit_point_weight_is_refused():
+    with pytest.raises(UnreadableRecord, match="not a valid subject weight"):
+        calculate_wam(_record("2024 | Autumn | Wollongong/On Campus | AAAA101 | 100 | 80 | D | Complete"))
+
+
+async def test_endpoint_rejects_oversized_and_empty_records(monkeypatch):
+    from app.api.deps import get_current_user
+    from app.core.database import get_db
+
+    app.dependency_overrides[get_current_user] = lambda: object()
+    app.dependency_overrides[get_db] = lambda: None
+    url = "/api/v1/wam/6f1c1f0e-0000-4000-8000-000000000000"
+    try:
+        async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test") as client:
+            huge = await client.post(url, json={"enrolment_record": "x" * 200_001})
+            empty = await client.post(url, json={"enrolment_record": ""})
+            missing = await client.post(url, json={})
+            bad_id = await client.post("/api/v1/wam/not-a-uuid", json={"enrolment_record": "x"})
+    finally:
+        app.dependency_overrides.clear()
+    assert [huge.status_code, empty.status_code, missing.status_code, bad_id.status_code] == [422] * 4
+
+
+async def test_linked_endpoint_404s_for_a_session_that_is_not_the_callers(monkeypatch):
+    from app.api.deps import get_current_user
+    from app.core.database import get_db
+
+    async def not_owned(self, session_id, result):
+        raise ValueError(f"Session {session_id} not found")
+
+    monkeypatch.setattr("app.services.agent_chat_service.AgentChatService.record_wam", not_owned)
+    app.dependency_overrides[get_current_user] = lambda: object()
+    app.dependency_overrides[get_db] = lambda: None
+    try:
+        async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test") as client:
+            response = await client.post(
+                "/api/v1/wam/6f1c1f0e-0000-4000-8000-000000000000",
+                json={"enrolment_record": _record(
+                    "2024 | Autumn | Wollongong/On Campus | AAAA101 | 6 | 80 | D | Complete")},
+            )
+    finally:
+        app.dependency_overrides.clear()
+    assert response.status_code == 404

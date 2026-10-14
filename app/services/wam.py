@@ -30,6 +30,14 @@ _COUNTED_STATUSES = frozenset({"Complete", "Failed"})
 _MARKED_GRADES = frozenset({"HD", "D", "C", "P", "F"})
 _PASS_MARK = 50
 
+# A result that is held back or not final yet has nothing to average, even if a
+# mark was printed beside it.
+_NOT_FINAL_GRADES = frozenset({"WH", "WD", "WS", "ND", "IPC", "IPR"})
+
+# Largest nominal credit-point value on any UOW subject row. Past this a row is
+# misread, and a single huge weight would swamp the whole average.
+MAX_SUBJECT_CP = 48
+
 
 class WamResult(BaseModel):
     wam: Decimal | None
@@ -47,6 +55,21 @@ def _mark_for(row: MarkedEnrolmentRow) -> int | None:
 def _checked_mark(row: MarkedEnrolmentRow) -> int | None:
     """The mark to count, or UnreadableRecord when the row cannot be trusted."""
     label = f"{row.code} ({row.year} {row.session})"
+
+    if not 0 <= row.nom_cp <= MAX_SUBJECT_CP:
+        raise UnreadableRecord(
+            f"{label} has {row.nom_cp} credit points, which is not a valid subject weight. "
+            "The record may be corrupted; paste it again."
+        )
+
+    if row.grade in _NOT_FINAL_GRADES:
+        return None
+
+    if row.mark is None and row.grade is None:
+        raise UnreadableRecord(
+            f"{label} is {row.status.lower()} but has neither a mark nor a grade. "
+            "Paste the record again with the Mark and Grade columns included."
+        )
 
     if row.mark is None and row.grade in _MARKED_GRADES:
         raise UnreadableRecord(

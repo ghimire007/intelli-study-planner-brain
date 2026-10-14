@@ -7,7 +7,7 @@ averaged and dropped.
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user
@@ -20,8 +20,12 @@ from app.services.wam import WamResult, calculate_wam
 router = APIRouter()
 
 
+# A real record is a few KB; this leaves room for long histories and nothing more.
+MAX_RECORD_CHARS = 200_000
+
+
 class WamRequest(BaseModel):
-    enrolment_record: str
+    enrolment_record: str = Field(min_length=1, max_length=MAX_RECORD_CHARS)
 
 
 @router.post("/{session_id}", response_model=WamResult)
