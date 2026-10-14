@@ -171,6 +171,17 @@ class EnrolmentRow(BaseModel):
     status: str
 
 
+class MarkedEnrolmentRow(EnrolmentRow):
+    """An enrolment row that also carries the numeric mark.
+
+    Produced only by `parse_enrolment(..., keep_marks=True)`, which exists for
+    the WAM calculator. Nothing that feeds a prompt asks for it, so the mark
+    stays out of the chat path by type, not by convention.
+    """
+
+    mark: int | None
+
+
 class CreditRow(BaseModel):
     """One advanced-standing row — specified (a named subject) or not."""
 
@@ -226,7 +237,16 @@ def _require_int(value: str, field: str) -> int:
         raise UnreadableRecord(f"Could not read {field} from {value!r}.") from exc
 
 
-def _enrolment_row(cells: dict[str, str]) -> EnrolmentRow:
+def _read_mark(value: str) -> int | None:
+    if not value:
+        return None
+    mark = _require_int(value, "mark")
+    if not 0 <= mark <= 100:
+        raise UnreadableRecord(f"{mark} is not a valid mark.")
+    return mark
+
+
+def _enrolment_row(cells: dict[str, str], keep_marks: bool) -> EnrolmentRow:
     code = cells.get("subject code", "").upper()
     if not _SUBJECT_CODE.match(code):
         raise UnreadableRecord(f"{code!r} is not a subject code.")
@@ -242,7 +262,7 @@ def _enrolment_row(cells: dict[str, str]) -> EnrolmentRow:
     # The column is "Campus/Delivery"; only the campus half is on the allowlist.
     campus = cells.get("campus/delivery") or cells.get("campus", "")
 
-    return EnrolmentRow(
+    fields = dict(
         year=_require_int(cells.get("year", ""), "year"),
         session=cells.get("session", ""),
         campus=campus.split("/")[0].strip(),
@@ -251,6 +271,9 @@ def _enrolment_row(cells: dict[str, str]) -> EnrolmentRow:
         grade=grade,
         status=status,
     )
+    if keep_marks:
+        return MarkedEnrolmentRow(**fields, mark=_read_mark(cells.get("mark", "")))
+    return EnrolmentRow(**fields)
 
 
 def _credit_row(cells: dict[str, str]) -> CreditRow:
@@ -330,12 +353,15 @@ _NO_HISTORY = (
 )
 
 
-def parse_enrolment(raw_sols: str) -> EnrolmentRecord:
+def parse_enrolment(raw_sols: str, *, keep_marks: bool = False) -> EnrolmentRecord:
     """Parse a SOLS paste into its allowlisted fields.
 
     Copying the record out of SOLS does not always preserve the table: pasted
     through a plain-text field it can arrive as one unbroken run of words. Both
     shapes are read, by the same allowlist and the same shape checks.
+
+    Marks are dropped unless `keep_marks` is set, which only the WAM calculator
+    does; rows then come back as `MarkedEnrolmentRow`.
 
     Raises UnreadableRecord if the paste has no readable enrolment history, or
     if any value in one fails its shape check.
@@ -344,11 +370,11 @@ def parse_enrolment(raw_sols: str) -> EnrolmentRecord:
     # a single line of pipes is a table that lost its line breaks, so it goes
     # down the relaxed path with everything else that arrived run together.
     if sum(line.lstrip().startswith("|") for line in raw_sols.splitlines()) > 1:
-        return _parse_table(raw_sols)
-    return _parse_flat(raw_sols)
+        return _parse_table(raw_sols, keep_marks)
+    return _parse_flat(raw_sols, keep_marks)
 
 
-def _parse_flat(raw_sols: str) -> EnrolmentRecord:
+def _parse_flat(raw_sols: str, keep_marks: bool) -> EnrolmentRecord:
     """Parse a paste whose table markup did not survive the copy.
 
     With no columns left, rows are recovered by matching the known row shape
@@ -430,17 +456,19 @@ def _parse_flat(raw_sols: str) -> EnrolmentRecord:
                     f"{grade!r} is not a known grade."
                 )
 
-        rows.append(
-            EnrolmentRow(
-                year=int(row.group("year")),
-                session=row.group("session"),
-                campus=row.group("campus").split("/")[0].strip(),
-                code=code,
-                nom_cp=int(row.group("nom_cp")),
-                grade=grade,
-                status=row.group("status"),
-            )
+        fields = dict(
+            year=int(row.group("year")),
+            session=row.group("session"),
+            campus=row.group("campus").split("/")[0].strip(),
+            code=code,
+            nom_cp=int(row.group("nom_cp")),
+            grade=grade,
+            status=row.group("status"),
         )
+        if keep_marks:
+            rows.append(MarkedEnrolmentRow(**fields, mark=_read_mark(row.group("mark") or "")))
+        else:
+            rows.append(EnrolmentRow(**fields))
 
     return EnrolmentRecord(
         course_code=header["course_code"],
@@ -452,7 +480,7 @@ def _parse_flat(raw_sols: str) -> EnrolmentRecord:
     )
 
 
-def _parse_table(raw_sols: str) -> EnrolmentRecord:
+def _parse_table(raw_sols: str, keep_marks: bool) -> EnrolmentRecord:
     """Parse a paste that still has its markdown tables."""
     header: dict = {"course_code": None, "campus": None, "majors": [], "_pending_major": False}
     rows: list[EnrolmentRow] = []
@@ -488,7 +516,7 @@ def _parse_table(raw_sols: str) -> EnrolmentRecord:
 
         by_name = dict(zip(columns, cells, strict=True))
         if table == "enrolment":
-            rows.append(_enrolment_row(by_name))
+            rows.append(_enrolment_row(by_name, keep_marks))
         elif table == "specified":
             specified.append(_credit_row(by_name))
         else:
