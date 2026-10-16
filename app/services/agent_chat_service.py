@@ -1,3 +1,4 @@
+import logging
 import re
 import uuid
 from typing import Literal
@@ -16,6 +17,7 @@ from app.services.credential_resolver import CredentialResolver
 from app.services.enrolment import UnreadableRecord, project
 from app.services.pii import scrub_pii
 from app.services.vault_service import VaultService
+from app.services.wam import calculate_wam, describe_for_prompt
 from langchain_core.messages import HumanMessage, SystemMessage
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -33,6 +35,29 @@ def _context_elective_preferences(
     if elective_interests is None and profile is not None:
         elective_interests = profile.elective_interests
     return elective_mode, list(elective_interests) if elective_interests is not None else None
+
+logger = logging.getLogger(__name__)
+
+
+def _with_wam(projected: str, raw_record: str) -> str:
+    """Append the server-calculated WAM to the projected record kept in state.
+
+    The WAM is worked out from the unprojected paste, before its marks are
+    dropped, and nothing but the WAM and its credit total comes back out. State
+    holds the projected record and every prompt reads it, so the advisor sees
+    the WAM and a newly pasted record replaces it. A record whose marks cannot
+    be read must not block planning, so that case is noted instead of raised.
+    The reason is logged, not shown: it may quote a mark. Any failure at all,
+    not only an unreadable record, degrades to that note: the WAM is a bonus
+    and must never stop the student getting a plan.
+    """
+    try:
+        note = describe_for_prompt(calculate_wam(raw_record))
+    except Exception:
+        logger.warning("WAM not calculated", exc_info=True)
+        note = "WAM: could not be calculated from this record (marks missing or unreadable)."
+    return f"{projected}\n\n{note}"
+
 
 class CredentialRejected(Exception):
     """The provider refused the key mid-conversation; it has been marked invalid."""
@@ -143,6 +168,7 @@ class AgentChatService:
                     raise
 
                 initial_messages.append(HumanMessage(content=projected_sols))
+                projected_sols = _with_wam(projected_sols, raw_sols)
                 planning_requested = True
 
             else:
@@ -261,7 +287,7 @@ class AgentChatService:
             print("continue_session: SOLS record detected")
             payload = {
                 "messages": [ HumanMessage(content=projected) ],
-                "raw_sols": projected,
+                "raw_sols": _with_wam(projected, user_message),
                 "planning_requested": True,
                 "plan": None,
             }
