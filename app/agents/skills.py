@@ -109,8 +109,7 @@ def confirm_metadata_tool(
     Call after the student has answered the intake question or
     explicitly corrected their details.
 
-    On first confirmation: do not call fetch_handbook_tool or attempt any
-    audit/planning before this has been called.
+    On first confirmation: do not attempt any audit/planning before this has been called.
 
     On a mid-chat degree/year/campus switch: call this again with the new
     values; the cached handbook is cleared so you must re-fetch it for the

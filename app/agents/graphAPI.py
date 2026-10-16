@@ -57,7 +57,7 @@ class AdvisorGraph:
         )
 
         # Conversational / metadata phase: collect and confirm student details.
-        graph.add_node("parse_input", conversation.parse_input)
+        # graph.add_node("parse_input", conversation.parse_input)
         graph.add_node("agent", conversation.agent)
         graph.add_node("tools", conversation.run_tools)
         graph.add_node("capture_tool_results", conversation.capture_tool_results)
@@ -83,8 +83,8 @@ class AdvisorGraph:
         # Parse whatever metadata the paste carries, then let the agent decide:
         # call a tool, fetch the handbook, start planning, recommend electives or end the turn
         # (which surfaces the agent's question to the student).
-        graph.add_edge(START, "parse_input")
-        graph.add_edge("parse_input", "agent")
+        # graph.add_edge(START, "parse_input")
+        graph.add_edge(START, "agent")
         graph.add_conditional_edges(
             "agent",
             conversation.route_after_agent,

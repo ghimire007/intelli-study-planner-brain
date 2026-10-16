@@ -156,6 +156,7 @@ class Stage2Nodes:
         """Emit the plan. After exhausted retries the latest plan is still
         returned rather than silently discarded."""
         print("NODE: format_output")
+        print("\n\nle plan\n\n", state.get("plan"), "\n\n")
 
         plan = state.get("plan") or (
             "Unable to complete plan generation. "

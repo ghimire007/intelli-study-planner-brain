@@ -23,7 +23,6 @@ from app.agents.state import (
 from app.llm.text import is_evaluation_reply
 from app.prompts.builder import build_system_prompt
 from app.prompts.prompts import SYSTEM_PROMPT
-from app.services.sols_parser import parse_sols
 
 
 class ConversationNodes:
@@ -60,28 +59,28 @@ class ConversationNodes:
         self._llms = llms
         self._tool_node = ToolNode(confirm_tools)
 
-    async def parse_input(self, state: AdvisorState) -> dict:
-        print("NODE: parse_input")
+    # async def parse_input(self, state: AdvisorState) -> dict:
+    #     print("NODE: parse_input")
 
-        if state.get("meta") is not None:
-            return {}
+    #     if state.get("meta") is not None:
+    #         return {}
 
-        raw_sols = state.get("raw_sols")
-        print("raw_sols chars =", len(raw_sols or ""))
+    #     raw_sols = state.get("raw_sols")
+    #     print("raw_sols chars =", len(raw_sols or ""))
 
-        start = time.perf_counter()
-        try:
-            meta = await parse_sols(self._llms.get("parser"), raw_sols)
-        except Exception as exc:
-            print(type(exc).__name__, repr(exc))
-            raise
-        print(f"parse_sols took {time.perf_counter() - start:.2f}s")
+    #     start = time.perf_counter()
+    #     try:
+    #         meta = await parse_sols_metadata(self._llms.get("parser"), raw_sols)
+    #     except Exception as exc:
+    #         print(type(exc).__name__, repr(exc))
+    #         raise
+    #     print(f"parse_sols_metadata took {time.perf_counter() - start:.2f}s")
 
-        return {
-            "meta": meta.model_dump(),
-            "meta_confirmed": False,
-            "planning_requested": False,
-        }
+    #     return {
+    #         "meta": meta.model_dump(),
+    #         "meta_confirmed": False,
+    #         "planning_requested": False,
+    #     }
 
     async def agent(self, state: AdvisorState) -> dict:
         """Conversational LLM: confirmation-oriented model before metadata is
@@ -124,9 +123,12 @@ class ConversationNodes:
             1. questions about the existing plan
             2. requests to modify the plan
 
-            DO NOT call request_plan_change_tool for general questions, questions about the plan itself or question about your logic.
+            Call request_plan_change_tool only when the student explicitly requests a change to their study plan, such as changing their major, changing elective preferences, moving subjects between sessions, or revising the plan.
 
-            Only call request_plan_change_tool when the student explicitly wants the plan to change.
+            Do NOT call request_plan_change_tool for informational questions about the student's existing enrolment history or current plan.
+            Answer informational questions using the available enrolment history and plan state.
+
+            A question about the plan is not a request to change the plan. Do not interpret general_revision as permission to regenerate the plan unless the student explicitly requests a revision.
 
             Current conversation mode:
             {conversation_mode}
