@@ -22,8 +22,7 @@ def extract_sols_metadata(text: str) -> SOLSMeta:
 
     meta = SOLSMeta()
 
-    # Course:1802Bachelor of Computer Science
-    # Also supports Course: 1802 Bachelor of Computer Science
+    # find degree code
     match = re.search(
         r"(?im)^\s*Course\s*:\s*(\d{3,4})(?!\d)",
         text,
@@ -31,7 +30,7 @@ def extract_sols_metadata(text: str) -> SOLSMeta:
     if match:
         meta.degree_code = match.group(1)
 
-    # Campus: Wollongong
+    # find campus
     match = re.search(
         r"(?im)^\s*Campus\s*:\s*"
         r"(Wollongong|Sydney|Liverpool|Batemans Bay|"
@@ -42,20 +41,23 @@ def extract_sols_metadata(text: str) -> SOLSMeta:
     if match:
         meta.campus = match.group(1).strip()
 
-    # Find the year associated with an enrolment row.
-    # Prefer a year appearing alongside a session.
-    match = re.search(
-        r"\b((?:19|20)\d{2})\s+"
-        r"(?:Annual|Autumn|Spring|Summer|Winter)\b",
+    # find first year
+    match = re.findall(
+        r"(?<!\d)(20\d{2})(?!\d)",
         text,
-        re.IGNORECASE,
     )
+    
+    # match = re.search(
+    #     r"\b((?:19|20)\d{2})\s+"
+    #     r"(?:Annual|Autumn|Spring|Summer|Winter)\b",
+    #     text,
+    #     re.IGNORECASE,
+    # )
+    
     if match:
-        meta.year = int(match.group(1))
-
-    # Major:SENGSoftware Engineering
-    # Major 1: Web Design and Development
-    # Major 2: Network Design & Management
+        meta.year = int(min(map(int, match)))
+        
+    # get major/s
     for match in re.finditer(
         r"(?im)^\s*Major(?:\s+\d+)?\s*:\s*(.+?)\s*$",
         text,

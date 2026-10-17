@@ -29,6 +29,8 @@ from app.agents.state import (
     _message_text,
     extract_and_parse_json,
     handbook_matches_current_meta,
+    get_ranking_preferences,
+    latest_user_request,
     stage1_electives_from_advisor_state,
 )
 from app.prompts.builder import build_system_prompt
@@ -37,13 +39,60 @@ from app.prompts.prompts import (
     POPULATE_ELECTIVES_IN_PLAN,
     SUBJECT_GENERATION_PROMPT,
 )
+import re
 
+def merge_elective_candidates(
+        ranked_json: str,
+        lookup_results: list[dict],
+    ) -> str:
+        """Merge lookup results into ranked candidates, deduplicated by code."""
+        try:
+            payload = json.loads(ranked_json)
+        except (json.JSONDecodeError, TypeError):
+            payload = {}
+
+        if not isinstance(payload, dict):
+            payload = {}
+
+        subjects = payload.setdefault("subjects", [])
+        if not isinstance(subjects, list):
+            subjects = []
+            payload["subjects"] = subjects
+
+        seen = {
+            str(item.get("code") or "").strip().upper()
+            for item in subjects
+            if isinstance(item, dict)
+        }
+
+        for subject in lookup_results:
+            if not isinstance(subject, dict):
+                continue
+
+            code = str(subject.get("code") or "").strip().upper()
+            match = re.fullmatch(r"[A-Z]{2,6}(\d{3})[A-Z]?", code)
+
+            if not match or int(match.group(1)[0]) not in {1, 2, 3}:
+                continue
+
+            if code in seen:
+                continue
+
+            # Do not fabricate the ranking or eligibility fields.
+            # Keep the source record intact for explicit normalization/validation.
+            subjects.append(subject)
+            seen.add(code)
+
+        return json.dumps(payload, ensure_ascii=False, default=str)
 
 class Stage1Nodes:
     """Stage 1: elective candidates and required/core subjects."""
 
     def __init__(self, llms: LLMRegistry) -> None:
         self._llms = llms
+
+
+    
 
     @staticmethod
     async def start_planning(state: AdvisorState) -> dict:
@@ -60,29 +109,84 @@ class Stage1Nodes:
             **PLANNING_RESET,
         }
 
-    async def fetch_elective_list(self, state: AdvisorState) -> dict:
-        """Rank electives from handbook data, with no model call.
+    
+    async def extract_request_elective_interests(
+        self,
+        state: AdvisorState,
+    ) -> list[str]:
+        """Extract elective interests explicitly expressed in the latest message."""
 
-        Reads the course's scraped elective pools, subject catalog and course
-        rules; drops core, major, completed and enrolled subjects and those
-        with unmet prerequisites; scores the rest by keyword overlap with the
-        major description or the student's interests.
-        """
+        request = latest_user_request(state).strip()
+        if not request:
+            return []
+
+        response = await self._llms.get("parser").ainvoke([
+            SystemMessage(content=(
+                "Extract topics the student explicitly wants to use "
+                "to choose university electives. Return JSON only, "
+                'in this format: {"interests": ["topic"]}. '
+                "Only extract topics relevant to an elective request. "
+                "Do not use saved preferences or infer unrelated interests. "
+                "If no elective interest is explicitly requested, return "
+                '{"interests": []}.'
+            )),
+            HumanMessage(content=request),
+        ])
+
+        parsed = extract_and_parse_json(response.content)
+        if not isinstance(parsed, dict):
+            return []
+
+        interests = parsed.get("interests", [])
+        if isinstance(interests, str):
+            interests = [interests]
+
+        if not isinstance(interests, list):
+            return []
+
+        return list(dict.fromkeys(
+            str(item).strip()
+            for item in interests
+            if isinstance(item, str) and item.strip()
+        ))
+
+
+    
+    async def fetch_elective_list(self, state: AdvisorState) -> dict:
+        """Retrieve and rank electives using current or saved preferences."""
         print("NODE: fetch_elective_list")
 
         if not handbook_matches_current_meta(state):
             print("STAGE 1 ELECTIVES BLOCKED: handbook invalid")
             return {}
 
-        # CPU-bound and synchronous: run it off the event loop so the core
-        # branch's model call keeps making progress in parallel.
-        electives = await asyncio.to_thread(stage1_electives_from_advisor_state, state)
+        request_interests = await self.extract_request_elective_interests(
+            state
+        )
+
+        ranking_state = get_ranking_preferences(
+            state,
+            request_interests=request_interests,
+        )
+
+        print("CURRENT REQUEST INTERESTS:", request_interests)
+        print("EFFECTIVE RANKING INTERESTS:",
+              ranking_state.get("elective_interests"))
+
+        # Run the existing ranking service without blocking the event loop.
+        electives = await asyncio.to_thread(
+            stage1_electives_from_advisor_state,
+            ranking_state,
+        )
 
         response = await self._llms.get("full").ainvoke([
             SystemMessage(content=(
-                "You are a university course planning assistant."
-                "Explain the supplied elective recommendations clearly. Give each elective its own succinct paragraph of general information as well as why it relates to the given elective request."
-                "Use only the supplied results. Do not invent subjects, eligibility claims, prerequisites, or availability. "
+                "You are a university course planning assistant. "
+                "Explain the supplied elective recommendations clearly. "
+                "Give each elective a succinct paragraph describing the "
+                "subject and why it relates to the student's request. "
+                "Use only the supplied results. Do not invent subjects, "
+                "eligibility claims, prerequisites, or availability. "
                 "If no electives are available, explain that clearly."
             )),
             HumanMessage(content=electives),
@@ -93,15 +197,17 @@ class Stage1Nodes:
                 AIMessage(content=_message_text(response).strip())
             ],
             "electives": electives,
+            "request_elective_interests": request_interests,
             "pending_elective_action": None,
             "electives_feedback": None,
         }
 
 
+
     async def populate_plan_electives(self, state: AdvisorState) -> dict:
         """Add valid elective candidates to the existing plan without rebuilding it."""
         print("NODE: populate_plan_electives")
-        print("PLANNNNNN: ", state.get('plan'))
+        # print("PLANNNNNN: ", state.get('plan'))
 
         if not handbook_matches_current_meta(state):
             print("POPULATE ELECTIVES BLOCKED: handbook invalid")
@@ -114,11 +220,30 @@ class Stage1Nodes:
                 "pending_elective_action": "recommend",
             }
 
-        # Obtain candidates from the deterministic elective-ranking service.
+        request_interests = await self.extract_request_elective_interests(
+            state
+        )
+
+        ranking_state = get_ranking_preferences(
+            state,
+            request_interests=request_interests,
+        )
+
+        # print("POPULATE CURRENT REQUEST INTERESTS:", request_interests)
+        # print("POPULATE EFFECTIVE INTERESTS:",
+        #       ranking_state.get("elective_interests"))
+
         candidates = await asyncio.to_thread(
             stage1_electives_from_advisor_state,
-            state,
+            ranking_state,
         )
+
+        candidates = merge_elective_candidates(
+            candidates,
+            state.get("elective_lookup_results") or [],
+        )
+
+        print("candidates = merged: ", candidates)
 
         if not candidates:
             print("POPULATE ELECTIVES: no valid elective candidates")
@@ -147,6 +272,8 @@ class Stage1Nodes:
             default=str,
         )
 
+        # print("current plan: ", state.get("plan"))
+
         prompt = build_system_prompt(
             prompt=POPULATE_ELECTIVES_IN_PLAN,
             meta=state.get("meta"),
@@ -162,23 +289,6 @@ EXISTING PLAN — SOURCE OF TRUTH:
 
 VALID ELECTIVE CANDIDATES:
 {candidates_text}
-
-TASK:
-Update the existing plan by filling its eligible elective slots using
-only subjects from VALID ELECTIVE CANDIDATES.
-
-RULES:
-1. Return the COMPLETE updated plan in the same JSON schema as the existing plan.
-2. Preserve all existing core and major subjects, their sessions, years,
-   credit points, and other plan fields unless an update is strictly necessary
-   to accommodate an elective.
-3. Do not rebuild or replace the degree plan.
-4. Do not add a subject that is absent from VALID ELECTIVE CANDIDATES.
-5. Do not duplicate subjects already present in the plan.
-6. Respect the degree's elective credit-point requirements and available slots.
-7. Respect prerequisites and handbook session availability.
-8. If there are insufficient valid candidates, leave unfilled slots unchanged.
-9. Return JSON only. Do not include markdown fences or explanatory prose.
 """
 
         feedback = state.get("electives_feedback")
@@ -191,46 +301,53 @@ RULES:
 
         response = await self._llms.get("full").ainvoke([
             SystemMessage(content=(
-                "You are an academic course planning assistant updating an "
-                "existing university degree plan. Preserve the existing plan "
-                "and follow the supplied candidate list. Return the complete "
-                "updated plan as JSON only. Do not call tools."
+                "You are updating an existing UOW study plan. "
+                "Change eligible elective placeholders only. "
+                "Preserve every other part of the existing plan. "
+                "Return the complete response using the output format "
+                "specified in the supplied system instructions, including "
+                "the audit, study-plan table, credit-point summary, and "
+                "final JSON code fence. "
+                "Do not call tools."
             )),
             HumanMessage(content=prompt),
         ])
 
         response_text = _message_text(response).strip()
 
-        try:
-            updated_plan = extract_and_parse_json(response_text)
+        # try:
+        #     updated_plan = extract_and_parse_json(response_text)
 
-            if not isinstance(updated_plan, (dict, list)):
-                raise ValueError(
-                    "Updated plan must be a JSON object or array."
-                )
+        #     if not isinstance(updated_plan, (dict, list)):
+        #         raise ValueError(
+        #             "Updated plan must be a JSON object or array."
+        #         )
 
-            updated_plan_text = json.dumps(
-                updated_plan,
-                ensure_ascii=False,
-            )
+        #     updated_plan_text = json.dumps(
+        #         updated_plan,
+        #         ensure_ascii=False,
+        #     )
 
-        except (ValueError, TypeError, json.JSONDecodeError) as exc:
-            print("POPULATE ELECTIVES: invalid plan JSON:", repr(exc))
-            return {
-                "electives_feedback": (
-                    "The updated plan could not be parsed as valid JSON. "
-                    "The existing plan has not been changed."
-                ),
-                "pending_elective_action": None,
-            }
+        # except (ValueError, TypeError, json.JSONDecodeError) as exc:
+        #     print("POPULATE ELECTIVES: invalid plan JSON:", repr(exc))
+        #     return {
+        #         "electives_feedback": (
+        #             "The updated plan could not be parsed as valid JSON. "
+        #             "The existing plan has not been changed."
+        #         ),
+        #         "pending_elective_action": None,
+        #     }
 
         print("POPULATE ELECTIVES: updated plan parsed successfully")
+        # print("plannnn: ", response_text)
 
         return {
-            "plan": updated_plan_text,
-            "messages": [response],
+            "plan": response_text,
+            "messages": [AIMessage(content=response_text)],
             "electives_feedback": None,
             "pending_elective_action": None,
+            "elective_lookup_results": [],
+            "elective_lookup_codes": []
         }
 
     async def generate_core_subjects(self, state: AdvisorState) -> dict:

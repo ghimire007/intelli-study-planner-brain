@@ -30,6 +30,38 @@ class ConversationNodes:
     metadata tools the agent calls back into state."""
 
     @staticmethod
+    def route_after_tool_results(
+        state: AdvisorState,
+    ) -> Literal["agent", "ensure_handbook", "__end__"]:
+        """Route confirmed metadata into the application workflow.
+
+        Do not invoke the LLM again just to decide what to do after
+        metadata has been confirmed.
+        """
+        batch = latest_tool_batch(state)
+
+        called_metadata_confirmation = any(
+            message.name == "confirm_metadata_tool"
+            for message in batch
+        )
+
+        if (
+            called_metadata_confirmation
+            and state.get("meta_confirmed")
+            and (
+                state.get("planning_requested")
+                or state.get("pending_elective_action") is not None
+            )
+            and not handbook_matches_current_meta(state)
+        ):
+            print("ROUTE: metadata confirmed; fetching handbook directly")
+            return "ensure_handbook"
+
+        # Other tool results, such as answers to subject questions,
+        # should return to the agent so it can respond to the student.
+        return "agent"
+
+    @staticmethod
     def user_requested_electives(state: AdvisorState) -> bool:
         """Detect explicit requests for elective recommendations or selection."""
         message = latest_student_message(state).strip().lower()
@@ -55,9 +87,12 @@ class ConversationNodes:
 
         return "recommend"
 
-    def __init__(self, llms: LLMRegistry, confirm_tools: list) -> None:
+    def __init__(self, llms: LLMRegistry, tools_by_kind: dict) -> None:
         self._llms = llms
-        self._tool_node = ToolNode(confirm_tools)
+        self._tool_nodes = {
+            kind: ToolNode(tools)
+            for kind, tools in tools_by_kind.items()
+        }
 
     # async def parse_input(self, state: AdvisorState) -> dict:
     #     print("NODE: parse_input")
@@ -86,6 +121,7 @@ class ConversationNodes:
         """Conversational LLM: confirmation-oriented model before metadata is
         confirmed, full planning/conversation model afterwards."""
         print("NODE: agent")
+        # print("current plan: ", state.get("plan"))
 
         pending_action = state.get("pending_elective_action")
 
@@ -93,7 +129,17 @@ class ConversationNodes:
             pending_action = self.requested_elective_action(state)
 
         confirmed = bool(state.get("meta_confirmed"))
-        kind = "full" if confirmed else "confirm"
+        conversation_mode = state.get("conversation_mode") or "collecting"
+
+        if not confirmed:
+            kind = "confirm"
+        elif (
+            conversation_mode == "post_plan"
+            and is_plan_explanation_question(latest_student_message(state))
+        ):
+            kind = "qa"
+        else:
+            kind = "full"
         print("agent: invoking", kind)
 
         conversation_mode = state.get("conversation_mode") or "collecting"
@@ -112,7 +158,6 @@ class ConversationNodes:
             - Use the dedicated elective workflow for elective recommendations.
             - Only call request_plan_change_tool to change saved preferences when the student explicitly asks to change those preferences.
             - If changing elective interests, elective_interests must be a list of strings. Never submit null for this field.
-            - Do not call fetch_handbook_tool or lookup_ranked_electives_tool.
             - Handbook fetching is handled by ensure_handbook.
             - Elective retrieval is handled by fetch_elective_list.
             - If pending_elective_action is set and metadata is confirmed, do not make additional tool calls. Let the application workflow handle the request.
@@ -175,8 +220,10 @@ class ConversationNodes:
             if not response.tool_calls and is_evaluation_reply(response.content):
                 response.content = "I couldn't produce a chat reply. Please try your message again."
 
-
-        updates = {"messages": [response]}
+        updates = {
+            "messages": [response],
+            "active_tool_kind": kind,
+        }
 
         if pending_action is not None:
             updates["pending_elective_action"] = pending_action
@@ -187,30 +234,102 @@ class ConversationNodes:
 
     async def run_tools(self, state: AdvisorState) -> dict:
         print("NODE: tools")
-        return await self._tool_node.ainvoke(state)
+
+        kind = state.get("active_tool_kind", "confirm")
+        tool_node = self._tool_nodes[kind]
+
+        return await tool_node.ainvoke(state)
 
     def capture_tool_results(self, state: AdvisorState) -> dict:
-        """Fold the latest batch of conversational tool results into state.
-
-        Only confirm_metadata_tool and request_plan_change_tool affect state;
-        both are applied in chronological order so a later call sees the
-        metadata an earlier one produced.
-        """
+        """Fold conversational tool results into state."""
         print("NODE: capture_tool_results")
 
         batch = latest_tool_batch(state)
         updates: dict = {}
 
+        lookup_results = list(state.get("elective_lookup_results") or [])
+        lookup_codes = {
+            str(code).strip().upper()
+            for code in (state.get("elective_lookup_codes") or [])
+        }
+
         print("TOOL RESULT:", batch)
 
         for message in batch:
-            if message.name not in {"confirm_metadata_tool", "request_plan_change_tool"}:
-                continue
-
             try:
                 parsed = extract_and_parse_json(message.content)
+
+                if message.name == "lookup_subjects_tool":
+                    # Support both the current {"query": ..., "subjects": [...]} format
+                    # and the older list format.
+                    if isinstance(parsed, dict):
+                        subjects = parsed.get("subjects", [])
+                    elif isinstance(parsed, list):
+                        subjects = parsed
+                    else:
+                        print(
+                            "LOOKUP RESULT IGNORED: expected JSON object or list; "
+                            f"got {type(parsed).__name__}"
+                        )
+                        continue
+
+                    if not isinstance(subjects, list):
+                        print("LOOKUP RESULT IGNORED: 'subjects' is not a list")
+                        continue
+
+                    captured_this_call = []
+
+                    for item in subjects:
+                        if not isinstance(item, dict):
+                            continue
+
+                        # Current lookup results wrap the detailed subject in "subject".
+                        # Also support results where the subject fields are at the top level.
+                        subject = item.get("subject")
+                        if not isinstance(subject, dict):
+                            subject = item
+
+                        code = str(
+                            subject.get("code") or item.get("code") or ""
+                        ).strip().upper()
+
+                        if not code or code in lookup_codes:
+                            continue
+
+                        # Copy the detailed subject without modifying the tool result.
+                        normalized_subject = {
+                            **subject,
+                            "code": code,
+                        }
+
+                        # Keep the relevance score if the outer result provides one.
+                        if "score" in item:
+                            normalized_subject.setdefault("score", item["score"])
+
+                        lookup_codes.add(code)
+                        lookup_results.append(normalized_subject)
+                        captured_this_call.append(code)
+
+                    print(
+                        "CAPTURED ELECTIVE LOOKUPS:",
+                        sorted(lookup_codes),
+                    )
+                    print(
+                        "CAPTURED IN THIS CALL:",
+                        captured_this_call,
+                    )
+                    continue
+
+                if message.name not in {
+                    "confirm_metadata_tool",
+                    "request_plan_change_tool",
+                }:
+                    continue
+
                 if not isinstance(parsed, dict):
-                    raise ValueError(f"{message.name} did not return an object.")
+                    raise ValueError(
+                        f"{message.name} did not return an object."
+                    )
 
                 prior_meta = updates.get("meta", state.get("meta"))
 
@@ -220,15 +339,28 @@ class ConversationNodes:
                         candidate_meta=parsed,
                         state=state,
                     )
-                    updates.update(apply_confirm_metadata(prior_meta, sanitized))
+                    updates.update(
+                        apply_confirm_metadata(prior_meta, sanitized)
+                    )
                     print("CONFIRMED METADATA RAW:", parsed)
                     print("CONFIRMED METADATA SANITIZED:", sanitized)
+
                 else:
-                    updates.update(apply_plan_change_request(prior_meta, parsed))
+                    updates.update(
+                        apply_plan_change_request(prior_meta, parsed)
+                    )
                     print("PLAN CHANGE TOOL RESULT:", parsed)
 
             except Exception as exc:
-                print("Conversational tool parse error:", repr(exc))
+                print(
+                    f"Conversational tool parse error ({message.name}):",
+                    repr(exc),
+                )
+
+        # Only update these keys if the batch included a lookup result.
+        if any(m.name == "lookup_subjects_tool" for m in batch):
+            updates["elective_lookup_results"] = lookup_results
+            updates["elective_lookup_codes"] = sorted(lookup_codes)
 
         return updates
 

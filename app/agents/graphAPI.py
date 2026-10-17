@@ -42,10 +42,51 @@ class AdvisorGraph:
         llm_config: LLMConfig | None = None,
     ) -> None:
         skills = build_skills(db)
-        llms = LLMRegistry(llm_config, {"confirm": skills["confirm"], "full": skills["full"]})
+
+        conversation_tools = {
+            "confirm": skills["confirm"],
+            "full": [
+                tool
+                for tool in skills["full"]
+                if tool.name in {
+                    "lookup_subjects_tool",
+                    "lookup_uow_policy_tool",
+                    "request_plan_change_tool",
+                }
+            ],
+            "qa": [
+                tool
+                for tool in skills["full"]
+                if tool.name in {
+                    "lookup_subjects_tool",
+                    "lookup_major_tool",
+                    "lookup_uow_policy_tool",
+                }
+            ],
+        }
+
+        llms = LLMRegistry(llm_config, conversation_tools)
+        stage1_tools = [
+            tool
+            for tool in skills["full"]
+            if tool.name in {
+                "lookup_uow_policy_tool",
+            }
+        ]
+
+        stage1_llms = LLMRegistry(
+            llm_config,
+            {
+                "confirm": skills["confirm"],
+                "full": stage1_tools,
+            },
+        )
 
         self._checkpointer = checkpointer
-        self.conversation = ConversationNodes(llms, skills["confirm"])
+        self.conversation = ConversationNodes(
+            llms,
+            conversation_tools,
+        )
         self.handbook = HandbookNodes(db)
         self.stage1 = Stage1Nodes(llms)
         self.stage2 = Stage2Nodes(llms, skills["full"])
@@ -98,7 +139,15 @@ class AdvisorGraph:
             },
         )
         graph.add_edge("tools", "capture_tool_results")
-        graph.add_edge("capture_tool_results", "agent")
+        graph.add_conditional_edges(
+            "capture_tool_results",
+            conversation.route_after_tool_results,
+            {
+                "agent": "agent",
+                "ensure_handbook": "ensure_handbook",
+                END: END,
+            },
+        )
 
         # Handbook gate: planning only proceeds with the matching handbook.
         graph.add_conditional_edges(

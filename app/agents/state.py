@@ -22,6 +22,61 @@ MAX_STAGE2_RETRIES = 2
 MAX_STAGE2_TOOL_LOOPS = 3
 
 
+def latest_user_request(state: dict) -> str:
+    """Return the latest user-authored message, not an AI/tool response."""
+    messages = state.get("messages") or []
+
+    for message in reversed(messages):
+        if isinstance(message, HumanMessage):
+            content = message.content
+            return content if isinstance(content, str) else ""
+
+        if isinstance(message, dict):
+            if message.get("type") == "human" or message.get("role") == "user":
+                content = message.get("content", "")
+                return content if isinstance(content, str) else ""
+
+    return ""
+
+
+def get_ranking_preferences(
+    state: dict,
+    request_interests: list[str] | None = None,
+) -> dict:
+    """
+    Return temporary ranking preferences.
+    Do not mutate the saved student profile.
+    """
+    explicit_interests = [
+        str(item).strip()
+        for item in (request_interests or [])
+        if str(item).strip()
+    ]
+
+    saved_interests = state.get("elective_interests") or []
+
+    if not saved_interests:
+        profile = state.get("profile") or {}
+        saved_interests = profile.get("elective_interests") or []
+
+    saved_interests = [
+        str(item).strip()
+        for item in saved_interests
+        if str(item).strip()
+    ]
+
+    interests = explicit_interests or saved_interests
+
+    return {
+        **state,
+        "elective_mode": "interest" if interests else (
+            state.get("elective_mode") or "degree"
+        ),
+        "elective_interests": interests,
+    }
+
+
+
 # function to get information from JSON
 def extract_and_parse_json(raw_input):
     """
@@ -154,6 +209,11 @@ def stage1_electives_from_advisor_state(
 
     completed, planned = sols_codes_for_ranking(state.get("raw_sols"))
 
+    # Major must come from confirmed metadata, not from a model-generated plan.
+    if not state.get("meta_confirmed", False):
+        print("STAGE 1 ELECTIVES BLOCKED: metadata is not confirmed")
+        return json.dumps({"mode": "major", "pools": []})
+
     raw_majors = meta.get("majors") or []
 
     if isinstance(raw_majors, str):
@@ -275,6 +335,11 @@ class AdvisorState(TypedDict):
     planning_requested: bool
     elective_mode: Literal["degree", "interest"] | None
     elective_interests: list[str]
+    selected_elective_codes: list[str] | None
+
+    request_elective_interests: list[str]
+    elective_lookup_results: list[dict] | None
+    elective_lookup_codes: list[str] | None
 
     pending_elective_action: Literal["recommend", "populate_plan"] | None
 
@@ -302,6 +367,8 @@ class AdvisorState(TypedDict):
     plan_feedback: str | None
     stage2_retry_count: int
     stage2_tool_loop_count: int
+
+    active_tool_kind: str | None
 
 # get the type of message to control whether the planning branch should be executed
 def latest_student_message(
@@ -636,82 +703,112 @@ def sanitize_confirmed_metadata(
         "elective_limit",
         "interests",
     ):
-        value = candidate.get(field)
+        candidate_value = candidate.get(field)
 
-        if value in (None, ""):
+        if candidate_value is None or candidate_value == "":
             continue
 
-        if field in {
-            "degree_code",
-            "year",
-            "campus",
-            "session",
-        }:
-            if (
-                field in prior
-                and str(prior.get(field)).strip() == str(value).strip()
-            ):
-                sanitized[field] = value
+        prior_value = prior.get(field)
 
-            elif _value_explicitly_stated_by_student(
-                value,
-                student_text,
-            ):
-                sanitized[field] = value
+        # Keep an already accepted value if the tool returns it unchanged.
+        if prior_value is not None and candidate_value == prior_value:
+            sanitized[field] = prior_value
+            continue
 
-            else:
-                print(
-                    "CONFIRMATION DROPPED NON-EXPLICIT",
-                    field,
-                    repr(value),
-                )
+        # Accept a new value only when the student explicitly supplied it.
+        if _value_explicitly_stated_by_student(
+            str(candidate_value),
+            student_text,
+        ):
+            sanitized[field] = candidate_value
         else:
-            sanitized[field] = value
+            print(
+                f"CONFIRMATION DROPPED UNVERIFIED {field.upper()}:",
+                repr(candidate_value),
+            )
 
     candidate_majors = candidate.get("majors")
 
-    # Backward compatibility with the old singular field.
-    if candidate_majors is None and candidate.get("major"):
-        candidate_majors = [candidate["major"]]
+    if candidate_majors is None:
+        candidate_majors = candidate.get("major")
 
     if isinstance(candidate_majors, str):
         candidate_majors = [candidate_majors]
+    elif isinstance(candidate_majors, (list, tuple, set)):
+        candidate_majors = list(candidate_majors)
+    else:
+        candidate_majors = []
 
-    if candidate_majors:
-        sanitized_majors = []
+    prior_majors = prior.get("majors")
 
-        for candidate_major in candidate_majors:
-            if not candidate_major:
-                continue
+    if prior_majors is None:
+        prior_majors = prior.get("major")
 
-            candidate_major = str(candidate_major).strip()
+    if isinstance(prior_majors, str):
+        prior_majors = [prior_majors]
+    elif isinstance(prior_majors, (list, tuple, set)):
+        prior_majors = list(prior_majors)
+    else:
+        prior_majors = []
 
-            if _value_explicitly_stated_by_student(
-                candidate_major,
-                student_text,
-            ):
-                sanitized_majors.append(candidate_major)
-            elif any(
-                candidate_major.casefold() == str(prior_major).strip().casefold()
-                for prior_major in (prior.get("majors") or [])
-            ):
-                sanitized_majors.append(candidate_major)
-            else:
-                print(
-                    "CONFIRMATION DROPPED UNVERIFIED MAJOR:",
-                    repr(candidate_major),
-                )
+    # Normalize prior major strings for safe comparison.
+    prior_major_lookup = {
+        str(major).strip().casefold()
+        for major in prior_majors
+        if major is not None and str(major).strip()
+    }
 
-        if sanitized_majors:
-            sanitized["majors"] = list(dict.fromkeys(sanitized_majors))
-            sanitized.pop("major", None)
+    sanitized_majors: list[str] = []
+
+    for candidate_major in candidate_majors:
+        if candidate_major is None:
+            continue
+
+        major = str(candidate_major).strip()
+
+        if not major:
+            continue
+
+        # Preserve an already accepted major.
+        if major.casefold() in prior_major_lookup:
+            sanitized_majors.append(major)
+            continue
+
+        # A new major must be explicitly stated by the student.
+        if _value_explicitly_stated_by_student(major, student_text):
+            sanitized_majors.append(major)
         else:
-            # Do not erase previously confirmed majors merely because
-            # the confirmation response omitted or changed them.
-            if prior.get("majors"):
-                sanitized["majors"] = prior["majors"]
-            else:
-                sanitized.pop("majors", None)
+            print(
+                "CONFIRMATION DROPPED UNVERIFIED MAJOR:",
+                repr(major),
+            )
+
+    # Deduplicate without changing the original order.
+    deduplicated_majors: list[str] = []
+    seen_majors: set[str] = set()
+
+    for major in sanitized_majors:
+        normalized = major.casefold()
+
+        if normalized not in seen_majors:
+            deduplicated_majors.append(major)
+            seen_majors.add(normalized)
+
+    if deduplicated_majors:
+        sanitized["majors"] = deduplicated_majors
+    elif prior_majors:
+        # Retain previously accepted majors if the tool did not
+        # provide a valid replacement.
+        sanitized["majors"] = [
+            str(major).strip()
+            for major in prior_majors
+            if major is not None and str(major).strip()
+        ]
+    else:
+        sanitized.pop("majors", None)
+
+    # Use one canonical field in the stored metadata.
+    sanitized.pop("major", None)
 
     return sanitized
 
@@ -888,14 +985,13 @@ def apply_plan_change_request(
             for interest in value
             if interest and str(interest).strip()
         ]
+        interests = list(dict.fromkeys(interests))
 
         if not interests:
             print(
                 "PLAN CHANGE REJECTED: elective interests missing"
             )
             return {}
-
-        interests = list(dict.fromkeys(interests))
 
         print(
             "PLAN CHANGE APPLIED: elective_interests",
@@ -907,9 +1003,7 @@ def apply_plan_change_request(
             "conversation_mode": "planning",
             "elective_interests": interests,
             "electives": None,
-            "remaining_subjects": None,
             "remaining_feedback": None,
-            "plan": None,
             "plan_feedback": None,
             "stage1_retry_count": 0,
             "stage2_retry_count": 0,
