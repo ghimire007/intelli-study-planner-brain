@@ -678,10 +678,12 @@ OVERALL COMPLETED RULE:
 - Remaining in plan: N CP
 - **Total applicable: 144 CP**
 
-Include a brief paragraph on what electives you have recommended and why. Also include what elective preference and any listed interests used.  
+**Current WAM:** give the calculated WAM
 
-*Disclaimer: This study plan is a suggested guide based on current handbook rules and your SOLS record. Double-check all requirements against the official handbook.
- <a href="{{course_handbook_link}}" target="_blank">UOW Course Handbook</a>.*
+Feel free to ask for elective recommendations or any other further questions about your study plan!  
+
+Disclaimer: This study plan is a suggested guide based on current handbook rules and your SOLS record. Double-check all requirements against the official handbook.
+<a href="{{course_handbook_link}}" target="_blank">UOW Course Handbook</a>.
 
 At the **very end** of your response, output the complete chronological record (**ALWAYS INCLUDE** both historical completed/current SOLS enrolments and newly generated future subjects), under a single "plan" key as a raw, valid, RFC-8259 compliant nested JSON block wrapped inside a ```json markdown code fence. 
 

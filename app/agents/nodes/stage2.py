@@ -179,19 +179,52 @@ class Stage2Nodes:
             return "format_output"
         return "stage2_make_plan"
 
+    
     @staticmethod
     async def format_output(state: AdvisorState) -> dict:
-        """Emit the plan. After exhausted retries the latest plan is still
-        returned rather than silently discarded."""
+        """Emit final evaluation feedback before the plan's JSON Markdown."""
         print("NODE: format_output")
-        print("\n\nle plan\n\n", state.get("plan"), "\n\n")
 
         plan = state.get("plan") or (
             "Unable to complete plan generation. "
             "Please provide or confirm the required degree information."
         )
+
+        feedback = state.get("plan_feedback")
+
+        # Show the final evaluation feedback before the JSON Markdown.
+        if feedback:
+            feedback_section = (
+                "**Plan feedback:**\n"
+                "To ensure full accuracy transparency, the presence of this section indicates that your generated plan **currently contains issues**. To ensure Courseo's compatability with free LLM key limits, the plan evaluation loop has been limited. Please ask for your plan to be fixed with the following feedback:\n"
+                f"{feedback.strip()}\n\n"
+            )
+
+        else:
+            feedback_section = (
+                "**Plan feedback:**\n"
+                "None! Your generated plan has passed the evaluation checks and is considered valid. Please review your plan and best of luck with your studies!\n\n"
+            )
+
+        # Insert feedback immediately before the JSON code fence.
+        fence_index = plan.lower().find("```json")
+
+        if fence_index != -1:
+            plan = (
+                plan[:fence_index]
+                + feedback_section
+                + plan[fence_index:]
+            )
+        else:
+            # If there is no JSON fence, put feedback at the start.
+            plan = feedback_section + plan
+
+
+        # print("\n\nFinal plan:\n", plan, "\n\n")
+
         return {
             "messages": [AIMessage(content=plan)],
             "planning_requested": False,
             "conversation_mode": "post_plan",
         }
+
