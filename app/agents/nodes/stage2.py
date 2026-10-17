@@ -62,6 +62,10 @@ class Stage2Nodes:
             HumanMessage(content=content_prompt),
         ])
 
+        print("AGENT RESPONSE TYPE:", type(response).__name__)
+        print("AGENT TOOL CALLS:", getattr(response, "tool_calls", []))
+        print("AGENT RESPONSE TEXT:", _message_text(response)[:500])
+
         updated: dict = {"messages": [response]}
 
         if not response.tool_calls:

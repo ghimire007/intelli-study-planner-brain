@@ -1,18 +1,54 @@
-"""Stage 1 nodes: elective candidates and required/core subjects, built in parallel.
+"""Stage 1 nodes: elective recommendations and required/core subjects.
 
-    start_planning ─┬─> fetch_elective_list ──────────┐
-                    └─> stage1_review_must_includes ──┴─> join_stage1 (deferred)
-    join_stage1 -> eval_stage1_lists | stage2_make_plan | END
-    eval_stage1_lists -> stage1_review_must_includes (retry) | stage2_make_plan
+    Initial plan generation:
+        start_planning
+            |
+            v
+        stage1_review_must_includes
+            |  Generate required/core subjects
+            v
+        eval_stage1_lists
+            |
+            v
+        route_stage1_eval
+            |-----------------------------|
+            v                             v
+        stage1_review_must_includes    stage2_make_plan
+        (retry)                        (continue)
 
-The branches are independent: electives come from handbook data scored in
-code, core subjects from the model. They write disjoint state keys
-(`electives` vs `remaining_subjects`/`remaining_feedback`), which LangGraph
-requires of nodes running in the same superstep.
+    Elective recommendations (when requested):
+        agent / ensure_handbook
+            |
+            v
+        fetch_elective_list
+            |
+            v
+           END
 
-join_stage1 is registered with defer=True, so it runs only once no other task
-is pending. It therefore waits for both branches on the first pass and still
-fires when a retry reruns the core branch alone.
+    Updating electives in an existing plan (when requested):
+        agent / ensure_handbook
+            |
+            v
+        populate_plan_electives
+            |
+            v
+           END
+
+    fetch_elective_list obtains deterministic elective recommendations
+    using the student's current request and saved ranking preferences.
+    It explains the supplied results without rebuilding the study plan.
+
+    populate_plan_electives updates elective placeholders in the existing
+    plan. It ranks candidates, merges captured subject lookup results, and
+    asks the model to preserve the rest of the plan while updating electives.
+
+    Required/core subjects are generated separately by the model. Only this
+    list is evaluated and retried. The evaluator does not validate or score
+    the elective list, which is supplied by the deterministic ranking service.
+
+    The elective paths terminate independently; neither automatically
+    continues to stage2_make_plan. Handbook validity and routing are handled
+    by the graph's ensure_handbook and route_after_fetch logic.
 """
 import asyncio
 import json
@@ -238,12 +274,16 @@ class Stage1Nodes:
             ranking_state,
         )
 
+        print("\ncandidates from call: ", candidates)
+
         candidates = merge_elective_candidates(
             candidates,
             state.get("elective_lookup_results") or [],
         )
 
-        print("candidates = merged: ", candidates)
+        print("\nelective lookup result: ", state.get("elective_lookup_codes"))
+
+        print("\ncandidates = merged: ", candidates)
 
         if not candidates:
             print("POPULATE ELECTIVES: no valid elective candidates")
@@ -302,12 +342,10 @@ VALID ELECTIVE CANDIDATES:
         response = await self._llms.get("full").ainvoke([
             SystemMessage(content=(
                 "You are updating an existing UOW study plan. "
-                "Change eligible elective placeholders only. "
+                "Change eligible elective placeholders or electives that are not completed or currently enrolled only. "
                 "Preserve every other part of the existing plan. "
-                "Return the complete response using the output format "
-                "specified in the supplied system instructions, including "
-                "the audit, study-plan table, credit-point summary, and "
-                "final JSON code fence. "
+                "Return the complete response using the output format specified in the supplied system instructions, including "
+                "the audit, study-plan table, credit-point summary, and final JSON code fence. "
                 "Do not call tools."
             )),
             HumanMessage(content=prompt),
@@ -382,27 +420,6 @@ VALID ELECTIVE CANDIDATES:
         content = parsed if isinstance(parsed, str) else json.dumps(parsed)
 
         return {"remaining_subjects": content, "remaining_feedback": None}
-
-    @staticmethod
-    def join(state: AdvisorState) -> dict:
-        """Fan-in point. Registered with defer=True, so it runs once every
-        pending branch has finished."""
-        print("NODE: join_stage1")
-        return {}
-
-    @staticmethod
-    def route_join_barrier(
-        state: AdvisorState,
-    ) -> Literal["eval_stage1_lists", "stage2_make_plan", "__end__"]:
-        if not handbook_matches_current_meta(state):
-            print("STAGE 1 STOPPED: handbook invalid")
-            return END
-        # On the last allowed pass a failing verdict could not trigger another
-        # retry, so evaluating would only spend a model call.
-        if state.get("stage1_retry_count", 0) + 1 >= MAX_STAGE1_RETRIES:
-            print("STAGE 1 final pass: skipping evaluation")
-            return "stage2_make_plan"
-        return "eval_stage1_lists"
 
     async def evaluate(self, state: AdvisorState) -> dict:
         """Evaluate only the required/core-subject list. The elective list comes

@@ -192,7 +192,7 @@ This is an UPDATE operation, not a new study-planning operation.
 
 The EXISTING PLAN is the single source of truth for the plan's structure, sessions, subjects, credit points, categories, historical record, and previously completed planning decisions.
 
-Your authority is strictly limited to replacing eligible elective placeholders with valid elective candidates. Everything else is immutable.
+Your authority is strictly limited to replacing electives with valid elective candidates. Everything else is immutable.
 
 ## INPUTS
 
@@ -204,12 +204,12 @@ You will receive:
 - Optional feedback identifying problems with an earlier elective update.
 
 Treat the existing plan as authoritative. It is immutible apart from electives. You may only replace elective placeholders or electives that are not completed or currently enrolled. 
-If the existing plan has no replaceable elective placeholders, return the existing plan unchanged.
+If all the elective placeholders are already filled, change all the electives to the new valid elective candidates if they are eligible. If they are not eligible, keep the existing electives in the plan. 
+If some of the elective placeholders are already filled, and some are still placeholders, only replace the placeholders with electives unless requested to replace the existing electives with new ones. 
 
-## ELECTIVE CANDIDATES
+If the existing plan has no replaceable elective placeholders or electives, return the existing plan unchanged.
 
-If the ranked list of valid elective candidates obtained from handbook data does not have enough eligible subjects to fill all placeholders, or the subjects are unrelated to the given elective interests, you may call `lookup_subjects_tool` ONCE to find additional relevant electives.
-If the additional relevant electives are found, re-rank the valid elective candidates with all the new subjects and start evaluating the electives to fill the placeholders. 
+Before checking any elective candidates, remove any elective candidates that are already in the plan. You cannot use a subject that is already in the plan.
 
 ## ELIGIBILITY CHECK
 Evaluate candidates individually, in ranked order, for each placeholder.
@@ -217,20 +217,15 @@ Stop evaluating candidates for that placeholder when the first eligible candidat
 
 For each candidate evaluated, output this block:
 [CODE]:
-- [1/5] Availability: offered in this session? State the evidence and PASS/FAIL.
-- [2/5] Prereq subjects: list required prerequisite subjects and establish
-  that each is completed or planned in Session N-1 or earlier. State
-  the evidence and PASS/FAIL.
-- [3/5] Coreq subjects: list required corequisite subjects and establish
-  that each is completed or planned in Session N or earlier. State
-  the evidence and PASS/FAIL.
-- [4/5] Prereq CP level: required J CP; count qualifying CP completed or
-  planned in Session N-1 or earlier = X CP. State the evidence and PASS/FAIL.
-- [5/5] Coreq CP level: required J CP; count qualifying CP completed or
-  planned in Session N or earlier = X CP. State the evidence and PASS/FAIL.
-- VERDICT: ELIGIBLE (all five checks PASS) / INELIGIBLE.
+- [1/6] Availability: offered in this session? State the evidence and PASS/FAIL.
+- [2/6] Prereq subjects: list required prerequisite subjects and establish that each is completed or planned in Session N-1 or earlier. State the evidence and PASS/FAIL.
+- [3/6] Coreq subjects: list required corequisite subjects and establish that each is completed or planned in Session N or earlier. State the evidence and PASS/FAIL.
+- [4/6] Prereq CP level: required J CP; count qualifying CP completed or planned in Session N-1 or earlier = X CP. State the evidence and PASS/FAIL.
+- [5/6] Coreq CP level: required J CP; count qualifying CP completed or planned in Session N or earlier = X CP. State the evidence and PASS/FAIL.
+- [6/6] Subject NOT already in plan? State the evidence and PASS/FAIL.
+- VERDICT: ELIGIBLE (all six checks PASS) / INELIGIBLE.
 
-Do not replace the five individual checks with a summary such as "prerequisites met".
+Do not replace the six individual checks with a summary such as "prerequisites met".
 
 
 ## OUTPUT FORMAT — MATCH the EXISTING PLAN

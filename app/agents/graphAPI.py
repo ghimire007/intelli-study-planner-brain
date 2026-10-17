@@ -2,17 +2,28 @@
 Advisor LangGraph: wires the node groups in app/agents/nodes/ into a StateGraph.
 
 ConversationNodes:
-    parse_input -> agent <-> tools
-    agent -> fetch_elective_list (when requested)
+START -> agent
+agent -> tools -> capture_tool_results -> agent | ensure_handbook | END
+agent -> ensure_handbook | fetch_elective_list | populate_plan_electives | start_planning | END
 
 HandbookNodes:
-    ensure_handbook / handbook_missing
+ensure_handbook -> start_planning | fetch_elective_list | populate_plan_electives | handbook_missing
+handbook_missing -> END
 
 Stage1Nodes:
-    start_planning -> generate core -> evaluate
+start_planning -> stage1_review_must_includes -> eval_stage1_lists
+eval_stage1_lists -> stage1_review_must_includes (retry) | stage2_make_plan
+fetch_elective_list -> END
+populate_plan_electives -> END
 
 Stage2Nodes:
-    make_plan <-> tools -> evaluate -> format_output
+stage2_make_plan -> stage2_tools | evaluate_stage2
+stage2_tools -> capture_stage2_tool_results -> stage2_make_plan
+evaluate_stage2 -> stage2_make_plan (retry) | format_output
+format_output -> END
+
+Elective retrieval and plan updates are request-driven paths that terminate after returning their results. They do not automatically continue into Stage 2. 
+Initial plan generation follows the separate Stage 1 core-subject generation and evaluation path.
 
 State and shared helpers live in app/agents/state.py.
 """
