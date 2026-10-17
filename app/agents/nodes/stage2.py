@@ -88,17 +88,41 @@ class Stage2Nodes:
         print("NODE: capture_stage2_tool_results")
         return {"stage2_tool_loop_count": state.get("stage2_tool_loop_count", 0) + 1}
 
+
+    
     @staticmethod
-    def route_after_make_plan(state: AdvisorState) -> Literal["stage2_tools", "evaluate_stage2"]:
+    def route_after_tool_results(
+        state: AdvisorState,
+    ) -> Literal["stage2_make_plan", "format_output"]:
+        """Stop before another LLM call when the tool-loop budget is exhausted."""
+        count = state.get("stage2_tool_loop_count", 0)
+
+        print(f"STAGE 2 TOOL LOOPS: {count}/{MAX_STAGE2_TOOL_LOOPS}")
+
+        if count >= MAX_STAGE2_TOOL_LOOPS:
+            print("STAGE 2 tool-loop limit reached; stopping without another LLM call")
+            return "format_output"
+
+        return "stage2_make_plan"
+
+
+    
+    @staticmethod
+    def route_after_make_plan(
+        state: AdvisorState,
+    ) -> Literal["stage2_tools", "evaluate_stage2", "format_output"]:
         messages = state.get("messages", [])
         last = messages[-1] if messages else None
 
         if isinstance(last, AIMessage) and last.tool_calls:
             if state.get("stage2_tool_loop_count", 0) >= MAX_STAGE2_TOOL_LOOPS:
                 print("STAGE 2 tool-loop limit reached")
-                return "evaluate_stage2"
+                return "format_output"
+
             return "stage2_tools"
+
         return "evaluate_stage2"
+
 
     async def evaluate(self, state: AdvisorState) -> dict:
         """Evaluate the generated plan against metadata, handbook, SOLS,

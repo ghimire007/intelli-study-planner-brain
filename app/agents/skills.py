@@ -223,22 +223,50 @@ def lookup_catalog_subjects(
     return json.dumps(results, ensure_ascii=False, default=str)
 
 
+def make_lookup_electives_tool(db: AsyncSession):
+    """Bind a DB session to a batched subject-lookup LangChain tool."""
+
+    @tool
+    def lookup_electives_tool(query: str, course: str, year: int, limit: int=25) -> str:
+        """Look up subject codes in the confirmed handbook catalogue.
+
+        Supply multiple exact subject codes in one batched query.
+        Do not repeat a lookup for codes already returned.
+        Use the returned subject records to construct the study plan.
+        Do not call this tool again unless a required subject is
+        genuinely missing from the results.
+        Never invent subject details.
+        """
+
+        result = search_catalog_subjects(
+            query=query,
+            course=course,
+            year=year,
+            limit=limit,
+        )
+
+        print("LOOKUP QUERY:", query)
+        print("LOOKUP COURSE/YEAR:", course, year)
+        print("LOOKUP RESULT TYPE:", type(result).__name__)
+        print("LOOKUP RESULT:", result)
+
+        return result
+
+    return lookup_electives_tool
+
 def make_lookup_subjects_tool(db: AsyncSession):
     """Bind a DB session to a batched subject-lookup LangChain tool."""
 
     @tool
-    def lookup_subjects_tool(query: str, course: str, year: int, limit: int=25) -> str:
-        """Look up subject codes in the confirmed handbook catalogue.
+    async def lookup_subjects_tool(codes: list[str]) -> str:
+        """Look up official details for one or more UOW subject codes in a single call.
 
-        Use exact subject codes. Never invent subject details.
+        Returns, per subject: title, credit points, prerequisites, session/campus
+        availability, and the handbook URL. Batch every code you need (e.g. all
+        subjects in a draft plan) into ONE call rather than calling repeatedly.
+        Use this instead of guessing prerequisites or session availability.
         """
-
-        return search_catalog_subjects(
-            query=query,
-            course=course,
-            year=year,
-            limit=limit
-        )
+        return await fetch_subjects(db, codes, _LATEST_HANDBOOK_YEAR)
 
     return lookup_subjects_tool
 
@@ -444,13 +472,14 @@ def build_skills(db: AsyncSession):
             lookup_uow_policy_tool,
             make_fetch_handbook_tool(db),
             make_lookup_subjects_tool(db),
+            make_lookup_electives_tool(db),
             make_lookup_major_tool(db),
             get_elective_priorities_tool,
             make_lookup_ranked_electives_tool(db),
             request_plan_change_tool,
         ],
         "electives": [
-            make_lookup_subjects_tool(db),
+            make_lookup_electives_tool(db),
             get_elective_priorities_tool,
         ],
     }

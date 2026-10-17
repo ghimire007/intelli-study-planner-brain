@@ -259,7 +259,7 @@ class ConversationNodes:
             try:
                 parsed = extract_and_parse_json(message.content)
 
-                if message.name == "lookup_subjects_tool":
+                if message.name == "lookup_electives_tool":
                     # Support both the current {"query": ..., "subjects": [...]} format
                     # and the older list format.
                     if isinstance(parsed, dict):
@@ -358,7 +358,7 @@ class ConversationNodes:
                 )
 
         # Only update these keys if the batch included a lookup result.
-        if any(m.name == "lookup_subjects_tool" for m in batch):
+        if any(m.name == "lookup_electives_tool" for m in batch):
             updates["elective_lookup_results"] = lookup_results
             updates["elective_lookup_codes"] = sorted(lookup_codes)
 

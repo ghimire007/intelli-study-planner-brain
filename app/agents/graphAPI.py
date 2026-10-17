@@ -61,6 +61,7 @@ class AdvisorGraph:
                 for tool in skills["full"]
                 if tool.name in {
                     "lookup_subjects_tool",
+                    "lookup_electives_tool",
                     "lookup_uow_policy_tool",
                     "request_plan_change_tool",
                 }
@@ -70,6 +71,7 @@ class AdvisorGraph:
                 for tool in skills["full"]
                 if tool.name in {
                     "lookup_subjects_tool",
+                    "lookup_electives_tool",
                     "lookup_major_tool",
                     "lookup_uow_policy_tool",
                 }
@@ -193,11 +195,23 @@ class AdvisorGraph:
 
         # Stage 2: plan, loop through tools as needed, evaluate, retry or emit.
         graph.add_conditional_edges(
-            "stage2_make_plan", stage2.route_after_make_plan,
-            {"stage2_tools": "stage2_tools", "evaluate_stage2": "evaluate_stage2"},
+            "stage2_make_plan",
+            stage2.route_after_make_plan,
+            {
+                "stage2_tools": "stage2_tools",
+                "evaluate_stage2": "evaluate_stage2",
+                "format_output": "format_output",
+            },
         )
         graph.add_edge("stage2_tools", "capture_stage2_tool_results")
-        graph.add_edge("capture_stage2_tool_results", "stage2_make_plan")
+        graph.add_conditional_edges(
+            "capture_stage2_tool_results",
+            stage2.route_after_tool_results,
+            {
+                "stage2_make_plan": "stage2_make_plan",
+                "format_output": "format_output",
+            },
+        )
         graph.add_conditional_edges(
             "evaluate_stage2", stage2.route_evaluation,
             {"stage2_make_plan": "stage2_make_plan", "format_output": "format_output"},
