@@ -492,6 +492,7 @@ Your job is to build a valid semester-by-semester study plan satisfying all degr
 
 Addressing any evaluation feedback is your highest priority. 
 If the student has completed all their requirements, you must still output the whole plan. 
+Only use elective placeholders, do not recommend electives. 
 
 Your response MUST ALWAYS INCLUDE THE FOLLOWING:
 1. A short response to the given request or question. 
@@ -635,13 +636,13 @@ PREREQUISITE DEPENDENCY VERIFICATION RULE: When evaluating Prereqs Met? for any 
 Required Format Per Subject: (DO NOT OMIT ANY LINE OR CONDITION. Do not evaluate coreqs during 2/5 etc)
 [SUBJECT_CODE]:
 - [1/5] Availability: [Code]: [Autumn/Spring] == current session? [PASS/FAIL]
-YOU MUST LIST OUT EVERY SUBJECT THAT IS INCLUDED IN THE TOTAL FOR PREREQ AND COREQ CP LEVELS.
+YOU MUST LIST OUT EVERY SUBJECT THAT IS INCLUDED IN THE TOTAL FOR PREREQ AND COREQ CP LEVELS. LEVELS OF SUBJECTS USED FOR PREREQ AND COREQ CP TOTAL MUST MATCH THE SPECIFIED SUBJECT LEVEL.
 - [2/5] Prereq (Subjects): [Code] (Session N): Prereqs [failed subjects do not count] (Session N-1 or earlier), Prereqs Met? [PASS/FAIL]
 - [3/5] Coreq (Subjects): [Code] (Session N): Coreqs [failed subjects do not count] (Session N or earlier), Coreqs Met? [PASS/FAIL]
-- [4/5] Prereq (CP Level): [Code] J CP total (Session N): Subject1 S CP (Session N-1 or earlier) + … + Subject2 S CP (Session N-1 or earlier) = J CP? [PASS/FAIL]
-- [5/5] Coreq (CP Level): [Code] J CP total (Session N): Subject1 S CP (Session N or earlier) + … + Subject2 S CP (Session N or earlier) = J CP? [PASS/FAIL] (Eligible subjects for this session can be included in this total, but they must then be part of the selected subjects) (A SUBJECT USED TOWARDS A PREREQ CP TOTAL CANNOT ALSO BE USED FOR COREQ CP COUNTING) 
+- [4/5] Prereq (CP Level): [Code] [Subject level] J CP total (Session N): Subject1 [must match subject level] S CP (Session N-1 or earlier) + … + Subject2 [must match subject level] S CP (Session N-1 or earlier) = J CP? [PASS/FAIL]
+- [5/5] Coreq (CP Level): [Code] [Subject level] J CP total (Session N): Subject1 [must match subject level] S CP (Session N or earlier) + … + Subject2 [must match subject level] S CP (Session N or earlier) = J CP? [PASS/FAIL] (Eligible subjects for this session can be included in this total, but they must then be part of the selected subjects) (A SUBJECT USED TOWARDS A PREREQ CP TOTAL CANNOT ALSO BE USED FOR COREQ CP COUNTING) 
 - VERDICT: [ELIGIBLE (All 5 conditions must be PASS) / INELIGIBLE]
-YOU CANNOT BEGIN THE SELECTION UNTIL 4 ELIGIBLE SUBJECTS ARE FOUND OR THERE ARE NO MORE SUBJECTS TO EVALUATE. You can evaluate multiple elective placeholders if needed. YOU CAN STOP EVALUATING ONCE 4 ELIGIBLE SUBJECTS ARE FOUND. 
+YOU CANNOT BEGIN THE SELECTION UNTIL 4 ELIGIBLE SUBJECTS ARE FOUND OR THERE ARE NO MORE SUBJECTS OR ELECTIVE PLACEHOLDERS TO EVALUATE. YOU CAN STOP EVALUATING ONCE 4 ELIGIBLE SUBJECTS ARE FOUND. 
 Do no make up an elective subject, ONLY use the placeholders. 
 - Selection: [Selected Codes from ELIGIBLE subjects ONLY. (Max 4)] | Session CP Added: [X] | Total current CP = Completed Cp Prior + Session CP Added
 
