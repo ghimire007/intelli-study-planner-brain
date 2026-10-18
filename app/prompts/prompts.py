@@ -546,6 +546,7 @@ Before generating the plan:
 - PREREQUISITE DEPENDENCY RULE: Subject S can be scheduled in Session N IF AND ONLY IF Session(Prereq(S)) <= N - 1. Simultaneous completion of prerequisites is FORBIDDEN. A subject CANNOT be planned in the same session as its prerequisite. "CP at level X" prerequisites: count only Complete CP or CP planned in a strictly earlier session (N - 1 or earlier).
 - COREQUISITE DEPENDENCY RULE: Subject S can be scheduled in Session N IF AND ONLY IF Session(Coreq(S)) <= N. SIMULTANEOUS COMPLETION OF COREQUISITES IS ALLOWED.
 - Never assume a corequisite satisfies a prerequisite.
+- ALWAYS check that a subject's level is correct for a prerequisite or corequisite requirement. If a subject is at the wrong level, it cannot satisfy the requirement.
 - A Failed subject, or any subject that must be repeated, cannot count towards any prerequisites or corequisites or any CP count until it is retaken.
 - No-Major Path is 18 CP (3 subjects) at 300-level + 6 CP (1 subject) at 200/300-level (CSCI/CSIT/ISIT). Do not make up no-major subjects. Write no-major 1 (200/300 lv) etc.
 - Electives are 18 CP (3 subjects) at 200/300-level + 6 CP (1 subject) at 100/200-level. Do not make up elective subjects. Write Elective 1 (300 lv) etc.
@@ -631,16 +632,16 @@ TERMINATION RULE: You cannot end Stage 2 until Unscheduled Subjects Remaining Co
 - Filter Protocol (EVALUATE EVERY REMAINING SUBJECT INDIVIDUALLY. Start with core subjects, followed by major/no-major then electives. NEVER EVALUATE AN ELECTIVE BEFORE ALL CORE AND MAJOR SUBJECTS ARE EVALUATED.):
 For EVERY code listed in Remaining Needed, you MUST output a dedicated line evaluating all 5 conditions UNTIL 4 ELIGIBLE SUBJECTS ARE FOUND OR THERE ARE NO MORE SUBJECTS TO EVALUATE. Shorthand phrases like "[Evaluated against...]" or grouped summaries are STRICTLY BANNED.
 PREREQUISITE DEPENDENCY VERIFICATION RULE: When evaluating Prereqs Met? for any candidate subject S in Session N: Condition: Prereq(S) is met IF AND ONLY IF Prereq(S) is in HISTORICAL_COMPLETED OR CURRENTLY_ENROLLED OR Planned Subjects in Sessions prior to N. If Prereq(S) is NOT present in that explicit set, Prereqs Met? MUST evaluate to FAIL, regardless of degree level or handbook standard pathways.
-Required Format Per Subject:
+Required Format Per Subject: (DO NOT OMIT ANY LINE OR CONDITION. Do not evaluate coreqs during 2/5 etc)
 [SUBJECT_CODE]:
 - [1/5] Availability: [Code]: [Autumn/Spring] == current session? [PASS/FAIL]
 YOU MUST LIST OUT EVERY SUBJECT THAT IS INCLUDED IN THE TOTAL FOR PREREQ AND COREQ CP LEVELS.
 - [2/5] Prereq (Subjects): [Code] (Session N): Prereqs [failed subjects do not count] (Session N-1 or earlier), Prereqs Met? [PASS/FAIL]
 - [3/5] Coreq (Subjects): [Code] (Session N): Coreqs [failed subjects do not count] (Session N or earlier), Coreqs Met? [PASS/FAIL]
 - [4/5] Prereq (CP Level): [Code] J CP total (Session N): Subject1 S CP (Session N-1 or earlier) + … + Subject2 S CP (Session N-1 or earlier) = J CP? [PASS/FAIL]
-- [5/5] Coreq (CP Level): [Code] J CP total (Session N): Subject1 S CP (Session N or earlier) + … + Subject2 S CP (Session N or earlier) = J CP? [PASS/FAIL]
+- [5/5] Coreq (CP Level): [Code] J CP total (Session N): Subject1 S CP (Session N or earlier) + … + Subject2 S CP (Session N or earlier) = J CP? [PASS/FAIL] (Eligible subjects for this session can be included in this total, but they must then be part of the selected subjects) (A SUBJECT USED TOWARDS A PREREQ CP TOTAL CANNOT ALSO BE USED FOR COREQ CP COUNTING) 
 - VERDICT: [ELIGIBLE (All 5 conditions must be PASS) / INELIGIBLE]
-YOU CANNOT BEGIN THE SELECTION UNTIL 4 ELIGIBLE SUBJECTS ARE FOUND OR THERE ARE NO MORE SUBJECTS TO EVALUATE.
+YOU CANNOT BEGIN THE SELECTION UNTIL 4 ELIGIBLE SUBJECTS ARE FOUND OR THERE ARE NO MORE SUBJECTS TO EVALUATE. You can evaluate multiple elective placeholders if needed. YOU CAN STOP EVALUATING ONCE 4 ELIGIBLE SUBJECTS ARE FOUND. 
 Do no make up an elective subject, ONLY use the placeholders. 
 - Selection: [Selected Codes from ELIGIBLE subjects ONLY. (Max 4)] | Session CP Added: [X] | Total current CP = Completed Cp Prior + Session CP Added
 
