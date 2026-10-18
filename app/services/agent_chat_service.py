@@ -227,6 +227,7 @@ class AgentChatService:
                 "stage1_retry_count": 0,
                 "stage2_retry_count": 0,
                 "stage2_tool_loop_count": 0,
+                "tool_calls_this_turn": 0,
 
                 "planning_requested": planning_requested,
                 "current_stage": None,
@@ -277,7 +278,10 @@ class AgentChatService:
         config = {"configurable": {"thread_id": str(session_id)}}
 
         protected_message = scrub_pii(user_message)
-        payload = {"messages": [HumanMessage(content=protected_message)]}
+        payload = {
+            "messages": [HumanMessage(content=protected_message)],
+            "tool_calls_this_turn": 0
+        }
 
         if elective_mode is not None:
             payload["elective_mode"] = elective_mode
@@ -305,6 +309,7 @@ class AgentChatService:
                 "raw_sols": _with_wam(projected, user_message),
                 "planning_requested": True,
                 "plan": None,
+                "tool_calls_this_turn": 0,
             }
 
             # Update metadata only when the new record provides it.

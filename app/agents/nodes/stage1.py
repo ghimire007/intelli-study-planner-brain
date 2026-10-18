@@ -185,8 +185,6 @@ class Stage1Nodes:
             for item in interests
             if isinstance(item, str) and item.strip()
         ))
-
-
     
     async def fetch_elective_list(self, state: AdvisorState) -> dict:
         """Retrieve and rank electives using current or saved preferences."""
@@ -199,6 +197,14 @@ class Stage1Nodes:
         request_interests = await self.extract_request_elective_interests(
             state
         )
+
+        if request_interests == []:
+            if state.get("elective_mode") == "degree":
+                request_interests = state.get("meta").get("majors", [])
+            else: 
+                request_interests = state.get("elective_interests", [])
+
+        print("HEYYYYYY: ", request_interests)
 
         ranking_state = get_ranking_preferences(
             state,
@@ -260,14 +266,23 @@ class Stage1Nodes:
             state
         )
 
+        if request_interests == []:
+            if state.get("elective_mode") == "degree":
+                request_interests = state.get("meta").get("majors", [])
+            else: 
+                request_interests = state.get("elective_interests", [])
+
+        print("HEYYYYYY: ", request_interests)
+
+        print("\n\nRANKING STATE")
         ranking_state = get_ranking_preferences(
             state,
             request_interests=request_interests,
         )
 
-        # print("POPULATE CURRENT REQUEST INTERESTS:", request_interests)
-        # print("POPULATE EFFECTIVE INTERESTS:",
-        #       ranking_state.get("elective_interests"))
+        print("POPULATE CURRENT REQUEST INTERESTS:", request_interests)
+        print("POPULATE EFFECTIVE INTERESTS:",
+              ranking_state.get("elective_interests"))
 
         candidates = await asyncio.to_thread(
             stage1_electives_from_advisor_state,
@@ -352,29 +367,6 @@ VALID ELECTIVE CANDIDATES:
         ])
 
         response_text = _message_text(response).strip()
-
-        # try:
-        #     updated_plan = extract_and_parse_json(response_text)
-
-        #     if not isinstance(updated_plan, (dict, list)):
-        #         raise ValueError(
-        #             "Updated plan must be a JSON object or array."
-        #         )
-
-        #     updated_plan_text = json.dumps(
-        #         updated_plan,
-        #         ensure_ascii=False,
-        #     )
-
-        # except (ValueError, TypeError, json.JSONDecodeError) as exc:
-        #     print("POPULATE ELECTIVES: invalid plan JSON:", repr(exc))
-        #     return {
-        #         "electives_feedback": (
-        #             "The updated plan could not be parsed as valid JSON. "
-        #             "The existing plan has not been changed."
-        #         ),
-        #         "pending_elective_action": None,
-        #     }
 
         print("POPULATE ELECTIVES: updated plan parsed successfully")
         # print("plannnn: ", response_text)

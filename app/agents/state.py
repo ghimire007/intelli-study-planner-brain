@@ -367,6 +367,7 @@ class AdvisorState(TypedDict):
     plan_feedback: str | None
     stage2_retry_count: int
     stage2_tool_loop_count: int
+    tool_calls_this_turn: int
 
     active_tool_kind: str | None
 
