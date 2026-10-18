@@ -45,6 +45,7 @@ class Stage2Nodes:
             base_prompt += f"\n\nAddress this previous evaluation feedback: {feedback}"
 
         content_prompt = (
+            "Do not skip any part of STAGE 1: ANALYSIS & AUDIT. Always include ALL session scratchpad evaluations. You must not skip evaluating any subject."
             "Authoritative metadata:\n"
             f"{state.get('meta')}\n\n"
             # "Authoritative handbook:\n"
@@ -226,7 +227,7 @@ class Stage2Nodes:
         else:
             feedback_section = (
                 "**Plan feedback:**\n"
-                "None! Your generated plan has passed the evaluation checks and is considered valid. Please review your plan and best of luck with your studies!\n\n"
+                "None! Your generated plan has passed the evaluation checks and is considered valid. However, the LLM and validator can still make mistakes, so please check your plan against the official UOW handbook. Best of luck with your studies!\n\n"
             )
 
         # Insert feedback immediately before the JSON code fence.

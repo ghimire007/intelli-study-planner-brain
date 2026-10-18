@@ -602,21 +602,22 @@ EARNED_CP_TOTAL = HISTORICAL_COMPLETED + CURRENTLY_ENROLLED
 STRICT LEDGER LOCK: You are strictly forbidden from adding any subject to HISTORICAL_COMPLETED or CURRENTLY_ENROLLED that is not explicitly present in the provided student record string.
 - ELECTIVE RULES: DO NOT replace any electives. If an elective is enrolled or completed it cannot be changed. If you cannot find a subject that is listed in SOLS assume it is a valid elective. You cannot assume other electives are taken. 24CP OF ELECTIVES MUST EXIST IN SOLS BEFORE YOU ARE ALLOWED TO PUT THE NEXT ELECTIVE INTO THE EXCESS CATEGORY.
 - UNCOMPLETED SUBJECT INVENTORY: Explicitly list all the subjects in Required/core subjects.
-- CP Audit (Categorize COMPLETED AND ENROLLED subjects IN ORDER TAKEN):
-    * Core_CP_Completed = [X] CP [Explicitly list codes here]
-    * Major_1_CP_Completed = [X] CP [Explicitly list codes here] (check against lookup_major_tool, any subject not listed for the given major that is also not core is an elective)
-    * Major_2_CP_Completed = [X] CP [Explicitly list codes here] (check against lookup_major_tool, any subject not listed for the given major that is also not core is an elective)
-    * Raw_Elective_CP_Taken = [X] CP [Explicitly list codes here]
-    * Valid_Elective_CP = MIN(24, Raw_Elective_CP_Taken) = [X] CP [Explicitly list codes here]
-    * Excess_CP = MAX(0, Raw_Elective_CP_Taken - 24) = [X] CP [Explicitly list codes here]
-    * Total_Applicable_Earned = Core_CP_Completed + Major_1_CP_Completed + Major_2_CP_Completed + Valid_Elective_CP = [X] / 144 CP (EXCESS CANNOT COUNT)
+- CP Audit (Categorize BOTH COMPLETED AND ENROLLED subjects IN ORDER TAKEN):
+    * Core_CP = [X] CP [Explicitly list codes here]
+    * Major_1_CP = [X] CP [Explicitly list codes here] (ONLY subjects that are part of the declared major count toward this bucket)
+    * Major_2_CP = [X] CP [Explicitly list codes here] (ONLY subjects that are part of the second declared major count toward this bucket)
+    * Raw_Elective_CP = [X] CP [Explicitly list codes here]
+    * Valid_Elective_CP = MIN(24, Raw_Elective_CP) = [X] CP [Explicitly list codes here] (if this bucket is full, you must place other electives into the EXCESS)
+    * Excess_CP = MAX(0, Raw_Elective_CP - 24) = [X] CP [Explicitly list codes here]
+    * Total_Applicable_Earned = Core_CP + Major_1_CP + Major_2_CP + Valid_Elective_CP = [X] / 144 CP (EXCESS CANNOT COUNT)
 - All subjects in IMMUTABLE SOLS LEDGER must be listed in the CP Audit. If any subject is missing, redo the audit.
 - UPDATED UNCOMPLETED SUBJECT INVENTORY: Updated UNCOMPLETED SUBJECT INVENTORY to have 0 to 4 elective placeholders if Valid_Elective_CP is not 24 CP and they are NOT doing an double major. Each elective is 6cp. Add enough elective placeholders to have 24cp of electives. Explicitly list all the subjects in UNCOMPLETED SUBJECT INVENTORY. State Total Uncompleted Subjects = N. This exact list of N subject codes is your Master Inventory.
 - Stage 1 Pre-Check Passed: [YES/NO]
 
 
 ### STAGE 2: SESSION SCRATCHPAD
-- Mandatory Inventory Verification: In the "Remaining Needed" field for the first session scratchpad, you MUST list every single uncompleted Core code, Major/No-Major code, and Major/Elective code INDIVIDUALLY. You are strictly forbidden from grouping remaining requirements under generic placeholders or credit point sums until every mandatory handbook code has been explicitly assigned to a future session. Once you have made the list DOUBLE CHECK ALL SUBJECT LISTED IN THE GIVEN HANDBOOK UNDER CORE AND MAJOR ARE LISTED. ADD THE CP OF EACH SUBJECT TO GET THE TOTAL. IF THE TOTAL + HISTORICAL_COMPLETED != 144 RECHECK THE LIST.  
+- Mandatory Inventory Verification: In the "Remaining Needed" field for the first session scratchpad, you MUST list every single uncompleted Core code, Major/No-Major code, and Major/Elective code INDIVIDUALLY. You are strictly forbidden from grouping remaining requirements under generic placeholders or credit point sums until every mandatory handbook code has been explicitly assigned to a future session. Once you have made the list DOUBLE CHECK ALL SUBJECT LISTED IN THE GIVEN HANDBOOK UNDER CORE AND MAJOR ARE LISTED. ADD THE CP OF EACH SUBJECT TO GET THE TOTAL. IF THE TOTAL + HISTORICAL_COMPLETED != 144 RECHECK THE LIST. 
+- Do not add elective placeholders if all the elective CP are already met in stage 1.  
 STRICT CARRY-FORWARD RULE: In every session scratchpad, Remaining Needed MUST equal [Previous Session Remaining Needed] minus [Previous Session Selected]. If an eligible subject is not selected due to the 4-subject cap or term mismatch, it MUST remain in Remaining Needed for all subsequent sessions until it is scheduled.
 SESSION INVENTORY STATUS: At the end of every session block, write: Unscheduled Subjects Remaining: [List remaining codes] (Count: X)
 TERMINATION RULE: You cannot end Stage 2 until Unscheduled Subjects Remaining Count = 0. If subjects remain and no more standard sessions exist, you MUST automatically create additional sessions (e.g., Autumn 2029) to schedule them.
@@ -624,7 +625,7 @@ TERMINATION RULE: You cannot end Stage 2 until Unscheduled Subjects Remaining Co
 (Mandatory: Output this block for EVERY session needed starting from the session following the given enrolment. Do NOT skip or use '...'. FOLLOW THIS TEMPLATE EXACTLY. Skipping Filter 1 or Filter 2 is A CRITICAL ERROR)
 #### Session [Year, Term]:
 - Completed CP Prior: [X] [failed subjects and excess subjects do not count]
-- Remaining Needed: [Explicitly list ALL uncompleted Core AND Major 1 / No-Major AND Major 2 / Electives to reach 144 CP]
+- Remaining Needed: [Explicitly list ALL uncompleted Core AND Major 1 / No-Major AND Major 2 / Electives to reach 144 CP] EXPLICITLY DO THE MATHS AND DO NOT INCLUDE EXTRA SUBJECTS OVER 144 CP UNLESS THEY ARE REQUIRED TO FULFILL A MANDATORY HANDBOOK REQUIREMENT.
 - Filter Protocol (EVALUATE EVERY REMAINING SUBJECT INDIVIDUALLY. Start with core subjects, followed by major/no-major then electives. NEVER EVALUATE AN ELECTIVE BEFORE ALL CORE AND MAJOR SUBJECTS ARE EVALUATED.):
 For EVERY code listed in Remaining Needed, you MUST output a dedicated line evaluating all 5 conditions UNTIL 4 ELIGIBLE SUBJECTS ARE FOUND OR THERE ARE NO MORE SUBJECTS TO EVALUATE. Shorthand phrases like "[Evaluated against...]" or grouped summaries are STRICTLY BANNED.
 PREREQUISITE DEPENDENCY VERIFICATION RULE: When evaluating Prereqs Met? for any candidate subject S in Session N: Condition: Prereq(S) is met IF AND ONLY IF Prereq(S) is in HISTORICAL_COMPLETED OR CURRENTLY_ENROLLED OR Planned Subjects in Sessions prior to N. If Prereq(S) is NOT present in that explicit set, Prereqs Met? MUST evaluate to FAIL, regardless of degree level or handbook standard pathways.
@@ -679,7 +680,7 @@ OVERALL COMPLETED RULE:
 - Completed / Credit Awarded: N CP
 - Excess / Non-awarded: N CP
 - Remaining in plan: N CP
-- **Total applicable: 144 CP**
+- **Total applicable: N CP**
 
 **Current WAM:** give the calculated WAM
 
@@ -746,7 +747,7 @@ For every subject in the plan evaluate:
 If any of the above questions evaluate to NO, add this issue to the plan feedback.
 
 For the whole plan:
-1. Is the total CP 144?
+1. Is the total CP 144? List all subjects and their CP to verify. 
 2. Are there <= 60 CP of 100 level subjects?
 3. For any listed majors are all the required subjects listed?
 4. Do all the sessions have <= 4 subjects? (A session may have 5 subjects ONLY IF specifically requested by the student)
