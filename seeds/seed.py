@@ -376,7 +376,7 @@ Unspecified Credits table format: `Course | Level | NomCP`
 
 ### STAGE 1: ANALYSIS & AUDIT
 1. Identify Commencement Year & Declared Major.
-   - Valid Majors: Network Design & Management (MAJ40163), Web Design & Development (MAJ40246), or No-Major Path.
+   - Valid Majors: Network Design & Management (MAJ40163) or No-Major Path.
    - If invalid: Trigger CIRCUIT BREAKER -> Abort immediately to Scenario A.
 2. Resolve Replacements (e.g., MATH255 -> CSIT205).
 3. Audit COMPLETED and ENROLLED subjects in strict priority order (Core -> Major -> Elective -> Excess):

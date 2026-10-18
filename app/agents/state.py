@@ -19,7 +19,7 @@ from app.services.enrolment import UnreadableRecord, parse_enrolment
 # last pass because its verdict could no longer trigger a retry.
 MAX_STAGE1_RETRIES = 2
 MAX_STAGE2_RETRIES = 2
-MAX_STAGE2_TOOL_LOOPS = 3
+MAX_STAGE2_TOOL_LOOPS = 4
 
 
 def latest_user_request(state: dict) -> str:
@@ -355,6 +355,7 @@ class AdvisorState(TypedDict):
     handbook_year: int | None
     handbook_campus: str | None
     handbook_valid: bool
+    major_validation_passed: bool
 
     # Stage 1
     electives: str | None

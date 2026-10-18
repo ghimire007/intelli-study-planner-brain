@@ -95,6 +95,22 @@ class AdvisorGraph:
             },
         )
 
+        stage2_llms = LLMRegistry(
+            llm_config,
+            {
+                "confirm": skills["confirm"],
+                "full": skills["full"],
+            },
+        )
+
+        stage2_no_tools_llms = LLMRegistry(
+            llm_config,
+            {
+                "confirm": skills["confirm"],
+                "full": [],
+            },
+        )
+
         self._checkpointer = checkpointer
         self.conversation = ConversationNodes(
             llms,
@@ -102,7 +118,7 @@ class AdvisorGraph:
         )
         self.handbook = HandbookNodes(db)
         self.stage1 = Stage1Nodes(llms)
-        self.stage2 = Stage2Nodes(llms, skills["full"])
+        self.stage2 = Stage2Nodes(stage2_llms, skills["full"], no_tools_llms=stage2_no_tools_llms)
 
     def build(self) -> StateGraph:
         graph = StateGraph(AdvisorState)
@@ -180,7 +196,14 @@ class AdvisorGraph:
         graph.add_edge("populate_plan_electives", END)
 
         # Stage 1: generate and evaluate the core subjects sequentially.
-        graph.add_edge("start_planning", "stage1_review_must_includes")
+        graph.add_conditional_edges(
+            "start_planning",
+            stage1.route_after_start_planning,
+            {
+                "stage1_review_must_includes": "stage1_review_must_includes",
+                "__end__": END,
+            },
+        )
         graph.add_edge("stage1_review_must_includes", "eval_stage1_lists")
 
         # A failed evaluation reruns only the core branch, which meets the

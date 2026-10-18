@@ -109,6 +109,8 @@ def confirm_metadata_tool(
     Do not infer missing majors. Use an empty list if the student
     has no major.
 
+    A major cannot be confirmed unless it is valid for the given campus. 
+
     Call after the student has answered the intake question or
     explicitly corrected their details.
 

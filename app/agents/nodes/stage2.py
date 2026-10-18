@@ -21,8 +21,9 @@ class Stage2Nodes:
     """Stage 2: generate the study plan (with planning tools), evaluate it,
     and emit the final message."""
 
-    def __init__(self, llms: LLMRegistry, planning_tools: list) -> None:
+    def __init__(self, llms: LLMRegistry, planning_tools: list, *, no_tools_llms: LLMRegistry) -> None:
         self._llms = llms
+        self._no_tools_llms = no_tools_llms
         self._tool_node = ToolNode(planning_tools)
 
     async def make_plan(self, state: AdvisorState) -> dict:
@@ -56,7 +57,15 @@ class Stage2Nodes:
             f"{state.get('electives')}\n"
         )
 
-        response = await self._llms.get("full").ainvoke([
+        tool_count = state.get("stage2_tool_loop_count", 0)
+
+        if tool_count >= MAX_STAGE2_TOOL_LOOPS:
+            llm = self._no_tools_llms.get("full")
+            print("STAGE 2: planning without tools")
+        else:
+            llm = self._llms.get("full")
+
+        response = await llm.ainvoke([
             SystemMessage(content=base_prompt),
             *state.get("messages", []),
             HumanMessage(content=content_prompt),
@@ -69,9 +78,9 @@ class Stage2Nodes:
         updated: dict = {"messages": [response]}
 
         if not response.tool_calls:
-            # A generation that finished without tools closes the tool loop.
             updated["stage2_tool_loop_count"] = 0
             text_plan = _message_text(response).strip()
+
             if text_plan:
                 updated["plan"] = text_plan
 
@@ -93,15 +102,19 @@ class Stage2Nodes:
     @staticmethod
     def route_after_tool_results(
         state: AdvisorState,
-    ) -> Literal["stage2_make_plan", "format_output"]:
-        """Stop before another LLM call when the tool-loop budget is exhausted."""
+    ) -> Literal["stage2_make_plan"]:
         count = state.get("stage2_tool_loop_count", 0)
 
-        print(f"STAGE 2 TOOL LOOPS: {count}/{MAX_STAGE2_TOOL_LOOPS}")
+        print(
+            f"STAGE 2 TOOL LOOPS: "
+            f"{count}/{MAX_STAGE2_TOOL_LOOPS}"
+        )
 
         if count >= MAX_STAGE2_TOOL_LOOPS:
-            print("STAGE 2 tool-loop limit reached; stopping without another LLM call")
-            return "format_output"
+            print(
+                "STAGE 2 tool limit reached; "
+                "returning to make_plan with tools disabled"
+            )
 
         return "stage2_make_plan"
 
@@ -110,13 +123,23 @@ class Stage2Nodes:
     @staticmethod
     def route_after_make_plan(
         state: AdvisorState,
-    ) -> Literal["stage2_tools", "evaluate_stage2", "format_output"]:
+    ) -> Literal[
+        "stage2_tools",
+        "evaluate_stage2",
+        "format_output",
+    ]:
         messages = state.get("messages", [])
         last = messages[-1] if messages else None
 
         if isinstance(last, AIMessage) and last.tool_calls:
-            if state.get("stage2_tool_loop_count", 0) >= MAX_STAGE2_TOOL_LOOPS:
-                print("STAGE 2 tool-loop limit reached")
+            if (
+                state.get("stage2_tool_loop_count", 0)
+                >= MAX_STAGE2_TOOL_LOOPS
+            ):
+                print(
+                    "ERROR: no-tools model returned tool calls; "
+                    "cannot execute additional tools"
+                )
                 return "format_output"
 
             return "stage2_tools"
@@ -196,7 +219,7 @@ class Stage2Nodes:
         if feedback:
             feedback_section = (
                 "**Plan feedback:**\n"
-                "To ensure full accuracy transparency, the presence of this section indicates that your generated plan **currently contains issues**. To ensure Courseo's compatability with free LLM key limits, the plan evaluation loop has been limited. Please ask for your plan to be fixed with the following feedback:\n"
+                "*Your generated plan **currently contains issues**. To ensure Courseo's compatability with free LLM key limits, the plan evaluation loop has been limited. Please ask for your plan to be fixed with the following feedback:*\n"
                 f"{feedback.strip()}\n\n"
             )
 

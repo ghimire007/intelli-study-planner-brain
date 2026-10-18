@@ -127,20 +127,136 @@ class Stage1Nodes:
     def __init__(self, llms: LLMRegistry) -> None:
         self._llms = llms
 
-
-    
-
     @staticmethod
-    async def start_planning(state: AdvisorState) -> dict:
-        """Consume planning_requested exactly once and reset planning state."""
+    def route_after_start_planning(
+        state: AdvisorState,
+    ) -> Literal["stage1_review_must_includes", "__end__"]:
+        if not state.get("major_validation_passed", False):
+            print("ROUTE: planning blocked; ending planning workflow")
+            return "__end__"
+
+        return "stage1_review_must_includes"
+
+
+    async def start_planning(self, state: AdvisorState) -> dict:
+        """Validate handbook metadata and major before starting planning."""
         print("NODE: start_planning")
 
         if not handbook_matches_current_meta(state):
             print("START PLANNING BLOCKED: handbook invalid")
             return {"planning_requested": False}
 
+        meta = state.get("meta") or {}
+        handbook = state.get("handbook")
+
+        if not handbook:
+            print("START PLANNING BLOCKED: handbook missing")
+            return {"planning_requested": False}
+
+        validation_prompt = f"""
+    Validate the user's confirmed academic major against the
+    authoritative handbook data.
+
+    Return ONLY a JSON object with this schema:
+    {{
+    "valid": true,
+    "reason": "brief explanation",
+    "invalid_majors": []
+    }}
+
+    Rules:
+    - Treat the handbook data as the sole authority.
+    - Verify every selected major against the handbook for the
+    confirmed degree and campus.
+    - Match major names carefully; do not assume that similar names
+    refer to the same major.
+    - If no major is selected, verify whether the course permits
+    a no-major study plan.
+    - If the handbook does not provide enough information to verify
+    the major, return valid=false.
+    - Never invent a major or infer that it is valid.
+
+    CONFIRMED METADATA:
+    {meta}
+
+    AUTHORITATIVE HANDBOOK:
+    {handbook}
+    """
+
+        try:
+            response = await self._llms.get("parser").ainvoke([
+                SystemMessage(content=(
+                    "You are a strict academic metadata validator. "
+                    "Use only the supplied authoritative handbook data. "
+                    "Return valid JSON only."
+                )),
+                HumanMessage(content=validation_prompt),
+            ])
+
+            result = extract_and_parse_json(response.content)
+
+            handbook = state.get("handbook")
+
+            print("HANDBOOK TYPE:", type(handbook).__name__)
+            print("HANDBOOK CONTENT:", str(handbook)[:5000])
+            print("MAJOR VALIDATION METADATA:", meta)
+            print("MAJOR VALIDATION RAW RESPONSE:", response.content)
+
+            print("\n\nresult: ", result)
+
+            if not isinstance(result, dict) or result.get("valid") is not True:
+                print("START PLANNING BLOCKED: major validation failed")
+
+                explanation_response = await self._llms.get("parser").ainvoke([
+                    SystemMessage(content="""
+                        You are the UOW academic course planning assistant.
+                        Explain the handbook validation result to the student in a concise,
+                        helpful way.
+
+                        Explain:
+                        - which selected major failed validation;
+                        - why the supplied handbook does not verify it;
+                        - what the student should clarify before planning can continue.
+
+                        Do not invent alternative majors or claim a major is invalid
+                        beyond what the validation result establishes.
+                        Return only the message intended for the student.
+                        """),
+                                HumanMessage(content=f"""
+                        Degree: {state.get("degree_code")}
+                        Campus: {state.get("campus")}
+                        Commencement year: {state.get("year")}
+                        Selected majors: {state.get("majors")}
+
+                        Validation result:
+                        {result}
+                    """),
+                ])
+
+                explanation = _message_text(explanation_response).strip()
+
+                return {
+                    "planning_requested": False,
+                    "major_validation_passed": False,
+                    "planning_block_reason": result.get("reason", ""),
+                    "messages": [AIMessage(content=explanation)],
+                }
+
+        except Exception as exc:
+            print("START PLANNING MAJOR VALIDATION ERROR:", repr(exc))
+            return {
+                "planning_requested": False,
+                "plan_feedback": (
+                    "Major validation could not be completed. "
+                    "Please confirm your major before planning."
+                ),
+            }
+
+        print("START PLANNING: handbook major validation passed")
+
         return {
             "planning_requested": False,
+            "major_validation_passed": True,
             "conversation_mode": "planning",
             **PLANNING_RESET,
         }
