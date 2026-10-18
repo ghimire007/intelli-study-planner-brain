@@ -623,7 +623,7 @@ TERMINATION RULE: You cannot end Stage 2 until Unscheduled Subjects Remaining Co
 #### Session [Year, Term]:
 - Completed CP Prior: [X] [failed subjects and excess subjects do not count]
 - Remaining Needed: [Explicitly list ALL uncompleted Core AND Major 1 / No-Major AND Major 2 / Electives to reach 144 CP]
-- Filter Protocol (EVALUATE EVERY REMAINING SUBJECT INDIVIDUALLY. Start with core subjects, followed by major/no-major then electives):
+- Filter Protocol (EVALUATE EVERY REMAINING SUBJECT INDIVIDUALLY. Start with core subjects, followed by major/no-major then electives. NEVER EVALUATE AN ELECTIVE BEFORE ALL CORE AND MAJOR SUBJECTS ARE EVALUATED.):
 For EVERY code listed in Remaining Needed, you MUST output a dedicated line evaluating all 5 conditions UNTIL 4 ELIGIBLE SUBJECTS ARE FOUND OR THERE ARE NO MORE SUBJECTS TO EVALUATE. Shorthand phrases like "[Evaluated against...]" or grouped summaries are STRICTLY BANNED.
 PREREQUISITE DEPENDENCY VERIFICATION RULE: When evaluating Prereqs Met? for any candidate subject S in Session N: Condition: Prereq(S) is met IF AND ONLY IF Prereq(S) is in HISTORICAL_COMPLETED OR CURRENTLY_ENROLLED OR Planned Subjects in Sessions prior to N. If Prereq(S) is NOT present in that explicit set, Prereqs Met? MUST evaluate to FAIL, regardless of degree level or handbook standard pathways.
 Required Format Per Subject:
