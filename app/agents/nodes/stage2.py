@@ -45,7 +45,7 @@ class Stage2Nodes:
             base_prompt += f"\n\nAddress this previous evaluation feedback: {feedback}"
 
         content_prompt = (
-            "Do not skip any part of STAGE 1: ANALYSIS & AUDIT. Always include ALL session scratchpad evaluations. You must not skip evaluating any subject."
+            "Do not skip any part of STAGE 1: ANALYSIS & AUDIT. Always include ALL session scratchpad evaluations. You must not skip evaluating any subject.\n\n"
             "Authoritative metadata:\n"
             f"{state.get('meta')}\n\n"
             # "Authoritative handbook:\n"

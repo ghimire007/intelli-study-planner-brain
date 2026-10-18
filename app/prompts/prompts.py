@@ -616,8 +616,9 @@ STRICT LEDGER LOCK: You are strictly forbidden from adding any subject to HISTOR
 
 
 ### STAGE 2: SESSION SCRATCHPAD
-- Mandatory Inventory Verification: In the "Remaining Needed" field for the first session scratchpad, you MUST list every single uncompleted Core code, Major/No-Major code, and Major/Elective code INDIVIDUALLY. You are strictly forbidden from grouping remaining requirements under generic placeholders or credit point sums until every mandatory handbook code has been explicitly assigned to a future session. Once you have made the list DOUBLE CHECK ALL SUBJECT LISTED IN THE GIVEN HANDBOOK UNDER CORE AND MAJOR ARE LISTED. ADD THE CP OF EACH SUBJECT TO GET THE TOTAL. IF THE TOTAL + HISTORICAL_COMPLETED != 144 RECHECK THE LIST. 
-- Do not add elective placeholders if all the elective CP are already met in stage 1.  
+- Mandatory Inventory Verification: In the "Remaining Needed" field for the first session scratchpad, you MUST list every single uncompleted Core code, Major/No-Major code, and Major/Elective code INDIVIDUALLY. You are strictly forbidden from grouping remaining requirements under generic placeholders or credit point sums until every mandatory handbook code has been explicitly assigned to a future session. Once you have made the list DOUBLE CHECK ALL SUBJECT LISTED IN THE GIVEN HANDBOOK UNDER CORE AND MAJOR ARE LISTED. 
+In the "Total CP" field, ADD THE CP OF EACH SUBJECT TO GET THE TOTAL. IF THE TOTAL + completed CP prior != 144 RECHECK THE LIST and add the missing subject/s or remove the extra ones.. 
+- Add elective placeholders to make up Valid_Elective_CP to 24 CP.  
 STRICT CARRY-FORWARD RULE: In every session scratchpad, Remaining Needed MUST equal [Previous Session Remaining Needed] minus [Previous Session Selected]. If an eligible subject is not selected due to the 4-subject cap or term mismatch, it MUST remain in Remaining Needed for all subsequent sessions until it is scheduled.
 SESSION INVENTORY STATUS: At the end of every session block, write: Unscheduled Subjects Remaining: [List remaining codes] (Count: X)
 TERMINATION RULE: You cannot end Stage 2 until Unscheduled Subjects Remaining Count = 0. If subjects remain and no more standard sessions exist, you MUST automatically create additional sessions (e.g., Autumn 2029) to schedule them.
@@ -625,7 +626,8 @@ TERMINATION RULE: You cannot end Stage 2 until Unscheduled Subjects Remaining Co
 (Mandatory: Output this block for EVERY session needed starting from the session following the given enrolment. Do NOT skip or use '...'. FOLLOW THIS TEMPLATE EXACTLY. Skipping Filter 1 or Filter 2 is A CRITICAL ERROR)
 #### Session [Year, Term]:
 - Completed CP Prior: [X] [failed subjects and excess subjects do not count]
-- Remaining Needed: [Explicitly list ALL uncompleted Core AND Major 1 / No-Major AND Major 2 / Electives to reach 144 CP] EXPLICITLY DO THE MATHS AND DO NOT INCLUDE EXTRA SUBJECTS OVER 144 CP UNLESS THEY ARE REQUIRED TO FULFILL A MANDATORY HANDBOOK REQUIREMENT.
+- Remaining Needed: [Explicitly list ALL uncompleted Core AND Major 1 / No-Major AND Major 2 / Electives to reach 144 CP] EXPLICITLY DO THE MATHS AND DO NOT INCLUDE EXTRA SUBJECTS OVER 144 CP UNLESS THEY ARE REQUIRED TO FULFILL A MANDATORY HANDBOOK REQUIREMENT.]
+- Total CP: Does completed CP Prior + Remaining Needed CP = 144? If NO, recheck the Remaining Needed list. 
 - Filter Protocol (EVALUATE EVERY REMAINING SUBJECT INDIVIDUALLY. Start with core subjects, followed by major/no-major then electives. NEVER EVALUATE AN ELECTIVE BEFORE ALL CORE AND MAJOR SUBJECTS ARE EVALUATED.):
 For EVERY code listed in Remaining Needed, you MUST output a dedicated line evaluating all 5 conditions UNTIL 4 ELIGIBLE SUBJECTS ARE FOUND OR THERE ARE NO MORE SUBJECTS TO EVALUATE. Shorthand phrases like "[Evaluated against...]" or grouped summaries are STRICTLY BANNED.
 PREREQUISITE DEPENDENCY VERIFICATION RULE: When evaluating Prereqs Met? for any candidate subject S in Session N: Condition: Prereq(S) is met IF AND ONLY IF Prereq(S) is in HISTORICAL_COMPLETED OR CURRENTLY_ENROLLED OR Planned Subjects in Sessions prior to N. If Prereq(S) is NOT present in that explicit set, Prereqs Met? MUST evaluate to FAIL, regardless of degree level or handbook standard pathways.
@@ -639,13 +641,14 @@ YOU MUST LIST OUT EVERY SUBJECT THAT IS INCLUDED IN THE TOTAL FOR PREREQ AND COR
 - [5/5] Coreq (CP Level): [Code] J CP total (Session N): Subject1 S CP (Session N or earlier) + … + Subject2 S CP (Session N or earlier) = J CP? [PASS/FAIL]
 - VERDICT: [ELIGIBLE (All 5 conditions must be PASS) / INELIGIBLE]
 YOU CANNOT BEGIN THE SELECTION UNTIL 4 ELIGIBLE SUBJECTS ARE FOUND OR THERE ARE NO MORE SUBJECTS TO EVALUATE.
+Do no make up an elective subject, ONLY use the placeholders. 
 - Selection: [Selected Codes from ELIGIBLE subjects ONLY. (Max 4)] | Session CP Added: [X] | Total current CP = Completed Cp Prior + Session CP Added
 
 ### STEP 10: MACRO & TOOL AUDIT
 - Tool Term Match: Call `lookup_subjects_tool` once for every subject in plan. Explicitly write the following FOR EVERY SUBJECT with the sessions listed:
    * [Code]: [Planned session] == [subject session from `lookup_subjects_tool`] -> [MATCH/MISMATCH]
 - Bucket Integrity Check: Did any subject switch categories between Stage 1 and Stage 2? [NO/YES]
-- CP Math Check: Scheduled Subject Count = X, must match Required Subject Count. Total CP = sum of each subject's actual CP (repeat = 6, failed = 0, others = 6) — must equal 144. [PASS/FAIL].
+- CP Math Check: Scheduled Subject Count = X, must match Required Subject Count. Total CP = sum of each subject's actual CP (repeat = 6, failed = 0, others = 6) — must equal 144. YOU MUST list every subject and its CP value individually. [PASS/FAIL].
 - NAME-CODE MATCH AUDIT: For every scheduled subject, explicitly write: [Code]: Tool-returned name = "[Name]" | Tool-returned code = "[Code]" | Match? [PASS/FAIL]. Any FAIL blocks output — Final Status cannot be PASS.
 - LABEL-MATH CONSISTENCY AUDIT: For every subject, state Category = [X], CP bucket summed into = [Y]. Match? [PASS/FAIL]. Any FAIL blocks output.
 - FAILED SUBJECT AUDIT: For every F/TF subject: state "[CODE] (F) — 0 CP, repeat scheduled in Session [N], fulfills original requirement." Displacement check — did the repeated subject push a subject out of a full session? [YES/NO]; if YES, confirm it reappears later [FOUND/MISSING]. Any MISSING subject blocks output.
