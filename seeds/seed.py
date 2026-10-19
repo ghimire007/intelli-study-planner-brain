@@ -221,7 +221,7 @@ HANDBOOK_1807_2026_WOLLONGONG = """# 1807 — Bachelor of Information Technology
 - CSIT321 Part 1 has ALL the prequisites and corequisites of CSIT321. CSIT321 Part 2 only has CSIT321 Part 1 as a prerequisite.
 - Part 2 MUST be in the **immediately following** session from Part 1 (Session N then Session N + 1).
 - If the student was already enrolled in Part 1 last session, Part 2 must appear in next current session.
-- Prioritise starting CSIT321 in the same session as CSIT314 if possible.
+- Prioritise starting CSIT321 in the same session as CSIT314 if possible, but CSIT314 can be scheduled eariler than CSIT321 and it is still valid. 
 - CSIT321 Part 1 is 6 CP. CSIT321 Part 2 is 6 CP.
 
 ### Core Replacements & Alternates
@@ -329,7 +329,7 @@ HANDBOOK_1807_2026_LIVERPOOL = """# 1807 — Bachelor of Information Technology 
 - CSIT321 is split into Part 1 and Part 2 both worth 6CP each for the purpose of scheduling. They CANNOT BE TAKEN SIMULTANEOUSLY AND YOU CANNOT COMBINE BOTH PARTS.
 - Part 2 MUST be in the **immediately following** session from Part 1 (Session N then Session N + 1).
 - If the student was already enrolled in Part 1 last session, Part 2 must appear in next current session.
-- Prioritise starting CSIT321 in the same session as CSIT314 if possible.
+- Prioritise starting CSIT321 in the same session as CSIT314 if possible, but CSIT314 can be scheduled eariler than CSIT321 and it is still valid. 
 - CSIT321 Part 1 is 6 CP. CSIT321 Part 2 is 6 CP.
 
 ### Core Replacements & Alternates

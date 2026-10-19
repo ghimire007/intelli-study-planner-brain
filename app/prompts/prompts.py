@@ -560,6 +560,7 @@ Before generating the plan:
 - SELECTION DEPENDENCY: When corequisite CP depends on other subjects selected in the same session, evaluate the proposed session load collectively. Select eligible supporting subjects first or evaluate the candidate combination together, then recheck the corequisite CP total. Every subject counted must appear in the final selected session, and the session must not exceed the load cap.
 - LEVEL AND STATUS VALIDATION: Count only subjects at the required level. Failed attempts contribute 0 CP. Do not count a subject twice toward prerequisite and corequisite CP totals where the prompt prohibits double-counting.
 - Never assume a corequisite satisfies a prerequisite.
+- A subject's level is determined by its first digit (e.g., CSIT121 is a 100-level subject, CSIT213 is a 200-level subject, CSIT314 is a 300-level subject).
 - ALWAYS check that a subject's level is correct for a prerequisite or corequisite requirement. If a subject is at the wrong level, it cannot satisfy the requirement.
 - A Failed subject, or any subject that must be repeated, cannot count towards any prerequisites or corequisites or any CP count until it is retaken.
 - No-Major Path is 18 CP (3 subjects) at 300-level + 6 CP (1 subject) at 200/300-level (CSCI/CSIT/ISIT). Do not make up no-major subjects or recommend subjects unless specifically requested. ONLY WRITE no-major 1 (200/300 lv) etc.
@@ -619,8 +620,8 @@ STRICT LEDGER LOCK: You are strictly forbidden from adding any subject to HISTOR
 - UNCOMPLETED SUBJECT INVENTORY: Explicitly list all the subjects in Required/core subjects.
 - CP Audit (Categorize BOTH COMPLETED AND ENROLLED subjects IN ORDER TAKEN):
     * Core_CP = [X] CP [Explicitly list codes here]
-    * Major_1_CP = [X] CP [Explicitly list codes here] (ONLY subjects that are part of the declared major count toward this bucket)
-    * Major_2_CP = [X] CP [Explicitly list codes here] (ONLY subjects that are part of the second declared major count toward this bucket)
+    * Major_1_CP = [X] CP [Explicitly list codes here] (ONLY subjects that are part of the declared major count toward this bucket. Do not mix majors, only major subjects from the same major can belong to major 1)
+    * Major_2_CP = [X] CP [Explicitly list codes here] (ONLY subjects that are part of the second declared major count toward this bucket. Do not mix majors, only major subjects from the same major can belong to major 2)
     * Raw_Elective_CP = [X] CP [Explicitly list codes here]
     * Valid_Elective_CP = MIN(24, Raw_Elective_CP) = [X] CP [Explicitly list codes here] (if this bucket is full, you must place other electives into the EXCESS)
     * Excess_CP = MAX(0, Raw_Elective_CP - 24) = [X] CP [Explicitly list codes here]
@@ -633,7 +634,7 @@ STRICT LEDGER LOCK: You are strictly forbidden from adding any subject to HISTOR
 ### STAGE 2: SESSION SCRATCHPAD
 - Mandatory Inventory Verification: In the "Remaining Needed" field for the first session scratchpad, you MUST list every single uncompleted Core code, Major/No-Major code, and Major/Elective code INDIVIDUALLY. You are strictly forbidden from grouping remaining requirements under generic placeholders or credit point sums until every mandatory handbook code has been explicitly assigned to a future session. Once you have made the list DOUBLE CHECK ALL SUBJECT LISTED IN THE GIVEN HANDBOOK UNDER CORE AND MAJOR ARE LISTED. 
 In the "Total CP" field, ADD THE CP OF EACH SUBJECT TO GET THE TOTAL. IF THE TOTAL + completed CP prior != 144 RECHECK THE LIST and add the missing subject/s or remove the extra ones.. 
-- Add elective placeholders to make up Valid_Elective_CP to 24 CP.  
+- If not a double major: add elective placeholders to make up Valid_Elective_CP to 24 CP.  
 STRICT CARRY-FORWARD RULE: In every session scratchpad, Remaining Needed MUST equal [Previous Session Remaining Needed] minus [Previous Session Selected]. If an eligible subject is not selected due to the 4-subject cap or term mismatch, it MUST remain in Remaining Needed for all subsequent sessions until it is scheduled.
 SESSION INVENTORY STATUS: At the end of every session block, write: Unscheduled Subjects Remaining: [List remaining codes] (Count: X)
 TERMINATION RULE: You cannot end Stage 2 until Unscheduled Subjects Remaining Count = 0. If subjects remain and no more standard sessions exist, you MUST automatically create additional sessions (e.g., Autumn 2029) to schedule them.
@@ -641,11 +642,11 @@ TERMINATION RULE: You cannot end Stage 2 until Unscheduled Subjects Remaining Co
 (Mandatory: Output this block for EVERY session needed starting from the session following the given enrolment. Do NOT skip or use '...'. FOLLOW THIS TEMPLATE EXACTLY. Skipping Filter 1 or Filter 2 is A CRITICAL ERROR)
 #### Session [Year, Term]:
 - Completed CP Prior: [X] [failed subjects and excess subjects do not count]
-- Remaining Needed: [Explicitly list ALL uncompleted Core AND Major 1 / No-Major AND Major 2 / Electives to reach 144 CP] EXPLICITLY DO THE MATHS AND DO NOT INCLUDE EXTRA SUBJECTS OVER 144 CP UNLESS THEY ARE REQUIRED TO FULFILL A MANDATORY HANDBOOK REQUIREMENT.]
+- Remaining Needed: [Explicitly list ALL uncompleted Core AND Major 1 / No-Major AND Major 2 / Electives to reach 144 CP] EXPLICITLY DO THE MATHS AND DO NOT INCLUDE EXTRA SUBJECTS OVER 144 CP UNLESS THEY ARE REQUIRED TO FULFILL A MANDATORY HANDBOOK REQUIREMENT. If two majors are given you must list all major subjects required for both majors and list no electives.]
 - Total CP: Does completed CP Prior + Remaining Needed CP = 144? If NO, recheck the Remaining Needed list. 
 - Filter Protocol (EVALUATE EVERY REMAINING SUBJECT INDIVIDUALLY. Start with core subjects, followed by major/no-major then electives. NEVER EVALUATE AN ELECTIVE BEFORE ALL CORE AND MAJOR SUBJECTS ARE EVALUATED.):
 For EVERY code listed in Remaining Needed, you MUST output a dedicated line evaluating all 5 conditions UNTIL 4 ELIGIBLE SUBJECTS ARE FOUND OR THERE ARE NO MORE SUBJECTS TO EVALUATE. Shorthand phrases like "[Evaluated against...]" or grouped summaries are STRICTLY BANNED.
-PREREQUISITE DEPENDENCY VERIFICATION RULE: When evaluating Prereqs Met? for any candidate subject S in Session N: Condition: Prereq(S) is met IF AND ONLY IF Prereq(S) is in HISTORICAL_COMPLETED OR CURRENTLY_ENROLLED OR Planned Subjects in Sessions prior to N. If Prereq(S) is NOT present in that explicit set, Prereqs Met? MUST evaluate to FAIL, regardless of degree level or handbook standard pathways.
+PREREQUISITE DEPENDENCY VERIFICATION RULE: When evaluating Prereqs Met? for any candidate subject S in Session N: Condition: Prereq(S) is met IF AND ONLY IF Prereq(S) is in HISTORICAL_COMPLETED OR CURRENTLY_ENROLLED OR Planned Subjects in Sessions prior to N AND is not a failed subject (UNDER NO CIRCUMSTANCES when a student has failed a prerequisite subject and needs to repeat it can they repeat the failed prerequisite and take the dependent subject in the same teaching session.). If Prereq(S) is NOT present in that explicit set, Prereqs Met? MUST evaluate to FAIL, regardless of degree level or handbook standard pathways.
 CONCURRENT COREQ RESOLUTION: Evaluate corequisite CP eligibility against the proposed current-session combination, not only against previously completed subjects. If a candidate depends on concurrent subjects for corequisite CP, provisionally evaluate the combination, select the supporting subjects within the session cap, and revalidate all 5 conditions against the final selection. A candidate is not INELIGIBLE solely because its corequisite CP has not been completed before Session N. If the required supporting combination cannot be selected, mark it INELIGIBLE for that session.
 Required Format Per Subject: (DO NOT OMIT ANY LINE OR CONDITION. Do not evaluate coreqs during 2/5 etc)
 [SUBJECT_CODE]:
@@ -770,7 +771,6 @@ Rules:
 6. Evaluate the plan that was actually supplied, including its table and JSON. Do not assume they agree.
 
 ## STEP 2 — RESPONSE STRUCTURE
-
 Verify that the response contains:
 1. A concise answer to the student's request.
 2. Stage 1 Analysis & Audit.
@@ -787,9 +787,7 @@ The JSON block must be the final content, with no prose after it. Check that all
 Missing or malformed required content is a validation failure.
 
 ## STEP 3 — SOLS LEDGER AND CHRONOLOGY
-
 Independently extract every subject attempt explicitly recorded in SOLS. Check that:
-
 1. Every historical and current subject appears in the plan.
 2. Subject codes, attempts, grades, statuses, CP values, years, and sessions agree with the record.
 3. Completed and currently enrolled subjects remain in their original sessions and are not moved, removed, or silently replaced.
@@ -803,9 +801,7 @@ Independently extract every subject attempt explicitly recorded in SOLS. Check t
 Flag every discrepancy with the exact subject code and record evidence.
 
 ## STEP 4 — SUBJECT IDENTITY, NAME, CP AND AVAILABILITY
-
 For EVERY subject in the plan, independently verify:
-
 1. The subject code matches the authoritative lookup result exactly.
 2. The subject name matches the returned name for that exact code character-for-character, excluding explicitly required repeat/failure annotations.
 3. The subject CP matches the authoritative subject data or the applicable documented SOLS value.
@@ -818,22 +814,18 @@ Do not infer subject availability from alternating-session patterns or subject-c
 A mismatch is a validation failure unless the source data explicitly establishes an applicable exception.
 
 ## STEP 5 — PREREQUISITE AND COREQUISITE VALIDATION
-
 Evaluate prerequisite and corequisite SUBJECT requirements separately from prerequisite and corequisite CP requirements. Use the actual handbook rules for each subject.
 
 ### 5A. Prerequisite subjects
-
 A prerequisite must be satisfied by the required prior completion or enrolment status specified by the handbook. Under the planning rules, required prerequisite subjects must be completed in a strictly earlier session (N−1 or earlier).
-
 - A prerequisite scheduled in the same session as the dependent subject FAILS.
 - A failed attempt does not satisfy a prerequisite.
 - A subject appearing later in the plan does not satisfy an earlier prerequisite.
 - Do not infer completion from a standard handbook pathway.
+A prerequisite can be completed in an earlier session. 
 
 ### 5B. Corequisite subjects
-
 A required corequisite may be completed in the same session or an earlier session, as permitted by the handbook.
-
 - Same-session corequisites are allowed.
 - Verify that the required corequisite is actually completed, already enrolled, or selected in the same session as applicable.
 - A corequisite scheduled only in a later session FAILS.
