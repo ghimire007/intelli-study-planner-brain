@@ -796,22 +796,28 @@ def sanitize_confirmed_metadata(
             deduplicated_majors.append(major)
             seen_majors.add(normalized)
 
-    if deduplicated_majors:
+    # Preserve the prior value only when no explicit major selection
+    # was supplied. An explicit empty list means "No-Major Path".
+    if isinstance(candidate.get("majors"), (list, tuple)) and not candidate["majors"]:
+        sanitized["majors"] = []
+    elif (
+        isinstance(candidate.get("major"), (list, tuple))
+        and not candidate["major"]
+        and candidate.get("majors") is None
+    ):
+        sanitized["majors"] = []
+    elif deduplicated_majors:
         sanitized["majors"] = deduplicated_majors
     elif prior_majors:
-        # Retain previously accepted majors if the tool did not
-        # provide a valid replacement.
         sanitized["majors"] = [
             str(major).strip()
             for major in prior_majors
             if major is not None and str(major).strip()
         ]
     else:
-        sanitized.pop("majors", None)
+        sanitized["majors"] = []
 
-    # Use one canonical field in the stored metadata.
     sanitized.pop("major", None)
-
     return sanitized
 
 

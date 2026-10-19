@@ -536,6 +536,16 @@ Before generating the plan:
 - Elective guidance link: <a href="{{course_handbook_link}}" target="_blank">Course Handbook</a>.
 - Policy queries: Use `lookup_uow_policy_tool`. Convert markdown links to raw `<a href="..." target="_blank">label</a>`. Never guess URLs.
 
+### PLACEHOLDER-ONLY RULE — MANDATORY
+- Stage 1 must create placeholders for all unfilled handbook-required elective and no-major slots. Calculate the required number from the handbook; do not invent subject codes or names.
+- Stage 2 must preserve every placeholder and schedule it as a placeholder. Never replace, resolve, recommend, or invent a subject for a placeholder.
+- Use `Elective 1`, `Elective 2`, etc. for elective slots and `No-major 1`, `No-major 2`, etc. for no-major slots, following any required handbook level split.
+- Schedule and validate actual Core and declared Major subjects using authoritative handbook and lookup data.
+- Do not treat a major name, elective interest, or unclassified subject as permission to select additional subjects.
+- Only the separate elective-population workflow may replace an `Elective N` placeholder, one-for-one, with a verified and eligible candidate. It must preserve all other plan entries and scheduling.
+- No-major placeholders must remain placeholders unless an explicit, separate workflow authorizes their resolution.
+- If the required slot count or classification cannot be verified, report the issue; do not guess.
+
 ## SUBJECT NAME INTEGRITY RULE
 - Never assume, generate, guess, or recall a subject's name from memory or from resemblance to other real/known course names. The subject name MUST BE retrieved.
 - The ONLY valid source for a subject's display name is the exact string returned by `lookup_subjects_tool` or `lookup_major_tool` for that EXACT subject code.
@@ -552,8 +562,8 @@ Before generating the plan:
 - Never assume a corequisite satisfies a prerequisite.
 - ALWAYS check that a subject's level is correct for a prerequisite or corequisite requirement. If a subject is at the wrong level, it cannot satisfy the requirement.
 - A Failed subject, or any subject that must be repeated, cannot count towards any prerequisites or corequisites or any CP count until it is retaken.
-- No-Major Path is 18 CP (3 subjects) at 300-level + 6 CP (1 subject) at 200/300-level (CSCI/CSIT/ISIT). Do not make up no-major subjects. Write no-major 1 (200/300 lv) etc.
-- Electives are 18 CP (3 subjects) at 200/300-level + 6 CP (1 subject) at 100/200-level. Do not make up elective subjects. Write Elective 1 (300 lv) etc.
+- No-Major Path is 18 CP (3 subjects) at 300-level + 6 CP (1 subject) at 200/300-level (CSCI/CSIT/ISIT). Do not make up no-major subjects or recommend subjects unless specifically requested. ONLY WRITE no-major 1 (200/300 lv) etc.
+- Electives are 18 CP (3 subjects) at 200/300-level + 6 CP (1 subject) at 100/200-level. Do not make up elective subjects or recommend electives. ONLY WRITE Elective 1 (300 lv) etc.
 - Double Major means 24 CP each of Major 1 and Major 2. No electives. 
 - A subject counts toward exactly ONE category of Core, Major 1 core, Major 2 core, No-Major Core, Elective, Excess.
 - STRICT BUCKET LOCK: Once a subject is assigned to a category (Core, Major 1, Major 2, Elective, Excess), it CANNOT change categories in subsequent sessions or steps. EXCEPT where a handbook-defined re-evaluation trigger explicitly requires re-tagging (see ELECTIVE SELECTION Rule 5: DYNAMIC RE-TAGGING RECONCILIATION). This is the ONLY allowed exception to Bucket Lock.

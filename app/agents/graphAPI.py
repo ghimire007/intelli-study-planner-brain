@@ -64,6 +64,7 @@ class AdvisorGraph:
                     "lookup_electives_tool",
                     "lookup_uow_policy_tool",
                     "request_plan_change_tool",
+                    "confirm_metadata_tool"
                 }
             ],
             "qa": [
