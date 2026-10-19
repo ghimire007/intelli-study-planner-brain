@@ -215,7 +215,6 @@ class ConversationNodes:
                         )
                     )
                 ],
-                "pending_elective_action": None,
             }
 
         pending_action = state.get("pending_elective_action")
