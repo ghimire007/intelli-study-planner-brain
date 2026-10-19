@@ -544,8 +544,11 @@ Before generating the plan:
 - If no tool result exists for a code, do NOT invent a plausible name. Use the placeholder: "Subject name unavailable for [subject code]"
 
 ## DEFINITIONS & DEGREE-RULE HIERARCHY
-- PREREQUISITE DEPENDENCY RULE: Subject S can be scheduled in Session N IF AND ONLY IF Session(Prereq(S)) <= N - 1. Simultaneous completion of prerequisites is FORBIDDEN. A subject CANNOT be planned in the same session as its prerequisite. "CP at level X" prerequisites: count only Complete CP or CP planned in a strictly earlier session (N - 1 or earlier).
-- COREQUISITE DEPENDENCY RULE: Subject S can be scheduled in Session N IF AND ONLY IF Session(Coreq(S)) <= N. SIMULTANEOUS COMPLETION OF COREQUISITES IS ALLOWED.
+- PREREQUISITE RULE: Required prerequisite subjects and prerequisite-level CP must be completed in a strictly earlier session (N−1 or earlier). Concurrent enrolment does NOT satisfy prerequisites.
+- COREQUISITE RULE: Required corequisite subjects and corequisite-level CP may be completed in the same session or any earlier session (N or earlier). Concurrent completion IS allowed.
+- COREQUISITE CP EVALUATION: Count only qualifying CP at the exact required level from completed subjects, or subjects scheduled in earlier sessions, plus eligible subjects selected in the current session. Current-session subjects count only if they are actually selected in that session. Do NOT reject a subject merely because its required corequisite CP comes from subjects taken concurrently.
+- SELECTION DEPENDENCY: When corequisite CP depends on other subjects selected in the same session, evaluate the proposed session load collectively. Select eligible supporting subjects first or evaluate the candidate combination together, then recheck the corequisite CP total. Every subject counted must appear in the final selected session, and the session must not exceed the load cap.
+- LEVEL AND STATUS VALIDATION: Count only subjects at the required level. Failed attempts contribute 0 CP. Do not count a subject twice toward prerequisite and corequisite CP totals where the prompt prohibits double-counting.
 - Never assume a corequisite satisfies a prerequisite.
 - ALWAYS check that a subject's level is correct for a prerequisite or corequisite requirement. If a subject is at the wrong level, it cannot satisfy the requirement.
 - A Failed subject, or any subject that must be repeated, cannot count towards any prerequisites or corequisites or any CP count until it is retaken.
@@ -633,17 +636,18 @@ TERMINATION RULE: You cannot end Stage 2 until Unscheduled Subjects Remaining Co
 - Filter Protocol (EVALUATE EVERY REMAINING SUBJECT INDIVIDUALLY. Start with core subjects, followed by major/no-major then electives. NEVER EVALUATE AN ELECTIVE BEFORE ALL CORE AND MAJOR SUBJECTS ARE EVALUATED.):
 For EVERY code listed in Remaining Needed, you MUST output a dedicated line evaluating all 5 conditions UNTIL 4 ELIGIBLE SUBJECTS ARE FOUND OR THERE ARE NO MORE SUBJECTS TO EVALUATE. Shorthand phrases like "[Evaluated against...]" or grouped summaries are STRICTLY BANNED.
 PREREQUISITE DEPENDENCY VERIFICATION RULE: When evaluating Prereqs Met? for any candidate subject S in Session N: Condition: Prereq(S) is met IF AND ONLY IF Prereq(S) is in HISTORICAL_COMPLETED OR CURRENTLY_ENROLLED OR Planned Subjects in Sessions prior to N. If Prereq(S) is NOT present in that explicit set, Prereqs Met? MUST evaluate to FAIL, regardless of degree level or handbook standard pathways.
+CONCURRENT COREQ RESOLUTION: Evaluate corequisite CP eligibility against the proposed current-session combination, not only against previously completed subjects. If a candidate depends on concurrent subjects for corequisite CP, provisionally evaluate the combination, select the supporting subjects within the session cap, and revalidate all 5 conditions against the final selection. A candidate is not INELIGIBLE solely because its corequisite CP has not been completed before Session N. If the required supporting combination cannot be selected, mark it INELIGIBLE for that session.
 Required Format Per Subject: (DO NOT OMIT ANY LINE OR CONDITION. Do not evaluate coreqs during 2/5 etc)
 [SUBJECT_CODE]:
 - [1/5] Availability: [Code]: [Autumn/Spring] == current session? [PASS/FAIL]
 YOU MUST LIST OUT EVERY SUBJECT THAT IS INCLUDED IN THE TOTAL FOR PREREQ AND COREQ CP LEVELS. LEVELS OF SUBJECTS USED FOR PREREQ AND COREQ CP TOTAL MUST MATCH THE SPECIFIED SUBJECT LEVEL.
 - [2/5] Prereq (Subjects): [Code] (Session N): Prereqs [failed subjects do not count] (Session N-1 or earlier), Prereqs Met? [PASS/FAIL]
 - [3/5] Coreq (Subjects): [Code] (Session N): Coreqs [failed subjects do not count] (Session N or earlier), Coreqs Met? [PASS/FAIL]
-- [4/5] Prereq (CP Level): [Code] [Subject level] J CP total (Session N): Subject1 [must match subject level] S CP (Session N-1 or earlier) + … + Subject2 [must match subject level] S CP (Session N-1 or earlier) = J CP? [PASS/FAIL]
-- [5/5] Coreq (CP Level): [Code] [Subject level] J CP total (Session N): Subject1 [must match subject level] S CP (Session N or earlier) + … + Subject2 [must match subject level] S CP (Session N or earlier) = J CP? [PASS/FAIL] (Eligible subjects for this session can be included in this total, but they must then be part of the selected subjects) (A SUBJECT USED TOWARDS A PREREQ CP TOTAL CANNOT ALSO BE USED FOR COREQ CP COUNTING) 
+- [4/5] Prereq (CP Level): [Code] requires [J] CP at [level] in Session N-1 or earlier. List every qualifying subject, its level, CP, and session. Calculate the total using completed subjects and subjects selected in Session N-1 or earlier. PASS if the qualifying total is >= J CP; otherwise FAIL.
+- [5/5] Coreq (CP Level): [Code] requires [J] CP at [level] in Session N or earlier. List every qualifying subject, its level, CP, and session. Calculate the total using completed subjects and eligible subjects selected in Session N or earlier. Concurrent subjects in Session N ARE ALLOWED. PASS if the qualifying total is >= J CP; otherwise FAIL. Any current-session subject counted MUST be selected in that session. Do NOT apply the prerequisite N−1 rule to corequisite CP.
 - VERDICT: [ELIGIBLE (All 5 conditions must be PASS) / INELIGIBLE]
 YOU CANNOT BEGIN THE SELECTION UNTIL 4 ELIGIBLE SUBJECTS ARE FOUND OR THERE ARE NO MORE SUBJECTS OR ELECTIVE PLACEHOLDERS TO EVALUATE. YOU CAN STOP EVALUATING ONCE 4 ELIGIBLE SUBJECTS ARE FOUND. 
-Do no make up an elective subject, ONLY use the placeholders. 
+Do not make up ANY elective subjects, ONLY use the placeholders. 
 - Selection: [Selected Codes from ELIGIBLE subjects ONLY. (Max 4)] | Session CP Added: [X] | Total current CP = Completed Cp Prior + Session CP Added
 
 ### STEP 10: MACRO & TOOL AUDIT
@@ -731,41 +735,294 @@ STRICT JSON SCHEMA & SYNTAX RULES:
 ### evaluator of stage 2 - correct session, name, cp total etc - feedback and back to stage 2 if needed
 
 EVAL_PLAN = """
-Step 1:
-To pass successfully, every response containing a study plan must strictly include:
-1. A short response to the given request or question. 
-2. The Audit & Rule Verification section (Stage 1 Analysis & Audit, Stage 2 Session Scratchpad, Elective selection, Step 10 Macro & Tool Audit, and Step 11 Pre-Flight Verification Matrix).
-3. The Study Plan Table with all historical, current, and future subjects.
-4. The Credit Point Summary.
-5. A raw, valid, RFC-8259 compliant nested JSON block wrapped inside a ```json markdown code fence at the very end of the response containing the entire chronological plan.
-If all 5 sections are included then step 1 PASSES.
+You are the independent final auditor for a University of Wollongong (UOW) degree study plan. Audit the supplied plan against the injected handbook, raw Student Record (SOLS), confirmed degree metadata, subject lookup results, and all applicable planning rules.
 
-If Step 1 PASSES then evaluate Step 2.
+Your task is to FIND ERRORS, NOT defend the generated plan. Do not trust the plan's own PASS labels, audit claims, calculated totals, or explanations. Independently recalculate and verify every requirement using the available source data.
 
-Step 2:
-Do NOT output text while waiting for tool execution results. Call `lookup_subjects_tool` ONCE with all planned subject codes to get key subject information. The information returned from this tool is to be considered the ONLY TRUTH. 
-For every subject in the plan evaluate:
-1. Does the planned session match the available sessions returned by lookup_subjects_tool?
-2. Does the subject name match the name returned by lookup_subjects_tool for that subject code?
-3. Are all prerequisites met in a strictly eariler session?
-4. Are all corequisites met in the same session or earlier?
-If any of the above questions evaluate to NO, add this issue to the plan feedback.
+Return valid JSON only, matching the required schema at the end. Do not generate a replacement study plan.
 
-For the whole plan:
-1. Is the total CP 144? List all subjects and their CP to verify. 
-2. Are there <= 60 CP of 100 level subjects?
-3. For any listed majors are all the required subjects listed?
-4. Do all the sessions have <= 4 subjects? (A session may have 5 subjects ONLY IF specifically requested by the student)
-If any of the above questions evaluate to NO, add this issue to the plan feedback.
+## STEP 1 — REQUIRED INPUTS AND EVIDENCE
 
-The response to evaluate: 
-{{PLAN}}
+Use the available injected data:
+- Handbook: {{handbook}}
+- Student Record: {{sols}}
+- Confirmed degree metadata: {{metadata}}
+- Proposed response and complete study plan: {{PLAN}}
 
-Respond ONLY in JSON format: 
+Use the exact subject code, name, credit points, availability, prerequisites, corequisites, and degree requirements returned by the authoritative sources.
+
+Rules:
+1. Never invent handbook rules, subject names, credit points, offerings, prerequisites, corequisites, or major requirements.
+2. Never infer completed subjects from standard degree sequences, the proposed plan, or downstream requirements. Completion must be supported by SOLS.
+3. If a required source or lookup result is unavailable, distinguish UNVERIFIABLE from PASS. Do not fabricate evidence or silently approve the plan.
+4. If the plan contains a subject absent from lookup results, flag its name, CP, availability, and rule eligibility as unverifiable where the missing data prevents verification.
+5. If degree metadata is missing or inconsistent, flag the issue. Do not silently substitute a course, year, campus, or major.
+6. Evaluate the plan that was actually supplied, including its table and JSON. Do not assume they agree.
+
+## STEP 2 — RESPONSE STRUCTURE
+
+Verify that the response contains:
+1. A concise answer to the student's request.
+2. Stage 1 Analysis & Audit.
+3. Stage 2 Session Scratchpad with individual eligibility checks.
+4. Elective selection and category reconciliation.
+5. Step 10 Macro & Tool Audit.
+6. Step 11 Pre-Flight Verification Matrix.
+7. A study plan table containing historical, current, and future subjects.
+8. A credit point summary and calculated WAM where sufficient data is available.
+9. A final RFC-8259-valid JSON code block containing the complete chronological plan.
+
+The JSON block must be the final content, with no prose after it. Check that all required fields exist, strings are correctly escaped, numbers have valid types, and there are no trailing commas or comments.
+
+Missing or malformed required content is a validation failure.
+
+## STEP 3 — SOLS LEDGER AND CHRONOLOGY
+
+Independently extract every subject attempt explicitly recorded in SOLS. Check that:
+
+1. Every historical and current subject appears in the plan.
+2. Subject codes, attempts, grades, statuses, CP values, years, and sessions agree with the record.
+3. Completed and currently enrolled subjects remain in their original sessions and are not moved, removed, or silently replaced.
+4. No subject is marked completed unless the record supports completion under the applicable rules.
+5. Failed attempts (F/TF) remain visible as historical rows. They earn 0 CP and do not satisfy prerequisites, corequisites, or degree requirements until a qualifying repeat is passed.
+6. A required repeat is scheduled and satisfies the original requirement only after passing.
+7. Specified credit is accounted for according to the supplied record and applicable degree rules.
+8. No subject is duplicated or silently omitted. Multiple genuine attempts must remain distinguishable.
+9. Future subjects are not incorrectly included in the historical completed ledger.
+
+Flag every discrepancy with the exact subject code and record evidence.
+
+## STEP 4 — SUBJECT IDENTITY, NAME, CP AND AVAILABILITY
+
+For EVERY subject in the plan, independently verify:
+
+1. The subject code matches the authoritative lookup result exactly.
+2. The subject name matches the returned name for that exact code character-for-character, excluding explicitly required repeat/failure annotations.
+3. The subject CP matches the authoritative subject data or the applicable documented SOLS value.
+4. The subject is scheduled only in an offered session for the confirmed year and campus, where those restrictions apply.
+5. The subject's displayed session, year, code, name, CP, and category agree across the table, scratchpad, audit, and JSON.
+6. The subject's level is correct for every prerequisite, corequisite, and degree-level requirement it is used to satisfy.
+
+Do not infer subject availability from alternating-session patterns or subject-code numbering. Use authoritative offering data.
+
+A mismatch is a validation failure unless the source data explicitly establishes an applicable exception.
+
+## STEP 5 — PREREQUISITE AND COREQUISITE VALIDATION
+
+Evaluate prerequisite and corequisite SUBJECT requirements separately from prerequisite and corequisite CP requirements. Use the actual handbook rules for each subject.
+
+### 5A. Prerequisite subjects
+
+A prerequisite must be satisfied by the required prior completion or enrolment status specified by the handbook. Under the planning rules, required prerequisite subjects must be completed in a strictly earlier session (N−1 or earlier).
+
+- A prerequisite scheduled in the same session as the dependent subject FAILS.
+- A failed attempt does not satisfy a prerequisite.
+- A subject appearing later in the plan does not satisfy an earlier prerequisite.
+- Do not infer completion from a standard handbook pathway.
+
+### 5B. Corequisite subjects
+
+A required corequisite may be completed in the same session or an earlier session, as permitted by the handbook.
+
+- Same-session corequisites are allowed.
+- Verify that the required corequisite is actually completed, already enrolled, or selected in the same session as applicable.
+- A corequisite scheduled only in a later session FAILS.
+- Do not treat a corequisite as satisfying a prerequisite unless the handbook explicitly permits it.
+
+### 5C. Prerequisite credit-point requirements
+
+For every prerequisite CP threshold, list the qualifying subjects, their levels, CP, status, and sessions.
+
+Count only qualifying CP that satisfies the handbook's completion rules and is available strictly before Session N. Do not count same-session subjects toward prerequisite CP under the planning rules.
+
+Failed attempts contribute 0 CP. Do not count an in-progress subject as completed unless the handbook explicitly allows that status to satisfy the requirement.
+
+### 5D. Corequisite credit-point requirements
+
+For every corequisite CP threshold, list the qualifying subjects, their levels, CP, status, and sessions.
+
+Count qualifying CP from eligible completed subjects and subjects in the current or an earlier session, according to the handbook and planning rules.
+
+**Concurrent corequisite CP is allowed.** Do not apply the prerequisite N−1 rule to corequisite CP.
+
+For example, if a subject requires 12 CP at 200-level as a corequisite, two qualifying 6 CP subjects selected in the same session may satisfy the threshold. This passes only if both subjects are valid 200-level subjects, are actually selected in that session, and all other applicable requirements are met.
+
+Validate the final selected session collectively. A concurrent subject cannot be counted merely because it appears in Remaining Needed or was provisionally considered; it must actually be selected in the final session.
+
+If the plan does not contain the supporting concurrent subject, or if the selected combination violates another rule, flag the specific failure.
+
+### 5E. CP double-counting
+
+Follow the planning rules for disjoint prerequisite and corequisite CP accounting. Where the rules prohibit using the same subject toward both CP thresholds, ensure that the same CP is not counted twice for the same eligibility evaluation.
+
+Do not impose a double-counting restriction on handbook requirements that explicitly permit overlapping credit. If the supplied rules conflict, flag the conflict instead of inventing a resolution.
+
+## STEP 6 — SESSION SEQUENCING AND LOAD
+
+For every future session, independently verify:
+
+1. Sessions follow the required chronology.
+2. Planning begins in the session immediately after the last session represented in the enrolment record, according to the supplied planning rules.
+3. No completed or currently enrolled subject is moved.
+4. No subject is scheduled before its prerequisites are satisfied.
+5. Corequisites and CP thresholds are satisfied in the applicable session.
+6. The subject is offered in that session.
+7. The standard maximum is four subjects (24 CP) per session.
+8. Five subjects are allowed only if specifically requested by the student.
+9. Six or more subjects in a session always FAIL.
+10. Subjects displaced by session capacity, prerequisite dependencies, or repeats remain scheduled in a later valid session rather than disappearing.
+11. Additional sessions are created when necessary to complete all requirements.
+
+A session containing fewer than four subjects is acceptable when availability, dependencies, or the remaining inventory justify it.
+
+Do not move a subject to an earlier session merely to fill capacity.
+
+## STEP 7 — DEGREE REQUIREMENTS AND CATEGORY INTEGRITY
+
+Independently derive the complete requirement inventory from the confirmed degree metadata and handbook.
+
+Verify every applicable requirement, including:
+- All required core subjects.
+- All required subjects for each confirmed major.
+- Both majors for a confirmed double-major course.
+- Applicable no-major requirements.
+- Required elective levels and credit points.
+- Any other explicit handbook constraints relevant to completion.
+
+Do not use generic placeholders to conceal omitted mandatory handbook subjects.
+
+Elective placeholders may represent only legitimate elective requirements that remain unfilled. Do not invent elective subject codes or names.
+
+Check that:
+1. Every required subject is accounted for exactly as the degree rules require.
+2. No mandatory subject is missing.
+3. No subject is added without a valid requirement, repeat, or permitted elective purpose.
+4. Each subject contributes to exactly one applicable category under the bucket-lock rules.
+5. Category assignments remain stable unless an explicit handbook re-evaluation rule requires re-tagging.
+6. Core, major, no-major, elective, and excess categories agree with the actual CP calculations.
+7. Double-major rules are followed, including the prohibition on electives where applicable.
+
+### Elective and excess audit
+
+Apply the handbook's actual elective cap and category rules. Do not assume a default elective cap where the handbook specifies another value.
+
+Audit subjects in chronological order using the required priority:
+1. Core.
+2. Applicable major or no-major requirements.
+3. Valid electives, subject to the actual cap.
+4. Excess only when the permitted elective allocation is exhausted.
+
+Reconcile every permitted dynamic re-tagging event. A subject re-tagged to Elective consumes one elective slot, updates the elective CP ledger, and reduces the number of remaining elective placeholders.
+
+A subject is not Excess merely because it is unfamiliar, non-IT, absent from the handbook lookup, or difficult to classify. Apply the documented category rules and require evidence that the elective cap is exhausted.
+
+Flag any disagreement between category labels, CP ledgers, placeholder counts, and the actual plan.
+
+## STEP 8 — CREDIT POINT AND SUBJECT-COUNT RECONCILIATION
+
+Recalculate all totals independently from the source record and proposed plan.
+
+Report separately:
+1. CP earned from completed subjects.
+2. CP currently enrolled, clearly distinguished from completed CP.
+3. CP awarded through specified credit, where applicable.
+4. Excess CP, which may count as earned CP but does not count toward applicable degree requirements when the rules say so.
+5. Applicable completed CP.
+6. Remaining applicable CP.
+7. Total applicable degree CP.
+8. Total subject attempts, including failed attempts and repeats.
+9. Required degree-subject count, using the actual handbook requirements.
+
+For the standard 144 CP course described by the supplied planning rules, verify that applicable degree requirements total 144 CP.
+
+Do not simply multiply every row by 6 or sum every row indiscriminately. Use each subject's actual CP and status. Failed attempts earn 0 CP; repeats are separate attempts; excess subjects do not contribute to applicable degree CP.
+
+Do not count an enrolled subject as completed or earned CP unless the relevant reporting metric and source rules explicitly permit it.
+
+Check that completed CP + remaining applicable CP reconciles to the applicable degree total, accounting for specified credit and other explicitly documented exceptions.
+
+Check the scheduled subject count against the actual number of requirements remaining. Do not add unnecessary subjects merely to reach a fixed row count when specified credit, failed attempts, repeats, or other documented rules change the required count.
+
+If the course's handbook rules differ from the standard 144 CP assumptions, follow the confirmed handbook and flag any conflict with the planning prompt.
+
+## STEP 9 — WAM AND ACADEMIC STATUS
+
+Check that grades and statuses are transcribed correctly.
+
+If WAM is required, verify that sufficient authoritative marks and weighting information are available to calculate it correctly. Do not invent marks or infer a numeric WAM from grade categories alone.
+
+If the required information is unavailable, flag WAM as unverifiable rather than fabricating a result.
+
+Check that F, TF, N, NH, W, WF, and AF attempts are correctly represented where present and that their treatment follows the applicable rules.
+
+## STEP 10 — TABLE, SCRATCHPAD AND JSON CONSISTENCY
+
+Cross-check all representations of the plan.
+
+1. Every historical and current SOLS subject appears in the table and JSON.
+2. Every future planned subject appears in the table, the final selected scratchpad session, and JSON.
+3. No JSON subject is absent from the final plan table.
+4. No subject has conflicting names, codes, CP, years, sessions, or categories across representations.
+5. Every year and session is valid, chronological, and correctly nested in JSON.
+6. Every JSON subject has the required code, name, cp, and notes fields, using the schema defined by the planning prompt.
+7. The JSON includes all sessions needed to complete the degree, without ellipses, omitted years, or omitted subjects.
+8. The response ends immediately after the JSON code block.
+9. The audit's PASS/FAIL labels match the independently verified results.
+
+Do not accept a plan merely because its JSON parses. A structurally valid JSON plan can still violate degree rules.
+
+## STEP 11 — FINAL DECISION AND ACTIONABLE FEEDBACK
+
+Set "valid" to true ONLY if every mandatory requirement is verified and passes.
+
+Set "valid" to false if:
+- A mandatory subject or requirement is missing.
+- Any subject name, code, CP, offering, session, or category is incorrect or unverifiable where verification is mandatory.
+- A prerequisite, corequisite, or CP-level requirement fails.
+- The session load or chronology violates the rules.
+- Applicable degree CP or required subject counts do not reconcile.
+- The historical/current ledger is incomplete or altered.
+- The plan table and JSON disagree.
+- A required audit section or JSON structure is missing.
+- A critical requirement cannot be verified from the available evidence.
+
+Do not mark a plan valid when a mandatory check is UNVERIFIABLE. Distinguish an evidence gap from a proven rule violation in the feedback.
+
+For every issue, provide:
+- Severity: CRITICAL or WARNING.
+- Exact subject code or affected requirement.
+- Planned year and session, where applicable.
+- Failed rule and expected condition.
+- Actual evidence and why the plan fails.
+- Required correction to Stage 2.
+
+Make feedback specific and actionable. Example:
+"CRITICAL — CSIT328, Autumn 2027: The 12 CP 200-level corequisite threshold is satisfied by CSIT205 (6 CP) and CSIT214 (6 CP), both selected in Autumn 2027. Concurrent corequisite CP is permitted, so this check PASSES. However, CSIT328 fails the prerequisite-subject check because [specific prerequisite] is not completed in an earlier session. Move CSIT328 to the earliest valid later session."
+
+Never recommend moving a subject solely because concurrent corequisite CP has not been completed before the semester starts.
+
+If the plan is invalid, request a targeted Stage 2 correction and a complete rerun of every affected eligibility check, session CP total, carry-forward inventory, and final audit. If a subject moves or the selected session combination changes, re-evaluate all affected subjects and downstream dependencies.
+
+If valid, return an empty feedback string.
+
+## REQUIRED OUTPUT
+
+Return ONLY one RFC-8259-compliant JSON object with this exact schema:
+
 {
-  "valid": true/false, 
-  "feedback": "reasoning if invalid"
+  "valid": false,
+  "feedback": "Concise, specific, actionable validation findings."
 }
+
+Requirements:
+- "valid" must be a JSON boolean, not a string.
+- "feedback" must be a JSON string.
+- Escape quotation marks and newlines correctly.
+- Do not include Markdown fences, comments, extra keys, or prose outside the JSON object.
+
+## PLAN TO EVALUATE
+
+{{PLAN}}
 """.strip()
 
 # output

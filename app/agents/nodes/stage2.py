@@ -15,7 +15,7 @@ from app.agents.state import (
 )
 from app.prompts.builder import build_system_prompt
 from app.prompts.prompts import EVAL_PLAN, SYSTEM_PROMPT_V1
-
+import json
 
 class Stage2Nodes:
     """Stage 2: generate the study plan (with planning tools), evaluate it,
@@ -45,18 +45,39 @@ class Stage2Nodes:
             base_prompt += f"\n\nAddress this previous evaluation feedback: {feedback}"
 
         content_prompt = (
-            "Do not skip any part of STAGE 1: ANALYSIS & AUDIT. Always include ALL session scratchpad evaluations. You must not skip evaluating any subject.\n\n"
-            "Authoritative metadata:\n"
-            f"{state.get('meta')}\n\n"
-            # "Authoritative handbook:\n"
-            # f"{state.get('handbook')}\n\n"
-            # "Current SOLS:\n"
-            # f"{state.get('raw_sols')}\n\n"
-            "Required/core subjects:\n"
-            f"{state.get('remaining_subjects')}\n\n"
-            "Elective choices:\n"
-            f"{state.get('electives')}\n"
+            "Execute SYSTEM_PROMPT_V1 in full and in the specified order. "
+            "Do not skip, merge, abbreviate, or assume completion of any mandatory stage, "
+            "audit section, subject evaluation, or output requirement.\n\n"
+
+            "STAGE 1: Complete the full analysis and audit before constructing the plan. "
+            "List every SOLS subject in the required immutable categories and calculate "
+            "their credit points exactly. Evaluate every required subject individually. "
+            "Include every required session scratchpad and explicitly assess each applicable "
+            "eligibility criterion using the available evidence.\n\n"
+
+            "STAGE 2: Construct the plan only after Stage 1 is complete. "
+            "Verify every subject against authoritative handbook and lookup data. "
+            "Check prerequisites against earlier sessions and corequisites against the "
+            "same or earlier sessions, including applicable credit-point thresholds. "
+            "Reconcile session loads, degree requirements, category allocations, and total CP.\n\n"
+
+            "VALIDATION: Before responding, audit the entire output against every mandatory "
+            "requirement in SYSTEM_PROMPT_V1. Ensure all required sections are present, "
+            "all subjects have been evaluated, all calculations reconcile, and the audit, "
+            "tables, summary, and JSON agree. Never claim a rule passes without supporting "
+            "evidence. If required evidence is missing or ambiguous, identify the limitation "
+            "rather than inventing a result.\n\n"
+
+            "FEEDBACK: If previous evaluation feedback is provided, address every reported "
+            "issue explicitly. Recheck affected subjects and all dependent session, "
+            "prerequisite, corequisite, and CP calculations. Preserve unaffected valid "
+            "parts of the plan. Do not ignore feedback or claim a correction without "
+            "verifying it.\n\n"
+
+            "Return the complete response in the exact format required by SYSTEM_PROMPT_V1. "
+            "Do not replace required analysis with a summary."
         )
+
 
         tool_count = state.get("stage2_tool_loop_count", 0)
 
@@ -159,17 +180,11 @@ class Stage2Nodes:
         if not plan:
             return {"plan_feedback": "No plan was generated.", "stage2_retry_count": retries + 1}
 
-        eval_prompt = EVAL_PLAN.replace("{{PLAN}}", plan) + (
-            "\n\nAUTHORITATIVE METADATA:\n"
-            f"{state.get('meta')}\n\n"
-            "AUTHORITATIVE HANDBOOK:\n"
-            f"{state.get('handbook')}\n\n"
-            "CURRENT SOLS:\n"
-            f"{state.get('raw_sols')}\n\n"
-            "REQUIRED/CORE SUBJECTS:\n"
-            f"{state.get('remaining_subjects')}\n\n"
-            "ELECTIVE OPTIONS:\n"
-            f"{state.get('electives')}\n"
+        eval_prompt = (
+            EVAL_PLAN.replace("{{PLAN}}", plan)
+            .replace("{{METADATA}}", json.dumps(state.get("meta", {}), indent=2))
+            .replace("{{HANDBOOK}}", state.get("handbook", ""))
+            .replace("{{SOLS}}", state.get("raw_sols", ""))
         )
 
         response = await self._llms.get("parser").ainvoke([
