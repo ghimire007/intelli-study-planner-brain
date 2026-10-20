@@ -19,9 +19,12 @@ def test_cors_origin_list_strips_whitespace_and_slashes() -> None:
     ]
 
 
-def test_lax_cookie_is_the_local_default() -> None:
-    assert Settings().AUTH_COOKIE_SAMESITE == "lax"
-    assert Settings().cookie_misconfigured() is None
+def test_cookie_defaults_suit_a_cross_site_frontend() -> None:
+    """Two onrender.com services are cross-site, so the default is SameSite=None; Secure."""
+    settings = Settings()
+    assert settings.AUTH_COOKIE_SAMESITE == "none"
+    assert settings.AUTH_COOKIE_SECURE is True
+    assert settings.cookie_misconfigured() is None
 
 
 def test_samesite_none_without_secure_is_reported() -> None:
