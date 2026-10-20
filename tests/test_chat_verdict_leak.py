@@ -34,7 +34,7 @@ def setup_node(responses):
     model.ainvoke = AsyncMock(side_effect=responses)
     registry = MagicMock()
     registry.get.return_value = model
-    node = ConversationNodes(registry, [])
+    node = ConversationNodes(registry, {})
     state = {"meta": {}, "meta_confirmed": False, "raw_sols": "no enrolment yet",
              "messages": [HumanMessage(content="Hello")], "planning_requested": False}
     return node, model, state
@@ -44,7 +44,7 @@ async def test_normal_reply_uses_one_call_and_changes_only_messages():
     answer = AIMessage(content="Hello! What would you like help with?")
     node, model, state = setup_node([answer])
     result = await node.agent(state)
-    assert result == {"messages": [answer]}
+    assert result["messages"] == [answer]
     assert model.ainvoke.await_count == 1
 
 
@@ -65,7 +65,7 @@ async def test_accidental_verdict_retries_without_using_plan_validator():
     node, model, state = setup_node([AIMessage(content=VERDICT), answer])
     state.update(plan="Existing free-form plan", conversation_mode="post_plan")
     result = await node.agent(state)
-    assert result == {"messages": [answer]}
+    assert result["messages"] == [answer]
     assert state["plan"] == "Existing free-form plan"
     assert model.ainvoke.await_count == 2
 

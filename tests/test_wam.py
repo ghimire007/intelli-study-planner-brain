@@ -301,7 +301,7 @@ async def test_the_model_is_sent_the_wam_and_no_mark_for_every_repo_record(servi
         "meta_confirmed": True,
         "handbook": "HANDBOOK",
     }
-    await ConversationNodes(registry, confirm_tools=[]).agent(state)
+    await ConversationNodes(registry, {}).agent(state)
     prompt = "\n".join(str(m.content) for m in registry.model.sent)
 
     result = calculate_wam(raw)

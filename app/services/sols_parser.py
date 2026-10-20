@@ -7,6 +7,7 @@
 
 
 import re
+
 from pydantic import BaseModel, Field
 
 
@@ -46,17 +47,17 @@ def extract_sols_metadata(text: str) -> SOLSMeta:
         r"(?<!\d)(20\d{2})(?!\d)",
         text,
     )
-    
+
     # match = re.search(
     #     r"\b((?:19|20)\d{2})\s+"
     #     r"(?:Annual|Autumn|Spring|Summer|Winter)\b",
     #     text,
     #     re.IGNORECASE,
     # )
-    
+
     if match:
         meta.year = int(min(map(int, match)))
-        
+
     # get major/s
     for match in re.finditer(
         r"(?im)^\s*Major(?:\s+\d+)?\s*:\s*(.+?)\s*$",

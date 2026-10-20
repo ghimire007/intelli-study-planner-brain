@@ -52,30 +52,30 @@
 """
 import asyncio
 import json
+import re
 from typing import Literal
 
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
-from langgraph.graph import END
 
 from app.agents.llms import LLMRegistry
 from app.agents.state import (
-    MAX_STAGE1_RETRIES,
-    PLANNING_RESET,
-    AdvisorState,
-    _message_text,
-    extract_and_parse_json,
-    handbook_matches_current_meta,
-    get_ranking_preferences,
-    latest_user_request,
-    stage1_electives_from_advisor_state,
+        MAX_STAGE1_RETRIES,
+        PLANNING_RESET,
+        AdvisorState,
+        _message_text,
+        extract_and_parse_json,
+        get_ranking_preferences,
+        handbook_matches_current_meta,
+        latest_user_request,
+        stage1_electives_from_advisor_state,
 )
 from app.prompts.builder import build_system_prompt
 from app.prompts.prompts import (
-    EVAL_SUBJECTS_ELECTIVES,
-    POPULATE_ELECTIVES_IN_PLAN,
-    SUBJECT_GENERATION_PROMPT,
+        EVAL_SUBJECTS_ELECTIVES,
+        POPULATE_ELECTIVES_IN_PLAN,
+        SUBJECT_GENERATION_PROMPT,
 )
-import re
+
 
 def merge_elective_candidates(
         ranked_json: str,
@@ -261,7 +261,7 @@ class Stage1Nodes:
             **PLANNING_RESET,
         }
 
-    
+
     async def extract_request_elective_interests(
         self,
         state: AdvisorState,
@@ -301,7 +301,7 @@ class Stage1Nodes:
             for item in interests
             if isinstance(item, str) and item.strip()
         ))
-    
+
     async def fetch_elective_list(self, state: AdvisorState) -> dict:
         """Retrieve and rank electives using current or saved preferences."""
         print("NODE: fetch_elective_list")
@@ -317,7 +317,7 @@ class Stage1Nodes:
         if request_interests == []:
             if state.get("elective_mode") == "degree":
                 request_interests = state.get("meta").get("majors", [])
-            else: 
+            else:
                 request_interests = state.get("elective_interests", [])
 
         print("HEYYYYYY: ", request_interests)
@@ -385,7 +385,7 @@ class Stage1Nodes:
         if request_interests == []:
             if state.get("elective_mode") == "degree":
                 request_interests = state.get("meta").get("majors", [])
-            else: 
+            else:
                 request_interests = state.get("elective_interests", [])
 
         print("HEYYYYYY: ", request_interests)

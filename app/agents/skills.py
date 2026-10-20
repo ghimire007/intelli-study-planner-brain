@@ -6,6 +6,7 @@ can choose to invoke, and binds whatever runtime context (e.g. a DB session)
 those services need.
 """
 import json
+import re
 from typing import Literal, TypedDict
 
 from langchain_core.tools import StructuredTool, tool
@@ -21,9 +22,7 @@ from app.services.elective_ranking import flatten_ranked_electives, get_elective
 from app.services.handbook_service import fetch_handbook
 from app.services.kb_service import fetch_major, fetch_subjects
 from app.services.knowledge_service import TOPIC_SLUGS, TOPICS, load_topic
-from app.services.subject_catalog import load_subject_catalog, _normalize
-import re
-from collections import Counter
+from app.services.subject_catalog import _normalize, load_subject_catalog
 
 # Newest handbook rows win; lookups are not tied to the student's commencement
 # year (the scraper currently only loads the latest published handbook year).
@@ -109,7 +108,7 @@ def confirm_metadata_tool(
     Do not infer missing majors. Use an empty list if the student
     has no major.
 
-    A major cannot be confirmed unless it is valid for the given campus. 
+    A major cannot be confirmed unless it is valid for the given campus.
 
     Call after the student has answered the intake question or
     explicitly corrected their details.

@@ -14,5 +14,5 @@ ignore = [
 ]
 
 [lint.per-file-ignores]
-"app/prompts/**" = ["W291"]
+"app/prompts/**" = ["W291", "RUF001"]
 "tests/**" = ["W291"]

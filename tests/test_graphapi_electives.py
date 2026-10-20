@@ -30,16 +30,19 @@ def test_stage1_electives_json_is_eval_shape() -> None:
         stage1_electives_from_advisor_state(
             {
                 "raw_sols": raw,
+                "meta_confirmed": True,
+                "elective_mode": "interest",
+                "elective_interests": ["artificial intelligence"],
                 "meta": {
                     "degree_code": "766",
                     "campus": "Wollongong",
                     "session": "Spring",
-                    "major": "AIBD — Artificial Intelligence and Big Data",
+                    "majors": ["AIBD — Artificial Intelligence and Big Data"],
                 },
             }
         )
     )
-    assert "subjects" in payload
+    assert payload["subjects"]
     required = {
         "code",
         "title",
@@ -66,11 +69,14 @@ def test_extract_and_parse_roundtrip_matches_service() -> None:
     raw_json = stage1_electives_from_advisor_state(
         {
             "raw_sols": RECORD.read_text(),
+            "meta_confirmed": True,
+            "elective_mode": "interest",
+            "elective_interests": ["artificial intelligence"],
             "meta": {
                 "degree_code": "766",
                 "campus": "Wollongong",
                 "session": "Spring",
-                "major": "AIBD",
+                "majors": ["AIBD"],
             },
         }
     )
