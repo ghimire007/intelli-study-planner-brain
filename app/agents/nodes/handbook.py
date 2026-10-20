@@ -19,27 +19,27 @@ class HandbookNodes:
         self._db = db
 
     async def ensure_handbook(self, state: AdvisorState) -> dict:
-        print("NODE: ensure_handbook")
+        # print("NODE: ensure_handbook")
 
         required = metadata_handbook_key(state.get("meta"))
         if required is None:
-            print("HANDBOOK FETCH: invalid metadata")
+            # print("HANDBOOK FETCH: invalid metadata")
             return {**HANDBOOK_CLEARED, "planning_requested": False}
 
         degree_code, year, campus = required
-        print("HANDBOOK FETCH:", degree_code, year, campus)
+        # print("HANDBOOK FETCH:", degree_code, year, campus)
 
         try:
             content = await fetch_handbook(self._db, degree_code, year, campus)
         except Exception as exc:
-            print("HANDBOOK FETCH ERROR:", repr(exc))
+            # print("HANDBOOK FETCH ERROR:", repr(exc))
             return {**HANDBOOK_CLEARED, "planning_requested": False}
 
         if not content or not str(content).strip():
-            print("HANDBOOK FETCH FAILED: empty")
+            # print("HANDBOOK FETCH FAILED: empty")
             return {**HANDBOOK_CLEARED, "planning_requested": False}
 
-        print("HANDBOOK FETCH SUCCESS:", required)
+        # print("HANDBOOK FETCH SUCCESS:", required)
         return {
             "handbook": content,
             "handbook_degree_code": degree_code,
@@ -68,7 +68,7 @@ class HandbookNodes:
     @staticmethod
     async def handbook_missing(state: AdvisorState) -> dict:
         """Stop planning until the handbook can be obtained."""
-        print("NODE: handbook_missing")
+        # print("NODE: handbook_missing")
         return {
             "planning_requested": False,
             "electives": None,

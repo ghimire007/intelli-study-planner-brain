@@ -30,17 +30,17 @@ async def find_subject(
 
     subject = result.scalar_one_or_none()
 
-    print(
-        "FIND SUBJECT:",
-        {
-            "requested_code": repr(code),
-            "normalized_code": normalized_code,
-            "requested_year": year,
-            "found": subject is not None,
-            "stored_code": getattr(subject, "code", None),
-            "stored_year": getattr(subject, "year", None),
-        },
-    )
+    # print(
+    #     "FIND SUBJECT:",
+    #     {
+    #         "requested_code": repr(code),
+    #         "normalized_code": normalized_code,
+    #         "requested_year": year,
+    #         "found": subject is not None,
+    #         "stored_code": getattr(subject, "code", None),
+    #         "stored_year": getattr(subject, "year", None),
+    #     },
+    # )
 
     return subject
 

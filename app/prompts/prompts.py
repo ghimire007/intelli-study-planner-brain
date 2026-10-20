@@ -43,6 +43,7 @@ IMPORTANT DISTINCTION
 
 METADATA EXTRACTION RULES
 Extract only information explicitly provided by the student.
+A Major may have a major code in front of the major name. Do not include the capital letter code if one is present. Only take the major title as the major.
 
 NEVER:
 - infer a commencement year

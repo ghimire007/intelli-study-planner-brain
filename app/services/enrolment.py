@@ -585,5 +585,5 @@ def render_for_llm(record: EnrolmentRecord) -> str:
 def project(raw_sols: str) -> str:
     """Parse a SOLS paste and render only its allowlisted fields."""
     rendered = (render_for_llm(parse_enrolment(raw_sols)))
-    print(rendered)
+    # print(rendered)
     return rendered

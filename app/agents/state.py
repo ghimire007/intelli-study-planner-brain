@@ -203,7 +203,7 @@ def stage1_electives_from_advisor_state(
     """
     Deterministically generate Stage 1 elective candidates.
     """
-    print("1111111\n AdvisorState: ", state.get("elective_interests"))
+    # print("1111111\n AdvisorState: ", state.get("elective_interests"))
 
     meta = state.get("meta") or {}
 
@@ -211,7 +211,7 @@ def stage1_electives_from_advisor_state(
 
     # Major must come from confirmed metadata, not from a model-generated plan.
     if not state.get("meta_confirmed", False):
-        print("STAGE 1 ELECTIVES BLOCKED: metadata is not confirmed")
+        # print("STAGE 1 ELECTIVES BLOCKED: metadata is not confirmed")
         return json.dumps({"mode": "major", "pools": []})
 
     raw_majors = meta.get("majors") or []
@@ -248,10 +248,10 @@ def stage1_electives_from_advisor_state(
     #     )
     # )
 
-    print("interests: ", elective_interests)
+    # print("interests: ", elective_interests)
 
     if elective_mode == "interest" and not elective_interests:
-        print("STAGE 1: interest mode selected but no interests supplied")
+        # print("STAGE 1: interest mode selected but no interests supplied")
         return json.dumps({
             "mode": "interest",
             "pools": [],
@@ -265,7 +265,7 @@ def stage1_electives_from_advisor_state(
     session = str(meta.get("session") or "").strip()
 
     if not course or not campus:
-        print("STAGE 1 ELECTIVES BLOCKED: confirmed course/campus missing")
+        # print("STAGE 1 ELECTIVES BLOCKED: confirmed course/campus missing")
 
         return json.dumps(
             {
@@ -293,24 +293,24 @@ def stage1_electives_from_advisor_state(
     )
 
     #debugging
-    print("ELECTIVE INPUT:")
-    print("  elective_mode:", elective_mode)
-    print("  elective_interests:", elective_interests)
-    print("  major:", major)
-    print("  raw_majors:", raw_majors)
-    print("  completed:", completed)
-    print("  planned:", planned)
+    # print("ELECTIVE INPUT:")
+    # print("  elective_mode:", elective_mode)
+    # print("  elective_interests:", elective_interests)
+    # print("  major:", major)
+    # print("  raw_majors:", raw_majors)
+    # print("  completed:", completed)
+    # print("  planned:", planned)
 
-    print(
-        "STAGE 1 ELECTIVES:",
-        student.course,
-        student.campus,
-        student.session,
-    )
+    # print(
+    #     "STAGE 1 ELECTIVES:",
+    #     student.course,
+    #     student.campus,
+    #     student.session,
+    # )
 
     ranking = get_elective_priorities(student)
 
-    print("RANKING RESULT:", ranking)
+    # print("RANKING RESULT:", ranking)
 
     result = flatten_ranked_electives(
         ranking,
@@ -319,7 +319,7 @@ def stage1_electives_from_advisor_state(
         course=student.course,
     )
 
-    print("FLATTENED ELECTIVES:", result)
+    # print("FLATTENED ELECTIVES:", result)
 
     return json.dumps(result.model_dump(by_alias=True))
 
@@ -723,11 +723,11 @@ def sanitize_confirmed_metadata(
             student_text,
         ):
             sanitized[field] = candidate_value
-        else:
-            print(
-                f"CONFIRMATION DROPPED UNVERIFIED {field.upper()}:",
-                repr(candidate_value),
-            )
+        # else:
+        #     print(
+        #         f"CONFIRMATION DROPPED UNVERIFIED {field.upper()}:",
+        #         repr(candidate_value),
+        #     )
 
     candidate_majors = candidate.get("majors")
 
@@ -753,13 +753,6 @@ def sanitize_confirmed_metadata(
     else:
         prior_majors = []
 
-    # Normalize prior major strings for safe comparison.
-    prior_major_lookup = {
-        str(major).strip().casefold()
-        for major in prior_majors
-        if major is not None and str(major).strip()
-    }
-
     sanitized_majors: list[str] = []
 
     for candidate_major in candidate_majors:
@@ -771,19 +764,7 @@ def sanitize_confirmed_metadata(
         if not major:
             continue
 
-        # Preserve an already accepted major.
-        if major.casefold() in prior_major_lookup:
-            sanitized_majors.append(major)
-            continue
-
-        # A new major must be explicitly stated by the student.
-        if _value_explicitly_stated_by_student(major, student_text):
-            sanitized_majors.append(major)
-        else:
-            print(
-                "CONFIRMATION DROPPED UNVERIFIED MAJOR:",
-                repr(major),
-            )
+        sanitized_majors.append(major)
 
     # Deduplicate without changing the original order.
     deduplicated_majors: list[str] = []
@@ -871,7 +852,7 @@ def apply_confirm_metadata(
     missing = validate_metadata(new_meta)
 
     if missing:
-        print("CONFIRMATION REJECTED - missing:", missing)
+        # print("CONFIRMATION REJECTED - missing:", missing)
 
         return {
             "meta_confirmed": False,
@@ -904,9 +885,9 @@ def apply_confirm_metadata(
     }
 
     if handbook_changed:
-        print("HANDBOOK INVALIDATED")
-        print("OLD:", old_key)
-        print("NEW:", new_key)
+        # ("HANDBOOK INVALIDATED")
+        # print("OLD:", old_key)
+        # printprint("NEW:", new_key)
 
         updates.update({
             "handbook": None,
@@ -941,10 +922,10 @@ def apply_plan_change_request(
     }
 
     if change_type not in allowed_types:
-        print(
-            "PLAN CHANGE REJECTED: unknown change_type",
-            change_type,
-        )
+        # print(
+        #     "PLAN CHANGE REJECTED: unknown change_type",
+        #     change_type,
+        # )
         return {}
 
     meta = dict(prior_meta or {})
@@ -960,7 +941,7 @@ def apply_plan_change_request(
             value = [value]
 
         if not isinstance(value, list):
-            print("PLAN CHANGE REJECTED: majors must be a list")
+            # print("PLAN CHANGE REJECTED: majors must be a list")
             return {}
 
         majors = [
@@ -970,7 +951,7 @@ def apply_plan_change_request(
         ]
 
         if not majors:
-            print("PLAN CHANGE REJECTED: major missing")
+            # print("PLAN CHANGE REJECTED: major missing")
             return {}
 
         meta["majors"] = list(dict.fromkeys(majors))
@@ -983,9 +964,9 @@ def apply_plan_change_request(
             value = [value]
 
         if not isinstance(value, list):
-            print(
-                "PLAN CHANGE REJECTED: elective_interests must be a list"
-            )
+            # print(
+            #     "PLAN CHANGE REJECTED: elective_interests must be a list"
+            # )
             return {}
 
         interests = [
@@ -996,15 +977,15 @@ def apply_plan_change_request(
         interests = list(dict.fromkeys(interests))
 
         if not interests:
-            print(
-                "PLAN CHANGE REJECTED: elective interests missing"
-            )
+            # print(
+            #     "PLAN CHANGE REJECTED: elective interests missing"
+            # )
             return {}
 
-        print(
-            "PLAN CHANGE APPLIED: elective_interests",
-            interests,
-        )
+        # print(
+        #     "PLAN CHANGE APPLIED: elective_interests",
+        #     interests,
+        # )
 
         return {
             "planning_requested": True,
@@ -1022,7 +1003,7 @@ def apply_plan_change_request(
         value = request.get("course")
 
         if not value or not str(value).strip():
-            print("PLAN CHANGE REJECTED: course missing")
+            # print("PLAN CHANGE REJECTED: course missing")
             return {}
 
         meta["degree_code"] = str(value).strip()
@@ -1031,7 +1012,7 @@ def apply_plan_change_request(
         value = request.get("campus")
 
         if not value or not str(value).strip():
-            print("PLAN CHANGE REJECTED: campus missing")
+            p/rint("PLAN CHANGE REJECTED: campus missing")
             return {}
 
         meta["campus"] = str(value).strip()
@@ -1040,25 +1021,25 @@ def apply_plan_change_request(
         value = request.get("commencement_year")
 
         if value is None:
-            print(
-                "PLAN CHANGE REJECTED: commencement year missing",
-            )
+            # print(
+            #     "PLAN CHANGE REJECTED: commencement year missing",
+            # )
             return {}
 
         try:
             meta["year"] = int(value)
         except (TypeError, ValueError):
-            print(
-                "PLAN CHANGE REJECTED: invalid commencement year",
-                repr(value),
-            )
+            # print(
+            #     "PLAN CHANGE REJECTED: invalid commencement year",
+            #     repr(value),
+            # )
             return {}
 
     elif change_type == "session":
         value = request.get("session")
 
         if not value or not str(value).strip():
-            print("PLAN CHANGE REJECTED: session missing")
+            # print("PLAN CHANGE REJECTED: session missing")
             return {}
 
         meta["session"] = str(value).strip()
@@ -1066,10 +1047,10 @@ def apply_plan_change_request(
     missing = validate_metadata(meta)
 
     if missing:
-        print(
-            "PLAN CHANGE REJECTED - missing:",
-            missing,
-        )
+        # print(
+        #     "PLAN CHANGE REJECTED - missing:",
+        #     missing,
+        # )
         return {
             "planning_requested": False,
             "meta_confirmed": False,
@@ -1093,19 +1074,19 @@ def apply_plan_change_request(
         "stage2_tool_loop_count": 0,
     }
 
-    print(
-        "PLAN CHANGE APPLIED:",
-        change_type,
-        meta,
-    )
+    # print(
+    #     "PLAN CHANGE APPLIED:",
+    #     change_type,
+    #     meta,
+    # )
 
     if old_key != new_key:
-        print(
-            "HANDBOOK INVALIDATED BY PLAN CHANGE",
-            old_key,
-            "->",
-            new_key,
-        )
+        # print(
+        #     "HANDBOOK INVALIDATED BY PLAN CHANGE",
+        #     old_key,
+        #     "->",
+        #     new_key,
+        # )
         updates.update({
             "handbook": None,
             "handbook_degree_code": None,

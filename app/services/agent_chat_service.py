@@ -110,7 +110,7 @@ class AgentChatService:
 
         cleaned_sols = raw_sols.strip() if raw_sols else ""
 
-        print("start session beginning, cleaned_sols:", cleaned_sols, ".")
+        # print("start session beginning, cleaned_sols:", cleaned_sols, ".")
 
         projected_sols: str | None = None
         initial_messages = []
@@ -119,7 +119,7 @@ class AgentChatService:
 
         if not cleaned_sols:
             # No initial input.
-            print("NO SOLS")
+            # print("NO SOLS")
 
             projected_sols = "no enrolment yet"
             initial_messages.append(HumanMessage(content="Hello"))
@@ -171,7 +171,7 @@ class AgentChatService:
             )
 
             if looks_like_sols:
-                print("SOLS detected")
+                # print("SOLS detected")
 
                 try:
                     projected_sols = project(protected_sols)
@@ -299,11 +299,11 @@ class AgentChatService:
             projected = None
 
         except Exception as e:
-            print( "continue_session: unexpected project() error:", repr(e), )
+            # print( "continue_session: unexpected project() error:", repr(e), )
             projected = None
 
         if projected:
-            print("continue_session: SOLS record detected")
+            # print("continue_session: SOLS record detected")
             payload = {
                 "messages": [ HumanMessage(content=projected) ],
                 "raw_sols": _with_wam(projected, user_message),

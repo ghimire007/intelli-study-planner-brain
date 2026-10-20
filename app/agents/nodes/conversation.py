@@ -152,7 +152,7 @@ class ConversationNodes:
             )
             and not handbook_matches_current_meta(state)
         ):
-            print("ROUTE: metadata confirmed; fetching handbook directly")
+            # print("ROUTE: metadata confirmed; fetching handbook directly")
             return "ensure_handbook"
 
         # Other tool results, such as answers to subject questions,
@@ -195,15 +195,15 @@ class ConversationNodes:
     async def agent(self, state: AdvisorState) -> dict:
         """Conversational LLM: confirmation-oriented model before metadata is
         confirmed, full planning/conversation model afterwards."""
-        print("NODE: agent")
+        # print("NODE: agent")
         # print("current plan: ", state.get("plan"))
         used = int(state.get("tool_calls_this_turn", 0))
 
         if used >= MAX_TOOL_CALLS_PER_TURN:
-            print(
-                f"TOOL BUDGET EXHAUSTED: "
-                f"{used}/{MAX_TOOL_CALLS_PER_TURN}"
-            )
+            # print(
+            #     f"TOOL BUDGET EXHAUSTED: "
+            #     f"{used}/{MAX_TOOL_CALLS_PER_TURN}"
+            # )
 
             return {
                 "messages": [
@@ -234,7 +234,7 @@ class ConversationNodes:
             kind = "qa"
         else:
             kind = "full"
-        print("agent: invoking", kind)
+        # print("agent: invoking", kind)
 
         conversation_mode = state.get("conversation_mode") or "collecting"
 
@@ -325,9 +325,9 @@ class ConversationNodes:
         prompt = [SystemMessage(content=system_content), *messages]
         model = self._llms.get(kind)
         response = await model.ainvoke(prompt)
-        print("AGENT RESPONSE TYPE:", type(response).__name__)
-        print("AGENT TOOL CALLS:", getattr(response, "tool_calls", []))
-        print("AGENT RESPONSE TEXT:", _message_text(response)[:500])
+        # print("AGENT RESPONSE TYPE:", type(response).__name__)
+        # print("AGENT TOOL CALLS:", getattr(response, "tool_calls", []))
+        # print("AGENT RESPONSE TEXT:", _message_text(response)[:500])
 
         if not response.tool_calls and is_evaluation_reply(response.content):
             # Retry only accidental verdicts; normal chat and tool routing stay intact.
@@ -355,10 +355,10 @@ class ConversationNodes:
             workflow_action = state.get("pending_elective_action")
 
             if not confirmed or workflow_action is not None:
-                print(
-                    "ELECTIVE LOOKUP SUPPRESSED: "
-                    "metadata unconfirmed or workflow action pending"
-                )
+                # print(
+                #     "ELECTIVE LOOKUP SUPPRESSED: "
+                #     "metadata unconfirmed or workflow action pending"
+                # )
                 filtered_calls = [
                     call for call in response.tool_calls
                     if call.get("name") != "lookup_electives_tool"
@@ -380,8 +380,8 @@ class ConversationNodes:
                 # The tool schema expects query: str, not list[str].
                 lookup_query = ", ".join(lookup_topics)
 
-                print("EXTRACTED REQUEST INTERESTS:", request_interests)
-                print("FINAL LOOKUP QUERY:", lookup_query)
+                # print("EXTRACTED REQUEST INTERESTS:", request_interests)
+                # print("FINAL LOOKUP QUERY:", lookup_query)
 
                 if lookup_query:
                     normalized_calls = []
@@ -444,7 +444,7 @@ class ConversationNodes:
 
 
     async def run_tools(self, state: AdvisorState) -> dict:
-        print("NODE: tools")
+        # print("NODE: tools")
 
         messages = state.get("messages", [])
         last = messages[-1] if messages else None
@@ -458,10 +458,10 @@ class ConversationNodes:
         # Count attempted tool calls, including calls that return errors.
         attempted = len(calls)
 
-        print(
-            f"TOOL BUDGET: {used}/{MAX_TOOL_CALLS_PER_TURN}; "
-            f"this batch requests {attempted}"
-        )
+        # print(
+        #     f"TOOL BUDGET: {used}/{MAX_TOOL_CALLS_PER_TURN}; "
+        #     f"this batch requests {attempted}"
+        # )
 
         kind = state.get("active_tool_kind", "confirm")
         tool_node = self._tool_nodes[kind]
@@ -475,7 +475,7 @@ class ConversationNodes:
 
     def capture_tool_results(self, state: AdvisorState) -> dict:
         """Fold conversational tool results into state."""
-        print("NODE: capture_tool_results")
+        # print("NODE: capture_tool_results")
 
         batch = latest_tool_batch(state)
         updates: dict = {}
@@ -486,7 +486,7 @@ class ConversationNodes:
             for code in (state.get("elective_lookup_codes") or [])
         }
 
-        print("TOOL RESULT:", batch)
+        # print("TOOL RESULT:", batch)
 
         for message in batch:
             try:
@@ -500,14 +500,14 @@ class ConversationNodes:
                     elif isinstance(parsed, list):
                         subjects = parsed
                     else:
-                        print(
-                            "LOOKUP RESULT IGNORED: expected JSON object or list; "
-                            f"got {type(parsed).__name__}"
-                        )
+                        # print(
+                        #     "LOOKUP RESULT IGNORED: expected JSON object or list; "
+                        #     f"got {type(parsed).__name__}"
+                        # )
                         continue
 
                     if not isinstance(subjects, list):
-                        print("LOOKUP RESULT IGNORED: 'subjects' is not a list")
+                        # print("LOOKUP RESULT IGNORED: 'subjects' is not a list")
                         continue
 
                     captured_this_call = []
@@ -543,14 +543,14 @@ class ConversationNodes:
                         lookup_results.append(normalized_subject)
                         captured_this_call.append(code)
 
-                    print(
-                        "CAPTURED ELECTIVE LOOKUPS:",
-                        sorted(lookup_codes),
-                    )
-                    print(
-                        "CAPTURED IN THIS CALL:",
-                        captured_this_call,
-                    )
+                    # print(
+                    #     "CAPTURED ELECTIVE LOOKUPS:",
+                    #     sorted(lookup_codes),
+                    # )
+                    # print(
+                    #     "CAPTURED IN THIS CALL:",
+                    #     captured_this_call,
+                    # )
                     continue
 
                 if message.name not in {
@@ -575,14 +575,14 @@ class ConversationNodes:
                     updates.update(
                         apply_confirm_metadata(prior_meta, sanitized)
                     )
-                    print("CONFIRMED METADATA RAW:", parsed)
-                    print("CONFIRMED METADATA SANITIZED:", sanitized)
+                    # print("CONFIRMED METADATA RAW:", parsed)
+                    # print("CONFIRMED METADATA SANITIZED:", sanitized)
 
                 else:
                     updates.update(
                         apply_plan_change_request(prior_meta, parsed)
                     )
-                    print("PLAN CHANGE TOOL RESULT:", parsed)
+                    # print("PLAN CHANGE TOOL RESULT:", parsed)
 
             except Exception as exc:
                 print(
@@ -616,7 +616,7 @@ class ConversationNodes:
 
         if pending is not None:
             if not handbook_matches_current_meta(state):
-                print("ROUTE: handbook required for elective request")
+                # print("ROUTE: handbook required for elective request")
                 return "ensure_handbook"
 
             if pending == "populate_plan":
@@ -630,7 +630,7 @@ class ConversationNodes:
             return END
 
         if not handbook_matches_current_meta(state):
-            print("ROUTE: handbook missing/stale")
+            # print("ROUTE: handbook missing/stale")
             return "ensure_handbook"
 
         return "start_planning"

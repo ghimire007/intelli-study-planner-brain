@@ -285,21 +285,21 @@ def main() -> None:
     for course in args.courses:
         path = scraped / f"course_{course}.json"
         if not path.exists():
-            print(f"Skipping {course} — {path.name} not found")
+            # print(f"Skipping {course} — {path.name} not found")
             continue
         course_data = _load_json(path)
         try:
             out = build_pools_for_course(course_data, args.campus)
         except ValueError as exc:
-            print(f"Skipping {course}: {exc}")
+            # print(f"Skipping {course}: {exc}")
             continue
         out_path = scraped / f"elective_pools_{course}.json"
         out_path.write_text(json.dumps(out, indent=2), encoding="utf-8")
         modes = ", ".join(f"{p['id']}={p['mode']}" for p in out["pools"])
-        print(
-            f"{course} ({args.campus}): {len(out['pools'])} pools "
-            f"[{modes}] -> {out_path.name}"
-        )
+        # print(
+        #     f"{course} ({args.campus}): {len(out['pools'])} pools "
+        #     f"[{modes}] -> {out_path.name}"
+        # )
 
 
 if __name__ == "__main__":

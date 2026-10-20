@@ -132,7 +132,7 @@ class Stage1Nodes:
         state: AdvisorState,
     ) -> Literal["stage1_review_must_includes", "__end__"]:
         if not state.get("major_validation_passed", False):
-            print("ROUTE: planning blocked; ending planning workflow")
+            # print("ROUTE: planning blocked; ending planning workflow")
             return "__end__"
 
         return "stage1_review_must_includes"
@@ -140,17 +140,17 @@ class Stage1Nodes:
 
     async def start_planning(self, state: AdvisorState) -> dict:
         """Validate handbook metadata and major before starting planning."""
-        print("NODE: start_planning")
+        # print("NODE: start_planning")
 
         if not handbook_matches_current_meta(state):
-            print("START PLANNING BLOCKED: handbook invalid")
+            # print("START PLANNING BLOCKED: handbook invalid")
             return {"planning_requested": False}
 
         meta = state.get("meta") or {}
         handbook = state.get("handbook")
 
         if not handbook:
-            print("START PLANNING BLOCKED: handbook missing")
+            # print("START PLANNING BLOCKED: handbook missing")
             return {"planning_requested": False}
 
         validation_prompt = f"""
@@ -197,15 +197,15 @@ class Stage1Nodes:
 
             handbook = state.get("handbook")
 
-            print("HANDBOOK TYPE:", type(handbook).__name__)
-            print("HANDBOOK CONTENT:", str(handbook)[:5000])
-            print("MAJOR VALIDATION METADATA:", meta)
-            print("MAJOR VALIDATION RAW RESPONSE:", response.content)
+            # print("HANDBOOK TYPE:", type(handbook).__name__)
+            # print("HANDBOOK CONTENT:", str(handbook)[:5000])
+            # print("MAJOR VALIDATION METADATA:", meta)
+            # print("MAJOR VALIDATION RAW RESPONSE:", response.content)
 
-            print("\n\nresult: ", result)
+            # print("\n\nresult: ", result)
 
             if not isinstance(result, dict) or result.get("valid") is not True:
-                print("START PLANNING BLOCKED: major validation failed")
+                # print("START PLANNING BLOCKED: major validation failed")
 
                 explanation_response = await self._llms.get("parser").ainvoke([
                     SystemMessage(content="""
@@ -243,7 +243,7 @@ class Stage1Nodes:
                 }
 
         except Exception as exc:
-            print("START PLANNING MAJOR VALIDATION ERROR:", repr(exc))
+            # print("START PLANNING MAJOR VALIDATION ERROR:", repr(exc))
             return {
                 "planning_requested": False,
                 "plan_feedback": (
@@ -252,7 +252,7 @@ class Stage1Nodes:
                 ),
             }
 
-        print("START PLANNING: handbook major validation passed")
+        # print("START PLANNING: handbook major validation passed")
 
         return {
             "planning_requested": False,
@@ -304,10 +304,10 @@ class Stage1Nodes:
     
     async def fetch_elective_list(self, state: AdvisorState) -> dict:
         """Retrieve and rank electives using current or saved preferences."""
-        print("NODE: fetch_elective_list")
+        # print("NODE: fetch_elective_list")
 
         if not handbook_matches_current_meta(state):
-            print("STAGE 1 ELECTIVES BLOCKED: handbook invalid")
+            # print("STAGE 1 ELECTIVES BLOCKED: handbook invalid")
             return {}
 
         request_interests = await self.extract_request_elective_interests(
@@ -320,16 +320,16 @@ class Stage1Nodes:
             else: 
                 request_interests = state.get("elective_interests", [])
 
-        print("HEYYYYYY: ", request_interests)
+        # print("HEYYYYYY: ", request_interests)
 
         ranking_state = get_ranking_preferences(
             state,
             request_interests=request_interests,
         )
 
-        print("CURRENT REQUEST INTERESTS:", request_interests)
-        print("EFFECTIVE RANKING INTERESTS:",
-              ranking_state.get("elective_interests"))
+        # print("CURRENT REQUEST INTERESTS:", request_interests)
+        # print("EFFECTIVE RANKING INTERESTS:",
+        #       ranking_state.get("elective_interests"))
 
         # Run the existing ranking service without blocking the event loop.
         electives = await asyncio.to_thread(
@@ -364,16 +364,16 @@ class Stage1Nodes:
 
     async def populate_plan_electives(self, state: AdvisorState) -> dict:
         """Add valid elective candidates to the existing plan without rebuilding it."""
-        print("NODE: populate_plan_electives")
+        # print("NODE: populate_plan_electives")
         # print("PLANNNNNN: ", state.get('plan'))
 
         if not handbook_matches_current_meta(state):
-            print("POPULATE ELECTIVES BLOCKED: handbook invalid")
+            # print("POPULATE ELECTIVES BLOCKED: handbook invalid")
             return {}
 
         current_plan = state.get("plan")
         if not current_plan:
-            print("POPULATE ELECTIVES BLOCKED: no existing plan")
+            # print("POPULATE ELECTIVES BLOCKED: no existing plan")
             return {
                 "pending_elective_action": "recommend",
             }
@@ -388,36 +388,36 @@ class Stage1Nodes:
             else: 
                 request_interests = state.get("elective_interests", [])
 
-        print("HEYYYYYY: ", request_interests)
+        # print("HEYYYYYY: ", request_interests)
 
-        print("\n\nRANKING STATE")
+        # print("\n\nRANKING STATE")
         ranking_state = get_ranking_preferences(
             state,
             request_interests=request_interests,
         )
 
-        print("POPULATE CURRENT REQUEST INTERESTS:", request_interests)
-        print("POPULATE EFFECTIVE INTERESTS:",
-              ranking_state.get("elective_interests"))
+        # print("POPULATE CURRENT REQUEST INTERESTS:", request_interests)
+        # print("POPULATE EFFECTIVE INTERESTS:",
+        #       ranking_state.get("elective_interests"))
 
         candidates = await asyncio.to_thread(
             stage1_electives_from_advisor_state,
             ranking_state,
         )
 
-        print("\ncandidates from call: ", candidates)
+        # print("\ncandidates from call: ", candidates)
 
         candidates = merge_elective_candidates(
             candidates,
             state.get("elective_lookup_results") or [],
         )
 
-        print("\nelective lookup result: ", state.get("elective_lookup_codes"))
+        # print("\nelective lookup result: ", state.get("elective_lookup_codes"))
 
-        print("\ncandidates = merged: ", candidates)
+        # print("\ncandidates = merged: ", candidates)
 
         if not candidates:
-            print("POPULATE ELECTIVES: no valid elective candidates")
+            # print("POPULATE ELECTIVES: no valid elective candidates")
             return {
                 "electives_feedback": (
                     "No valid elective candidates were available. "
@@ -484,7 +484,7 @@ VALID ELECTIVE CANDIDATES:
 
         response_text = _message_text(response).strip()
 
-        print("POPULATE ELECTIVES: updated plan parsed successfully")
+        # print("POPULATE ELECTIVES: updated plan parsed successfully")
         # print("plannnn: ", response_text)
 
         return {
@@ -499,10 +499,10 @@ VALID ELECTIVE CANDIDATES:
     async def generate_core_subjects(self, state: AdvisorState) -> dict:
         """Ask the model for the required/core subjects, folding in evaluator
         feedback on a retry."""
-        print("NODE: stage1_review_must_includes")
+        # print("NODE: stage1_review_must_includes")
 
         if not handbook_matches_current_meta(state):
-            print("STAGE 1 REQUIRED SUBJECTS BLOCKED")
+            # print("STAGE 1 REQUIRED SUBJECTS BLOCKED")
             return {}
 
         prompt = build_system_prompt(
@@ -532,7 +532,7 @@ VALID ELECTIVE CANDIDATES:
     async def evaluate(self, state: AdvisorState) -> dict:
         """Evaluate only the required/core-subject list. The elective list comes
         from handbook data and is not second-guessed by a model."""
-        print("NODE: eval_stage1_lists")
+        # print("NODE: eval_stage1_lists")
 
         retries = state.get("stage1_retry_count", 0)
 
@@ -581,6 +581,6 @@ VALID ELECTIVE CANDIDATES:
         if not state.get("remaining_feedback"):
             return "stage2_make_plan"
         if state.get("stage1_retry_count", 0) >= MAX_STAGE1_RETRIES:
-            print("STAGE 1 retry limit reached")
+            # print("STAGE 1 retry limit reached")
             return "stage2_make_plan"
         return "stage1_review_must_includes"
