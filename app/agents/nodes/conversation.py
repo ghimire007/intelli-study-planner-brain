@@ -253,16 +253,13 @@ class ConversationNodes:
 
         AUTHORITATIVE HANDBOOK MAJOR NORMALIZATION
 
-        The student metadata is not yet confirmed. Use the fetched handbook below
-        to resolve the student's stated major to its exact canonical handbook name.
+        The student metadata is not yet confirmed. Use the fetched handbook below to resolve the student's stated major to its exact canonical handbook name.
 
         - Match the student's intended major to a major listed in the handbook.
-        - When the match is unambiguous, use the exact handbook name in the
-        `majors` argument to `confirm_metadata_tool`.
+        - When the match is unambiguous, use the exact handbook name in the `majors` argument to `confirm_metadata_tool`.
         - The canonical name does not need to match the student's wording verbatim.
         - Do not invent a major or select one based on similarity alone.
-        - If multiple majors could match, or no valid match exists, ask the student
-        to clarify instead of guessing.
+        - If multiple majors could match, or no valid match exists, ask the student to clarify instead of guessing.
         - Never interpret an unresolved major as an explicit choice of no major.
 
         HANDBOOK:
@@ -283,6 +280,10 @@ class ConversationNodes:
 
             ONLY CALL lookup_electives_tool when the student requests a specific type of elective. Then provide the query as a list of topics relevant to the student's elective request. 
             DO NOT CALL lookup_electives_tool FOR GENERAL ELECTIVE REQUESTS.
+
+            MAKING A PLAN RULES:
+            - DO NOT ATTEMPT TO MAKE A PLAN.
+            - If requested to make a plan from a degree you do not have the handbook for, respond to the student saying that degree is not supported yet.
             
             PLAN CHANGE RULES:
 
