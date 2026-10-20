@@ -180,16 +180,26 @@ def resolve_pool_candidates(
             or _matches_prefixes(code, prefixes)
         )
 
-        if not prefix_match:
-            if not (
-                include_general_schedule
-                and _is_general_schedule(subject)
-            ):
-                continue
-        elif not prefixes and include_general_schedule:
-            if not _is_general_schedule(subject):
-                continue
+        general_schedule_match = (
+            include_general_schedule
+            and _is_general_schedule(subject)
+        )
+
+        if not prefix_match and not general_schedule_match:
+            continue
 
         candidates.add(code)
+
+        # if not prefix_match:
+        #     if not (
+        #         include_general_schedule
+        #         and _is_general_schedule(subject)
+        #     ):
+        #         continue
+        # elif not prefixes and include_general_schedule:
+        #     if not _is_general_schedule(subject):
+        #         continue
+
+        # candidates.add(code)
 
     return candidates

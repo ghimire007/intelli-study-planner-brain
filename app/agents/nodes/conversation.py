@@ -3,7 +3,7 @@ import re
 import time
 from typing import Literal
 
-from langchain_core.messages import AIMessage, SystemMessage
+from langchain_core.messages import AIMessage, SystemMessage, HumanMessage
 from langgraph.graph import END
 from langgraph.prebuilt import ToolNode
 
@@ -17,18 +17,147 @@ from app.agents.state import (
     handbook_matches_current_meta,
     is_plan_explanation_question,
     latest_student_message,
+    latest_user_request,
     latest_tool_batch,
     sanitize_confirmed_metadata,
 )
 from app.llm.text import is_evaluation_reply
 from app.prompts.builder import build_system_prompt
 from app.prompts.prompts import SYSTEM_PROMPT
-from app.services.sols_parser import parse_sols
 
+MAX_TOOL_CALLS_PER_TURN = 2
 
 class ConversationNodes:
     """Intake and chat: parse the SOLS paste, talk to the student, and fold the
     metadata tools the agent calls back into state."""
+
+    async def extract_request_elective_interests(
+        self,
+        state: AdvisorState,
+    ) -> list[str]:
+        """Extract elective interests explicitly expressed in the latest message."""
+
+        request = latest_user_request(state).strip()
+        if not request:
+            return []
+
+        response = await self._llms.get("parser").ainvoke([
+            SystemMessage(content=(
+                "Extract topics the student explicitly wants to use "
+                "to choose university electives. Return JSON only, "
+                'in this format: {"interests": ["topic"]}. '
+                "Only extract topics relevant to an elective request. "
+                "Do not use saved preferences or infer unrelated interests. "
+                "If no elective interest is explicitly requested, return "
+                '{"interests": []}.'
+            )),
+            HumanMessage(content=request),
+        ])
+
+        parsed = extract_and_parse_json(response.content)
+        if not isinstance(parsed, dict):
+            return []
+
+        interests = parsed.get("interests", [])
+        if isinstance(interests, str):
+            interests = [interests]
+
+        if not isinstance(interests, list):
+            return []
+
+        return list(dict.fromkeys(
+            str(item).strip()
+            for item in interests
+            if isinstance(item, str) and item.strip()
+        ))
+
+    @staticmethod
+    def build_elective_lookup_query(
+        state: AdvisorState,
+        request_interests: list[str],
+    ) -> list[str]:
+        """Resolve the lookup query without accumulating historical interests."""
+
+        def clean_list(value) -> list[str]:
+            if isinstance(value, str):
+                value = [value]
+
+            if not isinstance(value, (list, tuple)):
+                return []
+
+            return list(dict.fromkeys(
+                item.strip()
+                for item in value
+                if isinstance(item, str) and item.strip()
+            ))
+
+        # Explicit interests apply to this lookup only.
+        if request_interests:
+            return clean_list(request_interests)
+
+        profile = state.get("profile") or {}
+
+        def read_preference(key, default=None):
+            if isinstance(profile, dict):
+                value = profile.get(key)
+            else:
+                value = getattr(profile, key, None)
+
+            if value is None:
+                value = state.get(key)
+
+            return default if value is None else value
+
+        mode = str(
+            read_preference("elective_mode", "degree")
+        ).strip().lower()
+
+        if mode in {"interest", "interests"}:
+            return clean_list(
+                read_preference("elective_interests", [])
+            )
+
+        # Degree mode: use confirmed metadata majors, not old chat interests.
+        meta = state.get("meta") or {}
+        if isinstance(meta, dict):
+            majors = clean_list(meta.get("majors", []))
+            if not majors:
+                majors = clean_list(meta.get("major"))
+            return majors
+
+        return []
+
+    @staticmethod
+    def route_after_tool_results(
+        state: AdvisorState,
+    ) -> Literal["agent", "ensure_handbook", "__end__"]:
+        """Route confirmed metadata into the application workflow.
+
+        Do not invoke the LLM again just to decide what to do after
+        metadata has been confirmed.
+        """
+        batch = latest_tool_batch(state)
+
+        called_metadata_confirmation = any(
+            message.name == "confirm_metadata_tool"
+            for message in batch
+        )
+
+        if (
+            called_metadata_confirmation
+            and state.get("meta_confirmed")
+            and (
+                state.get("planning_requested")
+                or state.get("pending_elective_action") is not None
+            )
+            and not handbook_matches_current_meta(state)
+        ):
+            print("ROUTE: metadata confirmed; fetching handbook directly")
+            return "ensure_handbook"
+
+        # Other tool results, such as answers to subject questions,
+        # should return to the agent so it can respond to the student.
+        return "agent"
 
     @staticmethod
     def user_requested_electives(state: AdvisorState) -> bool:
@@ -56,37 +185,37 @@ class ConversationNodes:
 
         return "recommend"
 
-    def __init__(self, llms: LLMRegistry, confirm_tools: list) -> None:
+    def __init__(self, llms: LLMRegistry, tools_by_kind: dict) -> None:
         self._llms = llms
-        self._tool_node = ToolNode(confirm_tools)
-
-    async def parse_input(self, state: AdvisorState) -> dict:
-        print("NODE: parse_input")
-
-        if state.get("meta") is not None:
-            return {}
-
-        raw_sols = state.get("raw_sols")
-        print("raw_sols chars =", len(raw_sols or ""))
-
-        start = time.perf_counter()
-        try:
-            meta = await parse_sols(self._llms.get("parser"), raw_sols)
-        except Exception as exc:
-            print(type(exc).__name__, repr(exc))
-            raise
-        print(f"parse_sols took {time.perf_counter() - start:.2f}s")
-
-        return {
-            "meta": meta.model_dump(),
-            "meta_confirmed": False,
-            "planning_requested": False,
+        self._tool_nodes = {
+            kind: ToolNode(tools)
+            for kind, tools in tools_by_kind.items()
         }
 
     async def agent(self, state: AdvisorState) -> dict:
         """Conversational LLM: confirmation-oriented model before metadata is
         confirmed, full planning/conversation model afterwards."""
         print("NODE: agent")
+        # print("current plan: ", state.get("plan"))
+        used = int(state.get("tool_calls_this_turn", 0))
+
+        if used >= MAX_TOOL_CALLS_PER_TURN:
+            print(
+                f"TOOL BUDGET EXHAUSTED: "
+                f"{used}/{MAX_TOOL_CALLS_PER_TURN}"
+            )
+
+            return {
+                "messages": [
+                    AIMessage(
+                        content=(
+                            "I've reached the tool-call limit for this request. "
+                            "I couldn't complete the lookup within that limit. "
+                            "Please try a more specific request."
+                        )
+                    )
+                ],
+            }
 
         pending_action = state.get("pending_elective_action")
 
@@ -94,7 +223,17 @@ class ConversationNodes:
             pending_action = self.requested_elective_action(state)
 
         confirmed = bool(state.get("meta_confirmed"))
-        kind = "full" if confirmed else "confirm"
+        conversation_mode = state.get("conversation_mode") or "collecting"
+
+        if not confirmed:
+            kind = "confirm"
+        elif (
+            conversation_mode == "post_plan"
+            and is_plan_explanation_question(latest_student_message(state))
+        ):
+            kind = "qa"
+        else:
+            kind = "full"
         print("agent: invoking", kind)
 
         conversation_mode = state.get("conversation_mode") or "collecting"
@@ -113,20 +252,26 @@ class ConversationNodes:
             - Use the dedicated elective workflow for elective recommendations.
             - Only call request_plan_change_tool to change saved preferences when the student explicitly asks to change those preferences.
             - If changing elective interests, elective_interests must be a list of strings. Never submit null for this field.
-            - Do not call fetch_handbook_tool or lookup_ranked_electives_tool.
+            - Elective_interests should be a list of topics relevant to the student's elective request.
             - Handbook fetching is handled by ensure_handbook.
             - Elective retrieval is handled by fetch_elective_list.
             - If pending_elective_action is set and metadata is confirmed, do not make additional tool calls. Let the application workflow handle the request.
 
+            ONLY CALL lookup_electives_tool when the student requests a specific type of elective. Then provide the query as a list of topics relevant to the student's elective request. 
+            DO NOT CALL lookup_electives_tool FOR GENERAL ELECTIVE REQUESTS.
+            
             PLAN CHANGE RULES:
 
             You must distinguish between:
             1. questions about the existing plan
             2. requests to modify the plan
 
-            DO NOT call request_plan_change_tool for general questions, questions about the plan itself or question about your logic.
+            Call request_plan_change_tool only when the student explicitly requests a change to their study plan, such as changing their major, changing elective preferences, moving subjects between sessions, or revising the plan.
 
-            Only call request_plan_change_tool when the student explicitly wants the plan to change.
+            Do NOT call request_plan_change_tool for informational questions about the student's existing enrolment history or current plan.
+            Answer informational questions using the available enrolment history and plan state.
+
+            A question about the plan is not a request to change the plan. Do not interpret general_revision as permission to regenerate the plan unless the student explicitly requests a revision.
 
             Current conversation mode:
             {conversation_mode}
@@ -173,10 +318,101 @@ class ConversationNodes:
             if not response.tool_calls and is_evaluation_reply(response.content):
                 response.content = "I couldn't produce a chat reply. Please try your message again."
 
+        # Ensure lookup_electives_tool receives the correct query.
+        clear_pending_elective_action = False
 
-        updates = {"messages": [response]}
+        lookup_calls = [
+            call
+            for call in (getattr(response, "tool_calls", []) or [])
+            if call.get("name") == "lookup_electives_tool"
+        ]
 
-        if pending_action is not None:
+        if lookup_calls:
+            workflow_action = state.get("pending_elective_action")
+
+            if not confirmed or workflow_action is not None:
+                print(
+                    "ELECTIVE LOOKUP SUPPRESSED: "
+                    "metadata unconfirmed or workflow action pending"
+                )
+                filtered_calls = [
+                    call for call in response.tool_calls
+                    if call.get("name") != "lookup_electives_tool"
+                ]
+                response = response.model_copy(
+                    update={"tool_calls": filtered_calls}
+                )
+
+            else:
+                request_interests = (
+                    await self.extract_request_elective_interests(state)
+                )
+
+                lookup_topics = self.build_elective_lookup_query(
+                    state,
+                    request_interests=request_interests,
+                )
+
+                # The tool schema expects query: str, not list[str].
+                lookup_query = ", ".join(lookup_topics)
+
+                print("EXTRACTED REQUEST INTERESTS:", request_interests)
+                print("FINAL LOOKUP QUERY:", lookup_query)
+
+                if lookup_query:
+                    normalized_calls = []
+
+                    for call in response.tool_calls:
+                        if call.get("name") == "lookup_electives_tool":
+                            call = {
+                                **call,
+                                "args": {
+                                    **call.get("args", {}),
+                                    "query": lookup_query,
+                                },
+                            }
+
+                        normalized_calls.append(call)
+
+                    response = response.model_copy(
+                        update={"tool_calls": normalized_calls}
+                    )
+
+                    # This targeted lookup is handled by the agent.
+                    clear_pending_elective_action = True
+
+                else:
+                    filtered_calls = [
+                        call for call in response.tool_calls
+                        if call.get("name") != "lookup_electives_tool"
+                    ]
+
+                    if not filtered_calls:
+                        response = response.model_copy(
+                            update={
+                                "tool_calls": [],
+                                "content": (
+                                    "I don't have a confirmed major or saved "
+                                    "elective interests to use for this lookup. "
+                                    "Which area would you like your electives "
+                                    "to focus on?"
+                                ),
+                            }
+                        )
+                        clear_pending_elective_action = True
+                    else:
+                        response = response.model_copy(
+                            update={"tool_calls": filtered_calls}
+                        )
+
+        updates = {
+            "messages": [response],
+            "active_tool_kind": kind,
+        }
+
+        if clear_pending_elective_action:
+            updates["pending_elective_action"] = None
+        elif pending_action is not None:
             updates["pending_elective_action"] = pending_action
 
         return updates
@@ -185,30 +421,124 @@ class ConversationNodes:
 
     async def run_tools(self, state: AdvisorState) -> dict:
         print("NODE: tools")
-        return await self._tool_node.ainvoke(state)
+
+        messages = state.get("messages", [])
+        last = messages[-1] if messages else None
+
+        if not isinstance(last, AIMessage) or not last.tool_calls:
+            return {}
+
+        calls = last.tool_calls
+        used = int(state.get("tool_calls_this_turn", 0))
+
+        # Count attempted tool calls, including calls that return errors.
+        attempted = len(calls)
+
+        print(
+            f"TOOL BUDGET: {used}/{MAX_TOOL_CALLS_PER_TURN}; "
+            f"this batch requests {attempted}"
+        )
+
+        kind = state.get("active_tool_kind", "confirm")
+        tool_node = self._tool_nodes[kind]
+
+        result = await tool_node.ainvoke(state)
+
+        return {
+            **result,
+            "tool_calls_this_turn": used + attempted,
+        }
 
     def capture_tool_results(self, state: AdvisorState) -> dict:
-        """Fold the latest batch of conversational tool results into state.
-
-        Only confirm_metadata_tool and request_plan_change_tool affect state;
-        both are applied in chronological order so a later call sees the
-        metadata an earlier one produced.
-        """
+        """Fold conversational tool results into state."""
         print("NODE: capture_tool_results")
 
         batch = latest_tool_batch(state)
         updates: dict = {}
 
+        lookup_results = list(state.get("elective_lookup_results") or [])
+        lookup_codes = {
+            str(code).strip().upper()
+            for code in (state.get("elective_lookup_codes") or [])
+        }
+
         print("TOOL RESULT:", batch)
 
         for message in batch:
-            if message.name not in {"confirm_metadata_tool", "request_plan_change_tool"}:
-                continue
-
             try:
                 parsed = extract_and_parse_json(message.content)
+
+                if message.name == "lookup_electives_tool":
+                    # Support both the current {"query": ..., "subjects": [...]} format
+                    # and the older list format.
+                    if isinstance(parsed, dict):
+                        subjects = parsed.get("subjects", [])
+                    elif isinstance(parsed, list):
+                        subjects = parsed
+                    else:
+                        print(
+                            "LOOKUP RESULT IGNORED: expected JSON object or list; "
+                            f"got {type(parsed).__name__}"
+                        )
+                        continue
+
+                    if not isinstance(subjects, list):
+                        print("LOOKUP RESULT IGNORED: 'subjects' is not a list")
+                        continue
+
+                    captured_this_call = []
+
+                    for item in subjects:
+                        if not isinstance(item, dict):
+                            continue
+
+                        # Current lookup results wrap the detailed subject in "subject".
+                        # Also support results where the subject fields are at the top level.
+                        subject = item.get("subject")
+                        if not isinstance(subject, dict):
+                            subject = item
+
+                        code = str(
+                            subject.get("code") or item.get("code") or ""
+                        ).strip().upper()
+
+                        if not code or code in lookup_codes:
+                            continue
+
+                        # Copy the detailed subject without modifying the tool result.
+                        normalized_subject = {
+                            **subject,
+                            "code": code,
+                        }
+
+                        # Keep the relevance score if the outer result provides one.
+                        if "score" in item:
+                            normalized_subject.setdefault("score", item["score"])
+
+                        lookup_codes.add(code)
+                        lookup_results.append(normalized_subject)
+                        captured_this_call.append(code)
+
+                    print(
+                        "CAPTURED ELECTIVE LOOKUPS:",
+                        sorted(lookup_codes),
+                    )
+                    print(
+                        "CAPTURED IN THIS CALL:",
+                        captured_this_call,
+                    )
+                    continue
+
+                if message.name not in {
+                    "confirm_metadata_tool",
+                    "request_plan_change_tool",
+                }:
+                    continue
+
                 if not isinstance(parsed, dict):
-                    raise ValueError(f"{message.name} did not return an object.")
+                    raise ValueError(
+                        f"{message.name} did not return an object."
+                    )
 
                 prior_meta = updates.get("meta", state.get("meta"))
 
@@ -218,15 +548,28 @@ class ConversationNodes:
                         candidate_meta=parsed,
                         state=state,
                     )
-                    updates.update(apply_confirm_metadata(prior_meta, sanitized))
+                    updates.update(
+                        apply_confirm_metadata(prior_meta, sanitized)
+                    )
                     print("CONFIRMED METADATA RAW:", parsed)
                     print("CONFIRMED METADATA SANITIZED:", sanitized)
+
                 else:
-                    updates.update(apply_plan_change_request(prior_meta, parsed))
+                    updates.update(
+                        apply_plan_change_request(prior_meta, parsed)
+                    )
                     print("PLAN CHANGE TOOL RESULT:", parsed)
 
             except Exception as exc:
-                print("Conversational tool parse error:", repr(exc))
+                print(
+                    f"Conversational tool parse error ({message.name}):",
+                    repr(exc),
+                )
+
+        # Only update these keys if the batch included a lookup result.
+        if any(m.name == "lookup_electives_tool" for m in batch):
+            updates["elective_lookup_results"] = lookup_results
+            updates["elective_lookup_codes"] = sorted(lookup_codes)
 
         return updates
 

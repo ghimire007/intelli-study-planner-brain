@@ -9,15 +9,49 @@ from app.models.subject import Subject
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from sqlalchemy import func, select
 
-async def find_subject(db: AsyncSession, code: str, year: int) -> Subject | None:
+async def find_subject(
+    db: AsyncSession,
+    code: str,
+    year: int,
+) -> Subject | None:
+    normalized_code = code.strip().upper()
+
     result = await db.execute(
         select(Subject)
-        .where(Subject.code == code.upper().strip(), Subject.year <= year)
+        .where(
+            func.upper(func.trim(Subject.code)) == normalized_code,
+            Subject.year <= year,
+        )
         .order_by(Subject.year.desc())
         .limit(1)
     )
-    return result.scalar_one_or_none()
+
+    subject = result.scalar_one_or_none()
+
+    print(
+        "FIND SUBJECT:",
+        {
+            "requested_code": repr(code),
+            "normalized_code": normalized_code,
+            "requested_year": year,
+            "found": subject is not None,
+            "stored_code": getattr(subject, "code", None),
+            "stored_year": getattr(subject, "year", None),
+        },
+    )
+
+    return subject
+
+# async def find_subject(db: AsyncSession, code: str, year: int) -> Subject | None:
+#     result = await db.execute(
+#         select(Subject)
+#         .where(Subject.code == code.upper().strip(), Subject.year <= year)
+#         .order_by(Subject.year.desc())
+#         .limit(1)
+#     )
+#     return result.scalar_one_or_none()
 
 
 async def find_major(db: AsyncSession, major_code: str, year: int) -> Major | None:

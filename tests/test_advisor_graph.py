@@ -31,8 +31,8 @@ HANDBOOK_OK = {
 
 
 class FakeConversation:
-    async def parse_input(self, state):
-        return {}
+    # async def parse_input(self, state):
+    #     return {}
 
     async def agent(self, state):
         return {}

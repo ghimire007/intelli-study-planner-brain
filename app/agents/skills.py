@@ -21,6 +21,9 @@ from app.services.elective_ranking import flatten_ranked_electives, get_elective
 from app.services.handbook_service import fetch_handbook
 from app.services.kb_service import fetch_major, fetch_subjects
 from app.services.knowledge_service import TOPIC_SLUGS, TOPICS, load_topic
+from app.services.subject_catalog import load_subject_catalog, _normalize
+import re
+from collections import Counter
 
 # Newest handbook rows win; lookups are not tied to the student's commencement
 # year (the scraper currently only loads the latest published handbook year).
@@ -106,11 +109,12 @@ def confirm_metadata_tool(
     Do not infer missing majors. Use an empty list if the student
     has no major.
 
+    A major cannot be confirmed unless it is valid for the given campus. 
+
     Call after the student has answered the intake question or
     explicitly corrected their details.
 
-    On first confirmation: do not call fetch_handbook_tool or attempt any
-    audit/planning before this has been called.
+    On first confirmation: do not attempt any audit/planning before this has been called.
 
     On a mid-chat degree/year/campus switch: call this again with the new
     values; the cached handbook is cleared so you must re-fetch it for the
@@ -125,6 +129,132 @@ def confirm_metadata_tool(
         }
     )
 
+def search_catalog_subjects(
+    query: str,
+    course: str,
+    year: int,
+    limit: int = 25,
+) -> str:
+    """Search the loaded catalogue by topic, title, description, and tags."""
+    catalog = load_subject_catalog(course=course, year=year)
+
+    terms = set(re.findall(r"[a-z0-9]+", query.lower()))
+    if not terms:
+        return json.dumps({"query": query, "subjects": []})
+
+    results = []
+
+    for code, subject in catalog.items():
+        if not isinstance(subject, dict):
+            continue
+
+        normalized_code = _normalize(code)
+        match = re.fullmatch(
+            r"[A-Z]{2,6}(\d{3})[A-Z]?",
+            normalized_code,
+        )
+        if not match or int(match.group(1)[0]) not in {1, 2, 3}:
+            continue
+
+        title = str(subject.get("title") or "")
+        description = str(subject.get("description") or "")
+        tags = subject.get("tags") or []
+
+        searchable = f"{title} {description} {' '.join(map(str, tags))}".lower()
+        words = set(re.findall(r"[a-z0-9]+", searchable))
+        matched = terms & words
+
+        # Prefer matches in the title, then description and tags.
+        title_words = set(re.findall(r"[a-z0-9]+", title.lower()))
+        title_matches = terms & title_words
+
+        if not matched:
+            continue
+
+        score = (
+            3 * len(title_matches)
+            + len(matched)
+        ) / max(len(terms), 1)
+
+        results.append({
+            "code": normalized_code,
+            "title": title,
+            "score": round(score, 3),
+            "subject": subject,
+        })
+
+    results.sort(key=lambda row: (-row["score"], row["code"]))
+
+    return json.dumps({
+        "query": query,
+        "subjects": results[:max(1, min(limit, 100))],
+    }, ensure_ascii=False, default=str)
+
+def lookup_catalog_subjects(
+    codes: list[str],
+    course: str,
+    year: int,
+) -> str:
+    catalog = load_subject_catalog(course=course, year=year)
+
+    normalized_catalog = {
+        _normalize(code): subject
+        for code, subject in catalog.items()
+    }
+
+    results = []
+
+    for requested_code in codes:
+        code = _normalize(requested_code)
+        subject = normalized_catalog.get(code)
+
+        if subject is None:
+            results.append({
+                "code": code,
+                "found": False,
+                "message": "Subject not found in the loaded catalogue.",
+            })
+            continue
+
+        results.append({
+            "code": code,
+            "found": True,
+            "subject": subject,
+        })
+
+    return json.dumps(results, ensure_ascii=False, default=str)
+
+
+def make_lookup_electives_tool(db: AsyncSession):
+    """Bind a DB session to a batched subject-lookup LangChain tool."""
+
+    @tool
+    def lookup_electives_tool(query: str, course: str, year: int, limit: int=25) -> str:
+        """Look up subject codes in the confirmed handbook catalogue.
+
+        Supply multiple exact subject codes in one batched query.
+        Do not repeat a lookup for codes already returned.
+        Use the returned subject records to construct the study plan.
+        Do not call this tool again unless a required subject is
+        genuinely missing from the results.
+        Never invent subject details.
+        """
+
+        result = search_catalog_subjects(
+            query=query,
+            course=course,
+            year=year,
+            limit=limit,
+        )
+
+        print("LOOKUP QUERY:", query)
+        print("LOOKUP COURSE/YEAR:", course, year)
+        print("LOOKUP RESULT TYPE:", type(result).__name__)
+        print("LOOKUP RESULT:", result)
+
+        return result
+
+    return lookup_electives_tool
 
 def make_lookup_subjects_tool(db: AsyncSession):
     """Bind a DB session to a batched subject-lookup LangChain tool."""
@@ -218,12 +348,12 @@ def make_lookup_ranked_electives_tool(db: AsyncSession):
     async def lookup_ranked_electives_tool(
         course: str,
         campus: str,
-        session: str,
         mode: Literal["major", "interest"],
         completed_subjects: list[str],
         planned_subjects: list[str],
         major: str | None = None,
         interests: list[str] | None = None,
+        session: str | None = None,
         limit: int = 25,
     ) -> str:
         """Rank elective shortlists and return official handbook cards for those codes.
@@ -290,11 +420,13 @@ lookup_uow_policy_tool = StructuredTool.from_function(
     args_schema=_LookupPolicyArgs,
 )
 
+
 @tool
 def request_plan_change_tool(
     change_type: Literal[
         "major",
         "elective_interests",
+        "selected_electives",
         "course",
         "campus",
         "commencement_year",
@@ -303,27 +435,29 @@ def request_plan_change_tool(
     ],
     majors: list[str] | None = None,
     elective_interests: list[str] | None = None,
+    selected_elective_codes: list[str] | None = None,
     course: str | None = None,
     campus: str | None = None,
     commencement_year: int | None = None,
     session: str | None = None,
 ) -> str:
-    """
-    Signal that the student's latest request requires a new or revised
-    study plan.
+    """Signal a requested study-plan change.
 
-    Only pass values explicitly stated by the student or clearly
-    established in the immediately preceding conversation.
+    elective_interests contains topics, such as ["art"].
+    selected_elective_codes contains subject codes, such as ["CAVA109"].
+    Only pass values explicitly stated or clearly established by the student.
     """
     return json.dumps({
         "change_type": change_type,
         "major": majors,
         "elective_interests": elective_interests,
+        "selected_elective_codes": selected_elective_codes,
         "course": course,
         "campus": campus,
         "commencement_year": commencement_year,
         "session": session,
     })
+
 
 
 def build_skills(db: AsyncSession):
@@ -340,13 +474,14 @@ def build_skills(db: AsyncSession):
             lookup_uow_policy_tool,
             make_fetch_handbook_tool(db),
             make_lookup_subjects_tool(db),
+            make_lookup_electives_tool(db),
             make_lookup_major_tool(db),
             get_elective_priorities_tool,
             make_lookup_ranked_electives_tool(db),
             request_plan_change_tool,
         ],
         "electives": [
-            make_lookup_subjects_tool(db),
+            make_lookup_electives_tool(db),
             get_elective_priorities_tool,
         ],
     }

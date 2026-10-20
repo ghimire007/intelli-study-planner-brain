@@ -238,13 +238,13 @@ def _lookup_subject(catalog: dict[str, dict], code: str) -> dict | None:
 def get_elective_priorities(student: ElectivePriorityInput) -> ElectivePriorityResult:
     """Return ranked elective shortlists per pool for the planner."""
     print("=== ELECTIVE DEBUG ===")
-    print("student:", student)
+    # print("student:", student)
 
     pools_data = load_elective_pools(student.course)
-    print("pools_data:", pools_data)
+    # print("pools_data:", pools_data)
 
     pools = pools_data.get("pools") or []
-    print("pool count:", len(pools))
+    # print("pool count:", len(pools))
 
     if not pools:
         print("STOP: no pools")
@@ -374,15 +374,23 @@ def get_elective_priorities(student: ElectivePriorityInput) -> ElectivePriorityR
 
         candidates = allowed & eligible_electives
 
+        # print(
+        #     "POOL:",
+        #     pool.get("id"),
+        #     "allowed:",
+        #     len(allowed),
+        #     "eligible:",
+        #     len(eligible_electives),
+        #     "intersection:",
+        #     len(candidates),
+        # )
         print(
-            "POOL:",
+            "POOL CONFIG:",
             pool.get("id"),
-            "allowed:",
-            len(allowed),
-            "eligible:",
-            len(eligible_electives),
-            "intersection:",
-            len(candidates),
+            "mode=", pool.get("mode"),
+            "prefixes=", pool.get("prefixes"),
+            "level_rules=", pool.get("level_rules"),
+            "include_general_schedule=", pool.get("include_general_schedule"),
         )
 
         ranked = rank_subjects_by_keywords(
@@ -392,7 +400,7 @@ def get_elective_priorities(student: ElectivePriorityInput) -> ElectivePriorityR
             student.limit,
         )
 
-        print("ranked:", ranked)
+        # print("ranked:", ranked)
 
         pool_results.append(
             ElectivePoolPriorities(
@@ -415,7 +423,7 @@ def get_elective_priorities(student: ElectivePriorityInput) -> ElectivePriorityR
             )
         )
 
-    print("POOL RESULTS:", pool_results)
+    # print("POOL RESULTS:", pool_results)
 
     return ElectivePriorityResult(
         mode=student.mode,

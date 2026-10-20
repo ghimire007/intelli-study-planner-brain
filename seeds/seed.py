@@ -221,7 +221,7 @@ HANDBOOK_1807_2026_WOLLONGONG = """# 1807 — Bachelor of Information Technology
 - CSIT321 Part 1 has ALL the prequisites and corequisites of CSIT321. CSIT321 Part 2 only has CSIT321 Part 1 as a prerequisite.
 - Part 2 MUST be in the **immediately following** session from Part 1 (Session N then Session N + 1).
 - If the student was already enrolled in Part 1 last session, Part 2 must appear in next current session.
-- Prioritise starting CSIT321 in the same session as CSIT314 if possible.
+- Prioritise starting CSIT321 in the same session as CSIT314 if possible, but CSIT314 can be scheduled eariler than CSIT321 and it is still valid. 
 - CSIT321 Part 1 is 6 CP. CSIT321 Part 2 is 6 CP.
 
 ### Core Replacements & Alternates
@@ -329,7 +329,7 @@ HANDBOOK_1807_2026_LIVERPOOL = """# 1807 — Bachelor of Information Technology 
 - CSIT321 is split into Part 1 and Part 2 both worth 6CP each for the purpose of scheduling. They CANNOT BE TAKEN SIMULTANEOUSLY AND YOU CANNOT COMBINE BOTH PARTS.
 - Part 2 MUST be in the **immediately following** session from Part 1 (Session N then Session N + 1).
 - If the student was already enrolled in Part 1 last session, Part 2 must appear in next current session.
-- Prioritise starting CSIT321 in the same session as CSIT314 if possible.
+- Prioritise starting CSIT321 in the same session as CSIT314 if possible, but CSIT314 can be scheduled eariler than CSIT321 and it is still valid. 
 - CSIT321 Part 1 is 6 CP. CSIT321 Part 2 is 6 CP.
 
 ### Core Replacements & Alternates
@@ -376,7 +376,7 @@ Unspecified Credits table format: `Course | Level | NomCP`
 
 ### STAGE 1: ANALYSIS & AUDIT
 1. Identify Commencement Year & Declared Major.
-   - Valid Majors: Network Design & Management (MAJ40163), Web Design & Development (MAJ40246), or No-Major Path.
+   - Valid Majors: Network Design & Management (MAJ40163) or No-Major Path.
    - If invalid: Trigger CIRCUIT BREAKER -> Abort immediately to Scenario A.
 2. Resolve Replacements (e.g., MATH255 -> CSIT205).
 3. Audit COMPLETED and ENROLLED subjects in strict priority order (Core -> Major -> Elective -> Excess):
@@ -399,117 +399,94 @@ Unspecified Credits table format: `Course | Level | NomCP`
 # Handbook data for 1838 Bachelor of Business Information Systems (Wollongong Campus, 2026)
 # DRAFT from seeds/scraped/course_1838.json + subjects_1838.json — verify global rules
 # and sessions against the live CourseLoop handbook before production use.
-HANDBOOK_1838_2026_WOLLONGONG = """# 1838 — Bachelor of Business Information Systems (Wollongong Campus, 2026 Handbook)
+HANDBOOK_1838_2026_WOLLONGONG = """# 1838 — Bachelor of Business Information Systems (Wollongong, 2026)
 
-> **Author note:** Draft distilled from CourseLoop scrape. No majors are offered on this
-> degree at Wollongong. Confirm award wording, sessions, and prerequisites against the
-> official handbook before use.
-
-## Global Rules
-
-To qualify for the award of Bachelor of Business Information Systems, complete **144 credit points** and satisfy all course requirements:
-
-- **(a) Core — 96 CP:** Complete all core subjects listed in Section A (**including CSIT321** at 12 CP). Core totals **96 CP** (Y1 48 + Y2 IT core 30 + CSIT314 6 + CSIT321 12).
-- **(b) No majors:** This degree has **no major** at Wollongong — do not apply 1807/766 major rules.
-- **(c) Year 2 Business electives — 18 CP:** Select **3** subjects from the Business Electives List (Section B), not already counted in Core.
-- **(d) Year 3 structured electives — 30 CP:** In addition to Y3 Core (CSIT314 + CSIT321):
-  - **6 CP** — **1** subject from the Business Electives List (Section B), and
-  - **24 CP** — **1** subject at **200/300-level** CSCI/CSIT/ISIT **and 3** subjects at **300-level** CSCI/CSIT/ISIT (not already in Core).
-- **(e) 100-level cap:** No more than **60 CP** at 100-level (complete + planned).
-
-**Agent counting rules:**
-- **CSIT321 (Capstone) = 12 CP**; every other listed subject = 6 CP unless stated otherwise. Never count CSIT321 as 6 CP.
-- Do NOT invent subject codes. Only use codes that appear in this handbook or the student's enrolment record.
-- A subject counts toward exactly ONE category: Core / Y2 Business Elective / Y3 Business Elective / Y3 CSIT Elective.
-- This document covers the **Wollongong campus** offering only (not Liverpool or SIM).
+## CORE DEGREE RULES (Total: 144 CP)
+- **Core (96 CP):** Complete ALL Section A subjects. No exceptions, no substitutions.
+- **NO MAJORS:** This degree has NO majors at Wollongong. NEVER ask the student which major they are in. NEVER apply Major, Double Major or No-Major Path rules from 766 or 1807. If the student states a major (e.g. Web Design and Development, Network Design and Management, Cybersecurity), that major belongs to a DIFFERENT degree: trigger the CIRCUIT BREAKER and abort to Scenario A.
+- **Business Electives (24 CP total, 4 subjects):** 18 CP (3 subjects) in Year 2 + 6 CP (1 subject) in Year 3. ALL 4 must come from the Section B Business Electives List. Placeholder: `Business Elective 1`, `Business Elective 2` etc.
+- **CSIT Electives (24 CP total, 4 subjects):** 18 CP (3 subjects) at 300-level + 6 CP (1 subject) at 200/300-level, all CSCI/CSIT/ISIT, none already in Core. Placeholder: `CSIT Elective 1 (300 lv)`, `CSIT Elective 4 (200/300 lv)` etc.
+- **SEPARATE BUCKETS:** Business Electives and CSIT Electives are DIFFERENT categories with DIFFERENT eligible subjects. A Business subject (ACCY/BUS/ECON/MARK/MGNT) can NEVER fill a CSIT Elective slot. A CSCI/CSIT/ISIT subject can NEVER fill a Business Elective slot. Do not merge them into one "Electives" bucket.
+- **Excess:** THIS DEGREE HAS NO GENERAL ELECTIVES. Any completed/enrolled subject that is not Core, not on the Section B Business Electives List, and not a CSCI/CSIT/ISIT subject eligible for a CSIT Elective slot is EXCESS. Excess earns 0 Applicable CP toward the 144 CP total. Also Excess: any Business Elective beyond 4 subjects (24 CP), and any CSIT Elective beyond 4 subjects (24 CP). List Excess codes explicitly in the audit.
+- **Level Cap:** Max 60 CP at 100-level overall (completed + planned). Year 1 Core is already 48 CP at 100-level, so AT MOST 2 of the 4 Business Electives may be 100-level subjects. If the student has already exceeded 60 CP at 100-level, state this explicitly in the audit and do not silently ignore it.
+- **Subject count:** 24 subjects total (8 Y1 Core + 5 Y2 Core + CSIT314 + CSIT321 as 2 parts + 4 Business Electives + 4 CSIT Electives). 23 subjects at 6 CP + CSIT321 at 12 CP = 144 CP.
 
 ---
 
-## (A) Core Subjects — Complete ALL
+## (A) CORE SUBJECTS (96 CP Total)
 
-### Year 1 Core (48 CP) — Complete ALL 8
+### Year 1 Core (48 CP) — ALL 8 required
+- CSIT110 (6 CP) | Fundamental Programming with Python | Aut/Spr | Prereq: None
+- CSIT115 (6 CP) | Database Management Systems | Aut/Spr | Prereq: None
+- CSIT121 (6 CP) | Object Oriented Design and Programming | Aut/Spr | Prereq: CSIT110 OR CSIT111 OR ENGG100
+- CSIT128 (6 CP) | Introduction to Web Technology | Aut/Spr | Prereq: None
+- CSIT123 (6 CP) | Computing and Cyber Security Fundamentals | Aut | Prereq: None
+- CSIT114 (6 CP) | System Analysis | Aut | Prereq: None
+- CSIT127 (6 CP) | Networks and Communications | Spr | Prereq: None
+- MGNT110 (6 CP) | Introduction to Management | Spr | Prereq: None
 
-| Subject Code | Session Availability | Prerequisites |
-|-------------|---------------------|--------------|
-| CSIT110 | Autumn or Spring | None |
-| CSIT115 | Autumn or Spring | None |
-| CSIT121 | Autumn or Spring | CSIT110 OR CSIT111 OR ENGG100 |
-| CSIT128 | Autumn or Spring | None |
-| CSIT127 | Spring | None |
-| MGNT110 | Spring | None |
-| CSIT123 | Autumn | None |
-| CSIT114 | Autumn | None |
+### Year 2 Core (30 CP) — ALL 5 required
+- CSIT214 (6 CP) | IT Project Management | Aut/Spr | Prereq: CSIT114
+- CSIT205 (6 CP) | Generative AI | Aut | Prereq: None
+- CSIT226 (6 CP) | Human Computer Interaction | Spr | Prereq: None
+- ISIT224 (6 CP) | Management Information Systems | Spr | Prereq: (CSIT113 OR CSIT123 OR BUS 101) AND 18 CP at 100-level
+- CSIT305 (6 CP) | Emerging Information Technologies and their Applications | Spr | Prereq: None
 
-### Year 2 Core — IT subjects (30 CP) — Complete ALL 5
+### Year 3 Core (18 CP) — ALL required
+- CSIT314 (6 CP) | Software Development Methodologies | Aut | Prereq: CSIT214 AND 12 CP at 200-level CSCI/ISIT
+- CSIT321 (12 CP) | Project | Aut/Spr | Prereq: CSIT214 AND 18 CP at 200-level CSCI/CSIT/ISIT | Coreq: CSIT226 AND CSIT314
 
-| Subject Code | Session Availability | Prerequisites |
-|-------------|---------------------|--------------|
-| CSIT214 | Autumn or Spring | CSIT114 |
-| CSIT205 | Autumn or Spring | None |
-| CSIT226 | Spring | None |
-| ISIT224 | Spring | (CSIT113 OR CSIT123 OR BUS 101) AND another 18 CP at 100-level |
-| CSIT305 | Spring | None |
+### CRITICAL: MGNT110 and CSIT305
+- **MGNT110 is CORE (Year 1).** It is NOT a Business Elective. Never count it toward the 4 Business Electives, and never list it in Section B.
+- **CSIT305 is CORE (Year 2)** despite its 300-level code. It is NOT a CSIT Elective and does NOT count toward the 18 CP of 300-level CSIT Electives. Never count it twice.
 
-### Year 3 Core (18 CP) — Complete ALL
+### Specifically for CSIT321:
+- CSIT321 is split into Part 1 and Part 2 both worth 6 CP each for the purpose of scheduling. They CANNOT BE TAKEN SIMULTANEOUSLY AND YOU CANNOT COMBINE BOTH PARTS.
+- CSIT321 Part 1 has ALL the prerequisites and corequisites of CSIT321. CSIT321 Part 2 only has CSIT321 Part 1 as a prerequisite.
+- Part 2 MUST be in the **immediately following** session from Part 1 (Session N then Session N + 1).
+- If the student was already enrolled in Part 1 last session, Part 2 must appear in next current session.
+- Prioritise starting CSIT321 in the same session as CSIT314 if possible.
+- CSIT321 Part 1 is 6 CP. CSIT321 Part 2 is 6 CP. The pair counts 12 CP ONCE toward the 96 CP Core total. Never count CSIT321 as 6 CP, and never count it as 24 CP.
 
-| Subject Code | CP | Session Availability | Prerequisites | Corequisites |
-|-------------|-----|---------------------|--------------|-------------|
-| CSIT314 | 6 | Autumn | CSIT214 AND 12 CP at 200-level CSCI/ISIT | None |
-| CSIT321 | 12 | Two consecutive sessions (start session flexible) | CSIT214 AND an additional 18 CP at 200-level CSCI/CSIT/ISIT | CSIT226 AND CSIT314 |
-
-**CSIT321 is Core** and counts **12 CP** toward the **96 CP** core total. Do **not** categorise CSIT321 as an elective.
-
-**CSIT321 scheduling rules:**
-- Spans exactly **two consecutive sessions** (Part 1 then Part 2). There must be **no gap** between parts.
-- **Start session is flexible:** Part 1 may begin in **Autumn or Spring**, provided prerequisites and corequisites are satisfied.
-- If the student was enrolled in Part 1 in the **immediately preceding session**, they MUST be enrolled in Part 2 in the current session.
-- CSIT226 and CSIT314 must be complete or co-enrolled as required by the corequisite rule.
-
-### Equivalency / Replacement Rules
-
-**Prerequisite alternates** (not core replacements — accepted in prereq clauses where listed):
-- CSIT111 may satisfy CSIT110 where a prereq says `CSIT110 OR CSIT111`
-- CSIT113 may satisfy CSIT123 where a prereq says `CSIT113 OR CSIT123`
-- Completing **BUS 101** satisfies the BUS 101 prerequisite branch of ISIT224 (i.e. no alternate subject substitutes for it — BUS 101 must be taken directly to meet that branch)
+### Core Replacements & Alternates
+- CSIT111 satisfies CSIT110 where allowed. CSIT113 satisfies CSIT123 where allowed.
+- BUS 101 satisfies the BUS 101 branch of the ISIT224 prerequisite. No other subject substitutes for that branch.
+- There is no MATH255/CSIT205 replacement rule in this degree.
 
 ---
 
-## (B) Business Electives List (Wollongong)
+## (B) BUSINESS ELECTIVES LIST (24 CP total — 4 subjects)
 
-Used for **Year 2** (3 x 6 CP = 18 CP) and **Year 3** (1 x 6 CP). Subjects must **not** already be counted as Core.
+3 subjects in Year 2 (18 CP) + 1 subject in Year 3 (6 CP). All from this list. None may already be counted as Core.
 
-| Subject Code | Title |
-|-------------|-------|
-| ECON100 | Economic Essentials for Business |
-| ACCY121 | Accounting for Decision Making |
-| MARK101 / MARK213 | Marketing Principles (same subject) |
-| ACCY122 | Accounting Principles |
-| BUS 101 | Principles of Responsible Business |
-| BUS 121 | Statistics for Business |
-| MGNT102 | Professional Communication: Concepts and Practices |
-| MGNT201 | Organisational Behaviour |
-| MGNT206 | Strategic Human Resource Management |
-| MGNT220 | Understanding Organisations |
-| MGNT311 | Management of Change |
+| Code | Title | Level |
+|------|-------|-------|
+| ECON100 | Economic Essentials for Business | 100 |
+| ACCY121 | Accounting for Decision Making | 100 |
+| ACCY122 | Accounting Principles | 100 |
+| MARK101 | Marketing Principles | 100 |
+| BUS 101 | Principles of Responsible Business | 100 |
+| BUS 121 | Statistics for Business | 100 |
+| MGNT102 | Professional Communication: Concepts and Practices | 100 |
+| MARK213 | Marketing Principles | 200 |
+| MGNT201 | Organisational Behaviour | 200 |
+| MGNT206 | Strategic Human Resource Management | 200 |
+| MGNT220 | Understanding Organisations | 200 |
+| MGNT311 | Management of Change | 300 |
 
-**Note:** MGNT110 is **Core** (Year 1), not a Business Elective.
-
----
-
-## (C) Year 3 CSIT/CSCI/ISIT Electives (24 CP)
-
-Complete **after** Core requirements, in the final year structure:
-
-- **6 CP** — one **200-level or 300-level** CSCI/CSIT/ISIT subject (not in Core)
-- **18 CP** — three **300-level** CSCI/CSIT/ISIT subjects (not in Core)
-
-Use `lookup_subjects_tool` to verify level, prerequisites, and session availability before finalising.
+- MARK101 and MARK213 are the same subject (Marketing Principles) at different levels. A student may count ONE of them, never both. If both appear, count the first chronologically and mark the second as Excess.
+- 7 of these 12 are 100-level. Because Year 1 Core already uses 48 of the 60 CP 100-level cap, AT MOST 2 Business Electives may be 100-level. The others must come from MARK213, MGNT201, MGNT206, MGNT220 or MGNT311.
+- Verify session availability with `lookup_subjects_tool` before scheduling any Business Elective. If the tool returns no session for a subject, treat it as unavailable in that session.
 
 ---
 
-## Electives — General
+## (C) CSIT ELECTIVES (24 CP total — 4 subjects)
 
-Any remaining CP to reach 144 is satisfied by the structured buckets above (Y2 business + Y3 business + Y3 CSIT). Do not invent codes — use placeholders such as "Business Elective" or "CSIT Elective (300-level)" if a specific code is unavailable.
+- 18 CP (3 subjects) at **300-level** CSCI/CSIT/ISIT, not already in Core.
+- 6 CP (1 subject) at **200-level or 300-level** CSCI/CSIT/ISIT, not already in Core.
+- CSIT305 is Core and can never fill one of these slots.
+- Business subjects (ACCY/BUS/ECON/MARK/MGNT) can NEVER fill these slots.
+- Verify level, prerequisites and session availability with `lookup_subjects_tool` before scheduling.
 
 ---
 
@@ -523,100 +500,44 @@ Unspecified credits count toward the total CP and toward the 100-level cap based
 
 The enrolment record is a table with the following columns:
 
-    Year | Session | Campus | Delivery | Subject Code | NomCP | Mark | Grade | Status
+      Year | Session | Campus | Delivery | Subject Code | NomCP | Mark | Grade | Status
 
 A subject is **Complete** if ALL of the following are true:
 - Grade is one of: **HD, D, C, P, PS, S**
 - Status is **"Complete"**
 - OR it is listed as a **Specified Credit**
-
-Grades F, N, NH, W, WF, AF, or any blank Grade do **NOT** count as complete.
+Grades TF, F, N, NH, W, WF, AF, or any blank Grade do **NOT** count as complete or towards the CP total.
 
 Specified Credits table format: `Course | Subject Code | Name | Level | NomCP`
 Unspecified Credits table format: `Course | Level | NomCP`
 
----
+The record may be pasted in compact, unlabelled form (e.g. `1838 Wollongong CSIT110 P 2024 CSIT115 P 2024`). Parse what is present before asking for anything: a 4-digit number is the course code, a campus name is the campus, and `CODE GRADE YEAR` rows are completed subjects. If the course code and campus are present, NEVER ask for them again. If the commencement year is only implied (earliest year in the record), proceed using it and say which year you inferred.
 
-## STAGE 1: ANALYSIS (Audit of Completed Credits)
+–-
 
-Complete this stage in full before starting Stage 2.
+## EXECUTION STEPS & AUDIT PROTOCOL
 
-**Step 1.1 — Commencement Year:**
-Identify the student's commencement year (earliest year in the enrolment record). This degree has **no major** — do not ask for or apply a major.
+### STAGE 1: ANALYSIS & AUDIT
+1. Identify Commencement Year. **Do NOT ask for or identify a major — this degree has none.**
+  - If the student has declared any major: Trigger CIRCUIT BREAKER -> Abort immediately to Scenario A, state that 1838 has no majors, and ask them to confirm the no-major structure or check their degree code.
+2. Resolve Replacements (CSIT111 -> CSIT110, CSIT113 -> CSIT123).
+3. Audit COMPLETED and ENROLLED subjects in strict priority order (Core -> Business Electives -> CSIT Electives -> Excess):
+  - Core_CP_Completed = [X] CP
+  - Business_Elective_CP_Taken = [X] CP
+  - Valid_Business_Elective_CP = MIN(24, Business_Elective_CP_Taken) = [X] CP
+  - CSIT_Elective_CP_Taken = [X] CP
+  - Valid_CSIT_Elective_CP = MIN(24, CSIT_Elective_CP_Taken) = [X] CP
+  - Excess_CP = all non-Core subjects not eligible for either elective bucket, plus any elective CP beyond each 24 CP cap = [X] CP (List codes here immediately)
+  - Total_Applicable_Earned = Core_CP_Completed + Valid_Business_Elective_CP + Valid_CSIT_Elective_CP = [X] / 144 CP
+4. Report Completed CP and Currently Enrolled CP as SEPARATE figures. Completed CP counts only subjects with a passing grade AND status Complete. Never fold currently-enrolled CP into Completed CP.
+5. 100-level check: sum all 100-level CP (completed + enrolled + planned). State the total. If > 60 CP, say so explicitly in the audit.
 
-**Step 1.2 — Apply Equivalency Rules:**
-Apply prerequisite alternates from Section A only where a later subject's prereq clause allows them.
-
-**Step 1.3 — Identify Complete Subjects:**
-List every subject that is Complete. Categorise each as exactly one of:
-
-| Category | Rule |
-|----------|------|
-| Core | Appears in Section A (**including CSIT321** at 12 CP toward the 96 CP core) |
-| Y2 Business Elective | One of the 3 business electives taken in Year 2 (from Section B, not Core) |
-| Y3 Business Elective | The 1 business elective in Year 3 (from Section B, not Core) |
-| Y3 CSIT Elective | The 4 CSIT/CSCI/ISIT electives in Year 3 (1x200/300 + 3x300 per Section C) |
-
-Never put CSIT321 in an elective category.
-
-**Step 1.4 — Count CP per category:**
-Sum CP per category. **CSIT321 = 12 CP** in Core; all other listed subjects = 6 CP unless stated otherwise.
-
-**Step 1.5 — Total Complete CP:**
-Total Complete CP = Core CP + Y2 Business Elective CP + Y3 Business Elective CP + Y3 CSIT Elective CP + Unspecified CP
-
-Target when fully complete: Core **96 CP** + structured electives **48 CP** = **144 CP**.
-
-⚠️ **DOUBLE CHECK Stage 1 before continuing:**
-1. Is the commencement year correct?
-2. Does each subject appear in exactly ONE category?
-3. Is CSIT321 categorised as **Core** (not Elective) and counted as **12 CP** toward the 96 CP core?
-4. Are Y2 business electives counted separately (up to 18 CP)?
-5. Does the arithmetic add up toward 144 CP?
-Correct any errors and repeat until all checks pass.
-
----
-
-## STAGE 2: PLANNING (Drafting the Study Plan)
-
-Start only after Stage 1 is fully verified.
-
-**Step 2.1 — List Outstanding Mandatory Subjects:**
-- All remaining **Core** subjects in Section A (including CSIT321 if not complete)
-- Remaining **Y2 business electives** (until 18 CP)
-- Remaining **Y3 business elective** (6 CP)
-- Remaining **Y3 CSIT electives** (24 CP per Section C)
-
-**Step 2.2 — Assign Sessions:**
-Schedule each subject into the correct session based on Section A availability. Autumn-only → Autumn; Spring-only → Spring; Autumn-or-Spring → choose whichever fits.
-
-**Step 2.3 — Enforce Prerequisites and Corequisites:**
-All prerequisites must be **Complete** or planned in a **strictly earlier** session. Corequisites must be **Complete** or planned in the **same or earlier** session. Prefer `lookup_subjects_tool` before finalising.
-
-**Step 2.4 — Schedule CSIT321:**
-- Part 1 in final year in **Autumn or Spring** once prerequisites/corequisites are satisfied.
-- Part 2 in the **immediately following** session (no gap).
-- Ensure CSIT226 and CSIT314 corequisites are satisfied.
-
-**Step 2.5 — Session Load Cap:**
-Each session must contain at most **4 subjects**.
-
-**Step 2.6 — Calculate Required Remaining CP:**
-Required CP = 144 - Total Complete CP (from Stage 1.5)
-
-**Step 2.7 — Fill structured elective buckets:**
-Allocate business and CSIT electives until structured elective CP and total CP reach 144. Do not invent subject codes.
-
-⚠️ **DOUBLE CHECK Stage 2 before outputting:**
-1. Total Complete CP + Total Planned CP = exactly **144**
-2. No subject appears more than once
-3. Prerequisites and corequisites satisfied
-4. Session availability respected
-5. No session has more than 4 subjects
-6. CSIT321 spans two consecutive sessions with no gap
-7. Total 100-level CP ≤ **60**
-8. No subject code invented
-Correct any errors and repeat until all checks pass.
+### STAGE 2: SESSION SCRATCHPAD
+1. Calculate Remaining Needed CP to reach 144 CP.
+2. Run Session Scratchpad for ALL future sessions in chronological order until 144 CP is reached.
+3. Apply Session Filters (Availability, Prereq <= N-1, Coreq <= N, CP level thresholds) to every uncompleted subject.
+4. Enforce Session Load Limits (Standard: 4 subjects / 24 CP; Hard Cap: Max 4 subjects).
+5. Proceed to Step 10 (Macro & Tool Audit) and Step 11 (Pre-Flight Verification Matrix).
 """
 
 # Handbook data for 1802 Bachelor of Computer Science (Dean's Scholar) (Wollongong Campus, 2026)
