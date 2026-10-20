@@ -245,6 +245,30 @@ class ConversationNodes:
             handbook=state.get("handbook"),
             raw_sols=state.get("raw_sols"),
         )
+        # Only use the fetched handbook to normalize majors during metadata confirmation.
+        handbook = state.get("handbook")
+
+        if not confirmed and handbook:
+            system_content += f"""
+
+        AUTHORITATIVE HANDBOOK MAJOR NORMALIZATION
+
+        The student metadata is not yet confirmed. Use the fetched handbook below
+        to resolve the student's stated major to its exact canonical handbook name.
+
+        - Match the student's intended major to a major listed in the handbook.
+        - When the match is unambiguous, use the exact handbook name in the
+        `majors` argument to `confirm_metadata_tool`.
+        - The canonical name does not need to match the student's wording verbatim.
+        - Do not invent a major or select one based on similarity alone.
+        - If multiple majors could match, or no valid match exists, ask the student
+        to clarify instead of guessing.
+        - Never interpret an unresolved major as an explicit choice of no major.
+
+        HANDBOOK:
+        {handbook}
+        """
+            
         system_content += f"""
             ELECTIVE REQUEST RULES:
             - A request to recommend electives is not a plan-change request.
