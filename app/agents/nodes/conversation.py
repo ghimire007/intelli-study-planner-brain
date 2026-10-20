@@ -1,9 +1,8 @@
 """Intake and chat nodes: parse the SOLS paste, talk to the student, fold metadata tools."""
 import re
-import time
 from typing import Literal
 
-from langchain_core.messages import AIMessage, SystemMessage, HumanMessage
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langgraph.graph import END
 from langgraph.prebuilt import ToolNode
 
@@ -17,8 +16,8 @@ from app.agents.state import (
     handbook_matches_current_meta,
     is_plan_explanation_question,
     latest_student_message,
-    latest_user_request,
     latest_tool_batch,
+    latest_user_request,
     sanitize_confirmed_metadata,
 )
 from app.llm.text import is_evaluation_reply
@@ -257,9 +256,9 @@ class ConversationNodes:
             - Elective retrieval is handled by fetch_elective_list.
             - If pending_elective_action is set and metadata is confirmed, do not make additional tool calls. Let the application workflow handle the request.
 
-            ONLY CALL lookup_electives_tool when the student requests a specific type of elective. Then provide the query as a list of topics relevant to the student's elective request. 
+            ONLY CALL lookup_electives_tool when the student requests a specific type of elective. Then provide the query as a list of topics relevant to the student's elective request.
             DO NOT CALL lookup_electives_tool FOR GENERAL ELECTIVE REQUESTS.
-            
+
             PLAN CHANGE RULES:
 
             You must distinguish between:

@@ -6,10 +6,9 @@ newest year at or below the requested handbook year.
 """
 from app.models.major import Major
 from app.models.subject import Subject
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from sqlalchemy import func, select
 
 async def find_subject(
     db: AsyncSession,

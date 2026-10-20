@@ -22,7 +22,7 @@ stage2_tools -> capture_stage2_tool_results -> stage2_make_plan
 evaluate_stage2 -> stage2_make_plan (retry) | format_output
 format_output -> END
 
-Elective retrieval and plan updates are request-driven paths that terminate after returning their results. They do not automatically continue into Stage 2. 
+Elective retrieval and plan updates are request-driven paths that terminate after returning their results. They do not automatically continue into Stage 2.
 Initial plan generation follows the separate Stage 1 core-subject generation and evaluation path.
 
 State and shared helpers live in app/agents/state.py.
@@ -80,22 +80,6 @@ class AdvisorGraph:
         }
 
         llms = LLMRegistry(llm_config, conversation_tools)
-        stage1_tools = [
-            tool
-            for tool in skills["full"]
-            if tool.name in {
-                "lookup_uow_policy_tool",
-            }
-        ]
-
-        stage1_llms = LLMRegistry(
-            llm_config,
-            {
-                "confirm": skills["confirm"],
-                "full": stage1_tools,
-            },
-        )
-
         stage2_llms = LLMRegistry(
             llm_config,
             {

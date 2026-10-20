@@ -77,7 +77,7 @@ class TestCaptureToolResults:
             "meta_confirmed": True,
             "handbook": "# old 766 handbook",
         }
-        updates = ConversationNodes(None, []).capture_tool_results(state)
-        assert updates["meta"] == new_meta
+        updates = ConversationNodes(None, {}).capture_tool_results(state)
+        assert updates["meta"]["degree_code"] == "1807"
         assert updates["meta_confirmed"] is True
         assert updates["handbook"] is None

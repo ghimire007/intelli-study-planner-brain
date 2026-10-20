@@ -16,11 +16,11 @@ from app.schemas.chat import ChatContext
 from app.services.credential_resolver import CredentialResolver
 from app.services.enrolment import UnreadableRecord, project
 from app.services.pii import scrub_pii
+from app.services.sols_parser import extract_sols_metadata
 from app.services.vault_service import VaultService
 from app.services.wam import calculate_wam, describe_for_prompt
 from langchain_core.messages import HumanMessage, SystemMessage
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.services.sols_parser import extract_sols_metadata
 
 ElectiveMode = Literal["degree", "interest"]
 
