@@ -298,7 +298,7 @@ class AgentChatService:
             # Not a valid SOLS record. Keep it as a normal chat message.
             projected = None
 
-        except Exception as e:
+        except Exception:
             # print( "continue_session: unexpected project() error:", repr(e), )
             projected = None
 

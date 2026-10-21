@@ -259,7 +259,7 @@ def get_elective_priorities(student: ElectivePriorityInput) -> ElectivePriorityR
             student.campus,
         )
         # print("rules loaded:", bool(rules))
-    except (FileNotFoundError, ValueError) as exc:
+    except (FileNotFoundError, ValueError):
         # print("STOP: course/campus rules failed:", repr(exc))
         return ElectivePriorityResult(
             mode=student.mode,

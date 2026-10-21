@@ -9,7 +9,6 @@ from langgraph.prebuilt import ToolNode
 from app.agents.llms import LLMRegistry
 from app.agents.state import (
     AdvisorState,
-    _message_text,
     apply_confirm_metadata,
     apply_plan_change_request,
     extract_and_parse_json,
@@ -264,7 +263,7 @@ class ConversationNodes:
         HANDBOOK:
         {handbook}
         """
-            
+
         system_content += f"""
             ELECTIVE REQUEST RULES:
             - A request to recommend electives is not a plan-change request.
@@ -283,7 +282,7 @@ class ConversationNodes:
             MAKING A PLAN RULES:
             - DO NOT ATTEMPT TO MAKE A PLAN.
             - If requested to make a plan from a degree you do not have the handbook for, respond to the student saying that degree is not supported yet.
-            
+
             PLAN CHANGE RULES:
 
             You must distinguish between:

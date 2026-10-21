@@ -47,7 +47,7 @@ def extract_sols_metadata(text: str) -> SOLSMeta:
         r"(?<!\d)(20\d{2})(?!\d)",
         text,
     )
-    
+
     if match:
         meta.year = int(min(map(int, match)))
 
