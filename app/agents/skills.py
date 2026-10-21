@@ -246,10 +246,10 @@ def make_lookup_electives_tool(db: AsyncSession):
             limit=limit,
         )
 
-        print("LOOKUP QUERY:", query)
-        print("LOOKUP COURSE/YEAR:", course, year)
-        print("LOOKUP RESULT TYPE:", type(result).__name__)
-        print("LOOKUP RESULT:", result)
+        # print("LOOKUP QUERY:", query)
+        # print("LOOKUP COURSE/YEAR:", course, year)
+        # print("LOOKUP RESULT TYPE:", type(result).__name__)
+        # print("LOOKUP RESULT:", result)
 
         return result
 
@@ -308,9 +308,9 @@ def get_elective_priorities_tool(
     planned subject codes from the SOLS record. Prefer higher-ranked codes
     when scheduling electives unless session/prereqs rule them out.
     """
-    print("!!!!!!!!!!!!!!!! EXECUTION STARTED !!!!!!!!!!!!!!!!")
-    print("Mode: ", mode)
-    print("Interests: ", interests)
+    # print("!!!!!!!!!!!!!!!! EXECUTION STARTED !!!!!!!!!!!!!!!!")
+    # print("Mode: ", mode)
+    # print("Interests: ", interests)
     result = get_elective_priorities(
         ElectivePriorityInput(
             course=course,
@@ -324,7 +324,7 @@ def get_elective_priorities_tool(
             limit=limit,
         )
     )
-    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n", result)
+    # print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n", result)
     return json.dumps(result.model_dump(), indent=2)
 
 

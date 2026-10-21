@@ -28,10 +28,10 @@ class Stage2Nodes:
         self._tool_node = ToolNode(planning_tools)
 
     async def make_plan(self, state: AdvisorState) -> dict:
-        print("NODE: stage2_make_plan")
+        # print("NODE: stage2_make_plan")
 
         if not handbook_matches_current_meta(state):
-            print("STAGE 2 BLOCKED: handbook invalid")
+            # print("STAGE 2 BLOCKED: handbook invalid")
             return {"planning_requested": False, "plan": None}
 
         base_prompt = build_system_prompt(
@@ -84,7 +84,7 @@ class Stage2Nodes:
 
         if tool_count >= MAX_STAGE2_TOOL_LOOPS:
             llm = self._no_tools_llms.get("full")
-            print("STAGE 2: planning without tools")
+            # print("STAGE 2: planning without tools")
         else:
             llm = self._llms.get("full")
 
@@ -94,9 +94,9 @@ class Stage2Nodes:
             HumanMessage(content=content_prompt),
         ])
 
-        print("AGENT RESPONSE TYPE:", type(response).__name__)
-        print("AGENT TOOL CALLS:", getattr(response, "tool_calls", []))
-        print("AGENT RESPONSE TEXT:", _message_text(response)[:500])
+        # print("AGENT RESPONSE TYPE:", type(response).__name__)
+        # print("AGENT TOOL CALLS:", getattr(response, "tool_calls", []))
+        # print("AGENT RESPONSE TEXT:", _message_text(response)[:500])
 
         updated: dict = {"messages": [response]}
 
@@ -110,14 +110,14 @@ class Stage2Nodes:
         return updated
 
     async def run_tools(self, state: AdvisorState) -> dict:
-        print("NODE: stage2_tools")
+        # print("NODE: stage2_tools")
         return await self._tool_node.ainvoke(state)
 
     @staticmethod
     def capture_tool_results(state: AdvisorState) -> dict:
         """Stage 2 tool results stay in the message history; this only bounds
         the tool loop. It deliberately runs no metadata-confirmation logic."""
-        print("NODE: capture_stage2_tool_results")
+        # print("NODE: capture_stage2_tool_results")
         return {"stage2_tool_loop_count": state.get("stage2_tool_loop_count", 0) + 1}
 
 
@@ -128,10 +128,10 @@ class Stage2Nodes:
     ) -> Literal["stage2_make_plan"]:
         count = state.get("stage2_tool_loop_count", 0)
 
-        print(
-            f"STAGE 2 TOOL LOOPS: "
-            f"{count}/{MAX_STAGE2_TOOL_LOOPS}"
-        )
+        # print(
+        #     f"STAGE 2 TOOL LOOPS: "
+        #     f"{count}/{MAX_STAGE2_TOOL_LOOPS}"
+        # )
 
         if count >= MAX_STAGE2_TOOL_LOOPS:
             print(
@@ -159,10 +159,10 @@ class Stage2Nodes:
                 state.get("stage2_tool_loop_count", 0)
                 >= MAX_STAGE2_TOOL_LOOPS
             ):
-                print(
-                    "ERROR: no-tools model returned tool calls; "
-                    "cannot execute additional tools"
-                )
+                # print(
+                #     "ERROR: no-tools model returned tool calls; "
+                #     "cannot execute additional tools"
+                # )
                 return "format_output"
 
             return "stage2_tools"
@@ -173,7 +173,7 @@ class Stage2Nodes:
     async def evaluate(self, state: AdvisorState) -> dict:
         """Evaluate the generated plan against metadata, handbook, SOLS,
         required subjects and electives."""
-        print("NODE: evaluate_stage2")
+        # print("NODE: evaluate_stage2")
 
         retries = state.get("stage2_retry_count", 0)
         plan = state.get("plan")
@@ -205,7 +205,7 @@ class Stage2Nodes:
                 return {"plan_feedback": None, "stage2_retry_count": 0}
             feedback = data.get("feedback", "Invalid plan.")
         except Exception as exc:
-            print("STAGE 2 EVAL ERROR:", repr(exc))
+            # print("STAGE 2 EVAL ERROR:", repr(exc))
             feedback = "Failed to parse evaluation output."
 
         return {"plan_feedback": feedback, "stage2_retry_count": retries + 1}
@@ -215,7 +215,7 @@ class Stage2Nodes:
         if not state.get("plan_feedback"):
             return "format_output"
         if state.get("stage2_retry_count", 0) >= MAX_STAGE2_RETRIES:
-            print("STAGE 2 retry limit reached")
+            # print("STAGE 2 retry limit reached")
             return "format_output"
         return "stage2_make_plan"
 
@@ -223,7 +223,7 @@ class Stage2Nodes:
     @staticmethod
     async def format_output(state: AdvisorState) -> dict:
         """Emit final evaluation feedback before the plan's JSON Markdown."""
-        print("NODE: format_output")
+        # print("NODE: format_output")
 
         plan = state.get("plan") or (
             "Unable to complete plan generation. "

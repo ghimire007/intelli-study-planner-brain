@@ -247,7 +247,7 @@ def get_elective_priorities(student: ElectivePriorityInput) -> ElectivePriorityR
     # print("pool count:", len(pools))
 
     if not pools:
-        print("STOP: no pools")
+        # print("STOP: no pools")
         return ElectivePriorityResult(
             mode=student.mode,
             pools=[],
@@ -258,19 +258,19 @@ def get_elective_priorities(student: ElectivePriorityInput) -> ElectivePriorityR
             student.course,
             student.campus,
         )
-        print("rules loaded:", bool(rules))
+        # print("rules loaded:", bool(rules))
     except (FileNotFoundError, ValueError) as exc:
-        print("STOP: course/campus rules failed:", repr(exc))
+        # print("STOP: course/campus rules failed:", repr(exc))
         return ElectivePriorityResult(
             mode=student.mode,
             pools=[],
         )
 
     year_value = pools_data.get("year")
-    print("pool year:", year_value)
+    # print("pool year:", year_value)
 
     if not year_value:
-        print("STOP: pool year missing")
+        # print("STOP: pool year missing")
         return ElectivePriorityResult(
             mode=student.mode,
             pools=[],
@@ -283,10 +283,10 @@ def get_elective_priorities(student: ElectivePriorityInput) -> ElectivePriorityR
         year=year,
     )
 
-    print("catalog size:", len(catalog) if catalog else 0)
+    # print("catalog size:", len(catalog) if catalog else 0)
 
     if not catalog:
-        print("STOP: catalog empty")
+        # print("STOP: catalog empty")
         return ElectivePriorityResult(
             mode=student.mode,
             pools=[],
@@ -297,15 +297,15 @@ def get_elective_priorities(student: ElectivePriorityInput) -> ElectivePriorityR
         rules,
     )
 
-    print("student.major:", repr(student.major))
-    print("resolved major_code:", repr(major_code))
+    # print("student.major:", repr(student.major))
+    # print("resolved major_code:", repr(major_code))
 
     query = _build_query(student)
 
-    print("query:", repr(query))
+    # print("query:", repr(query))
 
     if not query.strip():
-        print("STOP: empty query")
+        # print("STOP: empty query")
         return ElectivePriorityResult(
             mode=student.mode,
             pools=[],
@@ -328,9 +328,9 @@ def get_elective_priorities(student: ElectivePriorityInput) -> ElectivePriorityR
         planned,
     )
 
-    print("completed:", completed)
-    print("planned:", planned)
-    print("forbidden count:", len(forbidden))
+    # print("completed:", completed)
+    # print("planned:", planned)
+    # print("forbidden count:", len(forbidden))
 
     eligibility = get_eligible_subjects(
         StudentEligibilityInput(
@@ -343,10 +343,10 @@ def get_elective_priorities(student: ElectivePriorityInput) -> ElectivePriorityR
         )
     )
 
-    print(
-        "eligible subject count:",
-        len(eligibility.eligible_subjects),
-    )
+    # print(
+    #     "eligible subject count:",
+    #     len(eligibility.eligible_subjects),
+    # )
 
     eligible_electives = {
         normalize_code(item.code)
@@ -358,10 +358,10 @@ def get_elective_priorities(student: ElectivePriorityInput) -> ElectivePriorityR
         ) in ALLOWED_ELECTIVE_LEVELS
     }
 
-    print(
-        "eligible_electives count:",
-        len(eligible_electives),
-    )
+    # print(
+    #     "eligible_electives count:",
+    #     len(eligible_electives),
+    # )
 
     pool_results: list[ElectivePoolPriorities] = []
 
@@ -384,14 +384,14 @@ def get_elective_priorities(student: ElectivePriorityInput) -> ElectivePriorityR
         #     "intersection:",
         #     len(candidates),
         # )
-        print(
-            "POOL CONFIG:",
-            pool.get("id"),
-            "mode=", pool.get("mode"),
-            "prefixes=", pool.get("prefixes"),
-            "level_rules=", pool.get("level_rules"),
-            "include_general_schedule=", pool.get("include_general_schedule"),
-        )
+        # print(
+        #     "POOL CONFIG:",
+        #     pool.get("id"),
+        #     "mode=", pool.get("mode"),
+        #     "prefixes=", pool.get("prefixes"),
+        #     "level_rules=", pool.get("level_rules"),
+        #     "include_general_schedule=", pool.get("include_general_schedule"),
+        # )
 
         ranked = rank_subjects_by_keywords(
             catalog,
