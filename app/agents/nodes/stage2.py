@@ -1,4 +1,5 @@
 """Stage 2 nodes: generate the study plan, evaluate it, emit the final message."""
+import json
 from typing import Literal
 
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
@@ -15,7 +16,7 @@ from app.agents.state import (
 )
 from app.prompts.builder import build_system_prompt
 from app.prompts.prompts import EVAL_PLAN, SYSTEM_PROMPT_V1
-import json
+
 
 class Stage2Nodes:
     """Stage 2: generate the study plan (with planning tools), evaluate it,
@@ -120,7 +121,7 @@ class Stage2Nodes:
         return {"stage2_tool_loop_count": state.get("stage2_tool_loop_count", 0) + 1}
 
 
-    
+
     @staticmethod
     def route_after_tool_results(
         state: AdvisorState,
@@ -141,7 +142,7 @@ class Stage2Nodes:
         return "stage2_make_plan"
 
 
-    
+
     @staticmethod
     def route_after_make_plan(
         state: AdvisorState,
@@ -218,7 +219,7 @@ class Stage2Nodes:
             return "format_output"
         return "stage2_make_plan"
 
-    
+
     @staticmethod
     async def format_output(state: AdvisorState) -> dict:
         """Emit final evaluation feedback before the plan's JSON Markdown."""

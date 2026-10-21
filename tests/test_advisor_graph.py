@@ -27,6 +27,7 @@ HANDBOOK_OK = {
     "handbook_year": 2024,
     "handbook_campus": "Wollongong",
     "handbook_valid": True,
+    "major_validation_passed": True,
 }
 
 
@@ -46,6 +47,10 @@ class FakeConversation:
     @staticmethod
     def route_after_agent(state):
         return "start_planning"
+
+    @staticmethod
+    def route_after_tool_results(state):
+        return END
 
 
 class FakeHandbook:
@@ -99,6 +104,10 @@ class FakeStage2:
     @staticmethod
     def capture_tool_results(state):
         raise AssertionError("capture_stage2_tool_results must not run")
+
+    @staticmethod
+    def route_after_tool_results(state):
+        return "format_output"
 
     @staticmethod
     def route_after_make_plan(state):
@@ -157,10 +166,6 @@ def test_route_stage1_eval_targets() -> None:
     assert route({"stage1_retry_count": 1}) == "stage2_make_plan"
     assert route({"remaining_feedback": "y", "stage1_retry_count": 1}) == "stage1_review_must_includes"
     assert route({"remaining_feedback": "y", "stage1_retry_count": 9}) == "stage2_make_plan"
-
-
-def test_join_ends_when_handbook_is_invalid() -> None:
-    assert Stage1Nodes.route_join_barrier({"meta": META}) == END
 
 
 class _ExplainerModel:

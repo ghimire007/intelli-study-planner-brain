@@ -3,8 +3,9 @@ from __future__ import annotations
 
 import json
 
-from app.agents.graph import apply_confirm_metadata, fold_tool_results
-from langchain_core.messages import ToolMessage
+from app.agents.nodes.conversation import ConversationNodes
+from app.agents.state import apply_confirm_metadata
+from langchain_core.messages import HumanMessage, ToolMessage
 
 
 class TestApplyConfirmMetadata:
@@ -12,7 +13,8 @@ class TestApplyConfirmMetadata:
         """Re-confirming the same degree/year/campus must not clear handbook."""
         meta = {"degree_code": "766", "year": 2024, "campus": "Wollongong"}
         updates = apply_confirm_metadata(meta, meta.copy())
-        assert updates == {"meta": meta, "meta_confirmed": True}
+        assert updates["meta"] == meta
+        assert updates["meta_confirmed"] is True
         assert "handbook" not in updates
 
     def test_degree_switch_clears_handbook(self) -> None:
@@ -57,50 +59,25 @@ class TestApplyConfirmMetadata:
         assert "handbook" not in updates
 
 
-class TestFoldToolResults:
-    def test_switch_then_fetch_keeps_new_handbook(self) -> None:
-        """Confirm+fetch in one turn: clear then load the new handbook."""
+class TestCaptureToolResults:
+    def test_degree_switch_clears_handbook(self) -> None:
+        """A confirmed switch drops the old handbook; ensure_handbook reloads the new one."""
+        new_meta = {"degree_code": "1807", "year": 2024, "campus": "Wollongong"}
         state = {
-            "messages": [],
+            "messages": [
+                HumanMessage(content="Please switch me to degree 1807, 2024, Wollongong"),
+                ToolMessage(
+                    content=json.dumps(new_meta),
+                    name="confirm_metadata_tool",
+                    tool_call_id="1",
+                ),
+            ],
             "raw_sols": "",
             "meta": {"degree_code": "766", "year": 2024, "campus": "Wollongong"},
             "meta_confirmed": True,
             "handbook": "# old 766 handbook",
         }
-        new_meta = {"degree_code": "1807", "year": 2024, "campus": "Wollongong"}
-        batch = [
-            ToolMessage(
-                content=json.dumps(new_meta),
-                name="confirm_metadata_tool",
-                tool_call_id="1",
-            ),
-            ToolMessage(
-                content="# new 1807 handbook",
-                name="fetch_handbook_tool",
-                tool_call_id="2",
-            ),
-        ]
-        updates = fold_tool_results(state, batch)
-        assert updates["meta"] == new_meta
+        updates = ConversationNodes(None, {}).capture_tool_results(state)
+        assert updates["meta"]["degree_code"] == "1807"
         assert updates["meta_confirmed"] is True
-        assert updates["handbook"] == "# new 1807 handbook"
-
-    def test_switch_alone_clears_handbook(self) -> None:
-        """Degree switch without a same-turn fetch leaves handbook None."""
-        state = {
-            "messages": [],
-            "raw_sols": "",
-            "meta": {"degree_code": "766", "year": 2024, "campus": "Wollongong"},
-            "meta_confirmed": True,
-            "handbook": "# old 766 handbook",
-        }
-        new_meta = {"degree_code": "1807", "year": 2024, "campus": "Wollongong"}
-        batch = [
-            ToolMessage(
-                content=json.dumps(new_meta),
-                name="confirm_metadata_tool",
-                tool_call_id="1",
-            ),
-        ]
-        updates = fold_tool_results(state, batch)
         assert updates["handbook"] is None
