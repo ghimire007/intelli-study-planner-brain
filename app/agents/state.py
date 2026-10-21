@@ -12,7 +12,7 @@ from langgraph.graph.message import add_messages
 
 from app.schemas.elective_ranking import ElectivePriorityInput
 from app.services.elective_ranking import flatten_ranked_electives, get_elective_priorities
-from app.services.enrolment import UnreadableRecord, parse_enrolment
+from app.services.enrolment import UnreadableRecord, parse_enrolment, split_major_code_and_title
 
 # CONSTANTS for max retries/loops to keep the model requests per minute < 15 for free API key tiers
 # Stage 1 generation passes per planning run. The evaluator is skipped on the
@@ -155,6 +155,11 @@ def _major_for_ranking(
 
     if text.upper().startswith("MAJ"):
         return text.upper()
+
+    # "WDD Web Design and Development" -> the title. The short code is not a
+    # handbook code, and ranking resolves the title through major aliases.
+    if split := split_major_code_and_title(text):
+        return split[1]
 
     return (
         re.split(r"\s+[—–-]\s+", text, maxsplit=1)[0].strip()  # noqa: RUF001 (en dash is intentional)

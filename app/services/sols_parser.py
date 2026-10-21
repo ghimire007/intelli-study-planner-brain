@@ -10,6 +10,8 @@ import re
 
 from pydantic import BaseModel, Field
 
+from app.services.enrolment import split_major_code_and_title
+
 
 class SOLSMeta(BaseModel):
     degree_code: str | None = None
@@ -64,6 +66,9 @@ def extract_sols_metadata(text: str) -> SOLSMeta:
         text,
     ):
         major = match.group(1).strip()
+        # "WDD Web Design and Development" is a SOLS code plus the handbook title.
+        if split := split_major_code_and_title(major):
+            major = split[1]
         if major and major not in meta.majors:
             meta.majors.append(major)
 

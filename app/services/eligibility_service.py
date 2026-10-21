@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+import re
+
 from app.schemas.eligibility import (
     EligibilityResult,
     EligibleSubjectOut,
     StudentEligibilityInput,
 )
 from app.services.course_rules import CourseRules, load_course_rules
+from app.services.enrolment import split_major_code_and_title
 from app.services.prerequisite_parser import (
     expand_held,
     expressions_satisfied,
@@ -17,16 +20,47 @@ from app.services.prerequisite_parser import (
 from app.services.subject_catalog import load_subject_catalog
 
 
+def _lookup_major_alias(candidate: str, rules: CourseRules) -> str | None:
+    """Match a code or title, including an '&' spelling of the same title."""
+    text = candidate.strip()
+    if not text:
+        return None
+    upper = text.upper()
+    if upper.startswith("MAJ") and upper in rules.major_core:
+        return upper
+    spelled = re.sub(r"\s*&\s*", " and ", text.lower())
+    spelled = re.sub(r"\s+", " ", spelled).strip()
+    for key in dict.fromkeys((text.lower(), spelled)):
+        if alias := rules.major_aliases.get(key):
+            return alias
+    return None
+
+
 def resolve_major_code(major: str | None, rules: CourseRules) -> str | None:
+    """Resolve a handbook code, a title, or a SOLS 'WDD Web Design and Development'."""
     if not major or not major.strip():
         return None
     raw = major.strip()
-    upper = raw.upper()
-    if upper.startswith("MAJ") and upper in rules.major_core:
-        return upper
-    alias = rules.major_aliases.get(raw.lower())
-    if alias:
-        return alias
+    if found := _lookup_major_alias(raw, rules):
+        return found
+
+    if code := re.search(r"\b(MAJ\d+)\b", raw, flags=re.IGNORECASE):
+        if found := _lookup_major_alias(code.group(1), rules):
+            return found
+
+    # Prefer the title: the leading token is a SOLS abbreviation, not MAJxxxx.
+    if split := split_major_code_and_title(raw):
+        code, title = split
+        if found := _lookup_major_alias(title, rules):
+            return found
+        if found := _lookup_major_alias(code, rules):
+            return found
+
+    parts = re.split(r"\s+[—–-]\s+", raw, maxsplit=1)
+    if len(parts) == 2:
+        for part in parts:
+            if found := _lookup_major_alias(part, rules):
+                return found
     return None
 
 

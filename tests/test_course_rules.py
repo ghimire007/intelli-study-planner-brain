@@ -37,6 +37,19 @@ def test_load_course_rules_equivalencies_from_overrides() -> None:
     assert "CSIT111" in rules.satisfies["CSIT110"]
 
 
+def test_bit_major_code_and_title_resolve() -> None:
+    """SOLS 'WDD Web Design and Development' is the same major as MAJ40246."""
+    from app.services.eligibility_service import resolve_major_code
+
+    rules = load_course_rules("1807", "Wollongong")
+    assert resolve_major_code("WDD Web Design and Development", rules) == "MAJ40246"
+    assert resolve_major_code("WDDWeb Design and Development", rules) == "MAJ40246"
+    assert resolve_major_code("WDD", rules) == "MAJ40246"
+    assert resolve_major_code("Web Design and Development", rules) == "MAJ40246"
+    assert resolve_major_code("Web Design & Development", rules) == "MAJ40246"
+    assert resolve_major_code("Web Design and Development (MAJ40246)", rules) == "MAJ40246"
+
+
 def test_load_course_rules_major_core_from_majors_json() -> None:
     rules = load_course_rules("766", "Wollongong")
     assert rules.major_core["MAJ44204"] == {"CSCI218", "CSCI316", "CSCI323", "ISIT312"}

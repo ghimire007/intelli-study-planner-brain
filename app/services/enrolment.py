@@ -91,6 +91,12 @@ _MAJOR_CODE = re.compile(r"^([A-Z]{2,6})\b")
 # from it — but it is shape-checked like every other field, and "Not yet
 # declared" is not a major.
 _MAJOR_TITLE = re.compile(r"^[A-Z][A-Za-z]*(?: [A-Za-z&-]+){1,7}$")
+# "WDD Web Design and Development" or "WDDWeb Design and Development": a SOLS
+# abbreviation, then the handbook title, with no dash between them. The space
+# is optional. The abbreviation is not a handbook code.
+_MAJOR_CODE_AND_TITLE = re.compile(
+    rf"^(?P<code>[A-Z]{{2,6}})\s*(?P<title>{_MAJOR_TITLE.pattern[1:]})"
+)
 _UNDECLARED = re.compile(r"^(?:not yet declared|undeclared|none|n/?a|tbd)$", re.IGNORECASE)
 
 # One row of a paste that arrived as a single run of text, its table markup and
@@ -288,9 +294,33 @@ def _credit_row(cells: dict[str, str]) -> CreditRow:
     )
 
 
+def split_major_code_and_title(value: str) -> tuple[str, str] | None:
+    """Split 'WDD Web Design and Development' into its code and title.
+
+    The code may be glued to the title ('WDDWeb Design and Development').
+
+    A dash-separated major ('AIBD — Artificial Intelligence and Big Data') is
+    not this shape: there the leading code is the value lookup already uses.
+    """
+    cleaned = re.sub(r"\s+Honours?$", "", value.strip(), flags=re.IGNORECASE).strip()
+    cleaned = re.sub(r"\s*&\s*", " and ", cleaned)
+    cleaned = re.sub(r"\s+", " ", cleaned).strip()
+    if _UNDECLARED.match(cleaned):
+        return None
+    if match := _MAJOR_CODE_AND_TITLE.match(cleaned):
+        return match.group("code"), match.group("title")
+    return None
+
+
 def _add_major(header: dict, value: str) -> None:
-    """Record a major by its code when it has one, else by its plain title."""
-    if code := _MAJOR_CODE.match(value):
+    """Record a major by its code when it has one, else by its plain title.
+
+    'WDD Web Design and Development' keeps the title. WDD is a SOLS
+    abbreviation, and the title is what resolves to the handbook major.
+    """
+    if split := split_major_code_and_title(value):
+        header["majors"].append(split[1])
+    elif code := _MAJOR_CODE.match(value):
         header["majors"].append(code.group(1))
     elif _MAJOR_TITLE.match(value) and not _UNDECLARED.match(value):
         value = re.sub(

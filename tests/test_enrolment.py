@@ -7,6 +7,7 @@ import pathlib
 import re
 
 import pytest
+from app.agents.state import _major_for_ranking
 from app.services.enrolment import (
     KNOWN_GRADES,
     KNOWN_SESSIONS,
@@ -15,6 +16,7 @@ from app.services.enrolment import (
     parse_enrolment,
     project,
 )
+from app.services.sols_parser import extract_sols_metadata
 
 pytestmark = pytest.mark.smoke
 
@@ -373,6 +375,51 @@ class TestFlatHeader:
             "Major: AIBD — Artificial Intelligence and Big Data " + ROW + "6 HD Complete"
         )
         assert record.majors == ["AIBD"]
+
+    def test_a_major_code_followed_by_its_name_keeps_the_name(self):
+        """SOLS prints some majors as an abbreviation and a title, with no dash."""
+        record = parse_enrolment(
+            "Course:1807 Bachelor of Information Technology "
+            "Instance:1807 Campus: Wollongong Delivery: On Campus Status: Active "
+            "Major:WDD Web Design and Development "
+            + ROW + "6 HD Complete"
+        )
+        assert record.course_code == "1807"
+        assert record.campus == "Wollongong"
+        assert record.majors == ["Web Design and Development"]
+
+    def test_a_major_code_glued_to_its_name_keeps_the_name(self):
+        record = parse_enrolment(
+            "Course:1807 Bachelor of Information Technology "
+            "Instance:1807 Campus: Wollongong Delivery: On Campus Status: Active "
+            "Major:WDDWeb Design and Development "
+            + ROW + "6 HD Complete"
+        )
+        assert record.course_code == "1807"
+        assert record.campus == "Wollongong"
+        assert record.majors == ["Web Design and Development"]
+
+    def test_an_ampersand_in_that_title_is_normalized(self):
+        record = parse_enrolment(
+            "Major:WDD Web Design & Development " + ROW + "6 HD Complete"
+        )
+        assert record.majors == ["Web Design and Development"]
+
+    def test_the_same_header_normalizes_in_metadata_and_ranking(self):
+        raw = (
+            "Course:1807 Bachelor of Information Technology\n"
+            "Instance:1807 Campus: Wollongong     Delivery: On Campus     Status: Active\n"
+            "Major:WDD Web Design and Development\n"
+            + ROW + "6 HD Complete"
+        )
+        assert extract_sols_metadata(raw).majors == ["Web Design and Development"]
+        assert _major_for_ranking("WDD Web Design and Development") == (
+            "Web Design and Development"
+        )
+        assert _major_for_ranking("WDDWeb Design and Development") == (
+            "Web Design and Development"
+        )
+        assert _major_for_ranking("AIBD — Artificial Intelligence and Big Data") == "AIBD"
 
     def test_both_majors_of_a_double_major(self):
         record = parse_enrolment(
