@@ -55,6 +55,8 @@ jobs:
           tests/test_profile_update.py
           tests/test_migration_url.py
           tests/eval/test_parser.py
+          tests/test_plan_oracle.py
+          tests/test_chat_scenarios.py
           -m "smoke and not needs_db"
           --llm=fake -q
 
