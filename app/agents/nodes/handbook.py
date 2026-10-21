@@ -31,7 +31,7 @@ class HandbookNodes:
 
         try:
             content = await fetch_handbook(self._db, degree_code, year, campus)
-        except Exception as exc:
+        except Exception:
             # print("HANDBOOK FETCH ERROR:", repr(exc))
             return {**HANDBOOK_CLEARED, "planning_requested": False}
 

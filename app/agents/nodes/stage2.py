@@ -204,7 +204,7 @@ class Stage2Nodes:
             if data.get("valid"):
                 return {"plan_feedback": None, "stage2_retry_count": 0}
             feedback = data.get("feedback", "Invalid plan.")
-        except Exception as exc:
+        except Exception:
             # print("STAGE 2 EVAL ERROR:", repr(exc))
             feedback = "Failed to parse evaluation output."
 

@@ -242,7 +242,7 @@ class Stage1Nodes:
                     "messages": [AIMessage(content=explanation)],
                 }
 
-        except Exception as exc:
+        except Exception:
             # print("START PLANNING MAJOR VALIDATION ERROR:", repr(exc))
             return {
                 "planning_requested": False,

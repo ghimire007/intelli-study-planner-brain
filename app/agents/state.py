@@ -1012,7 +1012,7 @@ def apply_plan_change_request(
         value = request.get("campus")
 
         if not value or not str(value).strip():
-            p/rint("PLAN CHANGE REJECTED: campus missing")
+            print("PLAN CHANGE REJECTED: campus missing")
             return {}
 
         meta["campus"] = str(value).strip()
