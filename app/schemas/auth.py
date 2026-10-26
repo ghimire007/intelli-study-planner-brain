@@ -88,3 +88,9 @@ class UserOut(BaseModel):
     campus: str | None
     major: str | None
     elective_interests: list[str]
+    is_guest: bool = False
+
+    @field_validator("is_guest", mode="before")
+    @classmethod
+    def default_guest_flag_for_legacy_rows(cls, value):
+        return False if value is None else value

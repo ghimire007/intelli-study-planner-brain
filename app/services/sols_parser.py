@@ -25,7 +25,7 @@ def extract_sols_metadata(text: str) -> SOLSMeta:
 
     # find degree code
     match = re.search(
-        r"(?im)^\s*Course\s*:\s*(\d{3,4})(?!\d)",
+        r"(?im)^\s*\**Course\s*\**:\s*\**\s*([0-9]{3,4})(?!\w|\.[0-9])",
         text,
     )
     if match:

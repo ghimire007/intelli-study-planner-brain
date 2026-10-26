@@ -13,6 +13,9 @@ class Settings(BaseSettings):
     GEMINI_MODEL: str = "gemini-3.5-flash"
     AUTH_COOKIE_NAME: str = "courseo_session"
     AUTH_SESSION_DAYS: int = 30
+    # Set this in production. When omitted, auth derives a stable signing key from
+    # the configured secrets-vault master key.
+    AUTH_JWT_SECRET: str = ""
     AUTH_COOKIE_SECURE: bool = True
     # "lax" is right when the frontend is served from the same site as the API.
     # When they are different sites — and two *.onrender.com services are, because

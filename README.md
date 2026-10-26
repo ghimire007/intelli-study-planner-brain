@@ -163,6 +163,14 @@ for authentication.
 
 #### Get history — `GET /api/v1/chat/{session_id}`
 
+`degree_code` is the last course number confirmed in this chat. It is `"UNKNOWN"`
+until the student confirms their course through the conversation; account/profile
+fields do not supply it. Confirmation persists on the chat session, survives later
+turns and history reloads, and changes only when a new course is confirmed.
+Confirmed checkpoint metadata also repairs older session rows on history reads.
+This behavior uses the existing database column and needs only a backend redeploy,
+with no new migration or account setup fields.
+
 ```json
 // Response 200
 {

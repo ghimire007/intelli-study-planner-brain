@@ -21,7 +21,7 @@ def test_cors_origin_list_strips_whitespace_and_slashes() -> None:
 
 def test_cookie_defaults_suit_a_cross_site_frontend() -> None:
     """Two onrender.com services are cross-site, so the default is SameSite=None; Secure."""
-    settings = Settings()
+    settings = Settings(_env_file=None)
     assert settings.AUTH_COOKIE_SAMESITE == "none"
     assert settings.AUTH_COOKIE_SECURE is True
     assert settings.cookie_misconfigured() is None

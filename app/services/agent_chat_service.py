@@ -13,6 +13,7 @@ from app.llm.registry import PROVIDER_LABELS
 from app.models.auth import User
 from app.models.session import ChatSession
 from app.schemas.chat import ChatContext
+from app.services.course_code import normalize_course_code
 from app.services.credential_resolver import CredentialResolver
 from app.services.enrolment import UnreadableRecord, project
 from app.services.pii import scrub_pii
@@ -38,6 +39,13 @@ def _context_elective_preferences(
     return elective_mode, list(elective_interests) if elective_interests is not None else None
 
 logger = logging.getLogger(__name__)
+
+
+def _confirmed_course_code(values: dict) -> str | None:
+    """Read only metadata accepted by the conversation's confirmation workflow."""
+    if not values.get("meta_confirmed"):
+        return None
+    return normalize_course_code((values.get("meta") or {}).get("degree_code"))
 
 
 def _with_wam(projected: str, raw_record: str) -> str:
@@ -141,32 +149,22 @@ class AgentChatService:
                 meta_payload = parsed_meta.model_dump()
 
             looks_like_sols = bool(
-                # Recognise actual SOLS header fields at the start of a line.
+                # Course/Student labels and subject codes also occur in normal
+                # intake answers. Require an enrolment table, not just a number.
                 re.search(
                     r"(?im)^\s*(?:"
-                    r"Student\b|"
-                    r"Course\b|"
-                    r"Campus\b|"
-                    r"Major(?:\s+\d+)?\s*:|"
-                    r"Effective Date\b|"
+                    r"\|\s*Year\s*\|\s*Session\b|"
                     r"Year\s+Session\b|"
-                    r"Subject Code\b|"
-                    r"Status\b|"
                     r"Enrolment History\b"
                     r")",
                     protected_sols,
                 )
                 # Recognise enrolment table rows.
                 or re.search(
-                    r"\b(?:19|20)\d{2}\s+"
+                    r"\b(?:19|20)\d{2}(?:\s+|\s*\|\s*)"
                     r"(?:Annual|Autumn|Spring|Summer|Winter)\b",
                     protected_sols,
                     re.IGNORECASE,
-                )
-                # Recognise subject codes.
-                or re.search(
-                    r"\b[A-Z]{2,4}\d{3}[A-Z]?\b",
-                    protected_sols,
                 )
             )
 
@@ -236,10 +234,8 @@ class AgentChatService:
         )
 
         state = await graph.aget_state({"configurable": {"thread_id": str(session_id)}})
-        meta = state.values.get("meta") or {}
-
-        # Handle fallback for missing degree_code
-        degree_code = meta.get("degree_code") or "UNKNOWN"
+        # Expose only a course code that the student has confirmed in chat.
+        degree_code = _confirmed_course_code(state.values) or "UNKNOWN"
 
         session = ChatSession(
             id=session_id,
@@ -336,13 +332,21 @@ class AgentChatService:
 
         await self._invoke(graph, llm_config, payload, config)
 
+        # Keep the last confirmed course number even when later turns collect
+        # other metadata or a replacement record awaits confirmation.
+        state = await graph.aget_state(config)
+        degree_code = _confirmed_course_code(state.values)
+        if degree_code is not None:
+            session.degree_code = degree_code
+
         # A student may switch models mid-conversation; keep the session in step
         # so the next turn resolves the same way without being asked again.
         if session.model != llm_config.model or session.credential_id != llm_config.credential_id:
             session.provider = llm_config.provider.value
             session.model = llm_config.model
             session.credential_id = llm_config.credential_id
-            await self._db.commit()
+
+        await self._db.commit()
 
         return await latest_reply(graph, str(session_id), fallback_model=llm_config.model)
 
@@ -355,6 +359,13 @@ class AgentChatService:
 
         if not state.values:
             return session, []
+
+        # Older sessions may have confirmed checkpoint metadata but an UNKNOWN
+        # SQL row. Repair on read without needing the student's provider key.
+        degree_code = _confirmed_course_code(state.values)
+        if degree_code is not None and session.degree_code != degree_code:
+            session.degree_code = degree_code
+            await self._db.commit()
 
         messages = await build_history(graph, str(session_id), fallback_model=session.model)
         return session, messages

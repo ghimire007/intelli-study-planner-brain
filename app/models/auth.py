@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import JSON, DateTime, ForeignKey, Integer, String, text
+from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Integer, String, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
@@ -15,6 +15,7 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(320), unique=True, index=True, nullable=False)
     display_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
+    is_guest: Mapped[bool] = mapped_column(Boolean, default=False, server_default=text("false"), nullable=False)
     degree_code: Mapped[str] = mapped_column(String(12), default="766", server_default="766")
     commencement_year: Mapped[int | None] = mapped_column(Integer, nullable=True)
     campus: Mapped[str | None] = mapped_column(String(32), nullable=True)
