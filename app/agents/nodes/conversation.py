@@ -578,6 +578,19 @@ class ConversationNodes:
                     # print("CONFIRMED METADATA SANITIZED:", sanitized)
 
                 else:
+                    if parsed.get("change_type") == "course":
+                        # Course changes must meet the same evidence rule as
+                        # initial confirmation; tool output alone is not proof.
+                        sanitized = sanitize_confirmed_metadata(
+                            prior_meta=prior_meta,
+                            candidate_meta={
+                                "degree_code": parsed.get("course"),
+                                "year": (prior_meta or {}).get("year"),
+                            },
+                            state=state,
+                        )
+                        if sanitized.get("degree_code") != str(parsed.get("course") or "").strip():
+                            continue
                     updates.update(
                         apply_plan_change_request(prior_meta, parsed)
                     )

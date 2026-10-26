@@ -5,6 +5,7 @@ from app.api.v1.chat import router as chat_router
 from app.api.v1.eligibility import router as eligibility_router
 from app.api.v1.handbook import router as handbook_router
 from app.api.v1.keys import router as keys_router
+from app.api.v1.plans import router as plans_router
 from app.api.v1.test_records import router as test_records_router
 
 router = APIRouter(prefix="/api/v1")
@@ -13,4 +14,5 @@ router.include_router(chat_router, prefix="/chat", tags=["chat"])
 router.include_router(eligibility_router, prefix="/planning", tags=["planning"])
 router.include_router(handbook_router, prefix="/handbook", tags=["handbook"])
 router.include_router(keys_router, prefix="/keys", tags=["keys"])
+router.include_router(plans_router, prefix="/plans", tags=["study plans"])
 router.include_router(test_records_router, prefix="/test-records", tags=["dev"])

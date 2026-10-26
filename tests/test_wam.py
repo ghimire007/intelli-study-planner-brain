@@ -267,6 +267,24 @@ async def test_pasting_a_new_record_mid_chat_replaces_the_wam(service):
     assert "90.00" in graph.payload["raw_sols"]
 
 
+async def test_chat_history_course_code_tracks_metadata_confirmed_in_chat(service):
+    svc, graph = service
+    session = types.SimpleNamespace(
+        user_id="u", model="gemini-test", credential_id=None, provider="gemini", degree_code="UNKNOWN"
+    )
+
+    async def get_session(model, key):
+        return session
+
+    svc._db.get = get_session
+    graph.state.values = {
+        "meta": {"degree_code": "1807", "year": 2024, "campus": "Wollongong"},
+        "meta_confirmed": True,
+    }
+    await svc.continue_session(uuid.uuid4(), "Yes, those details are correct.")
+    assert session.degree_code == "1807"
+
+
 class _RecordingModel:
     def __init__(self):
         self.sent = []

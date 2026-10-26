@@ -80,6 +80,16 @@ async def login(
     return user
 
 
+@router.post("/guest", response_model=UserOut, status_code=status.HTTP_201_CREATED)
+async def create_guest(
+    response: Response,
+    service: AuthService = Depends(_get_service),
+):
+    user, token = await service.create_guest()
+    _set_session_cookie(response, token)
+    return user
+
+
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
 async def logout(
     response: Response,
@@ -114,6 +124,21 @@ async def delete_account(
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)
         ) from exc
+    _clear_session_cookie(response)
+
+
+@router.delete("/guest", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_guest(
+    response: Response,
+    user: User = Depends(get_current_user),
+    service: AuthService = Depends(_get_service),
+):
+    try:
+        await service.delete_guest(user)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+    except VaultError as exc:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
     _clear_session_cookie(response)
 @router.patch("/me", response_model=UserOut)
 async def update_me(

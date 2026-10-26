@@ -11,6 +11,7 @@ from langchain_core.messages import BaseMessage, HumanMessage, ToolMessage
 from langgraph.graph.message import add_messages
 
 from app.schemas.elective_ranking import ElectivePriorityInput
+from app.services.course_code import course_code_stated_by_student, normalize_course_code
 from app.services.elective_ranking import flatten_ranked_electives, get_elective_priorities
 from app.services.enrolment import UnreadableRecord, parse_enrolment
 
@@ -697,8 +698,22 @@ def sanitize_confirmed_metadata(
 
     sanitized = dict(prior)
 
+    # Course numbers need semantic context, not the generic substring check
+    # below (e.g. 110 in CSIT110 or 1807 inside a student ID).
+    prior_code = normalize_course_code(prior.get("degree_code"))
+    candidate_code = normalize_course_code(candidate.get("degree_code"))
+    sanitized.pop("degree_code", None)
+    if prior_code:
+        sanitized["degree_code"] = prior_code
+    if candidate_code and (
+        candidate_code == prior_code
+        or course_code_stated_by_student(
+            candidate_code, state.get("messages", []), year=candidate.get("year")
+        )
+    ):
+        sanitized["degree_code"] = candidate_code
+
     for field in (
-        "degree_code",
         "year",
         "campus",
         "session",
