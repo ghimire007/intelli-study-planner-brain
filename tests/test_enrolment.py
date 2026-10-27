@@ -350,6 +350,21 @@ class TestFlatRowShapes:
 class TestFlatHeader:
     """The three allowlisted header fields, with no line breaks to delimit them."""
 
+    def test_clipboard_can_join_course_instance_campus_and_major(self):
+        record = parse_enrolment(
+            "Course:766Bachelor of Computer Science Instance:766Campus: Wollongong "
+            "Delivery: On Campus Status: Transfer Major:SENGSoftware Engineering "
+            + ROW + "6 HD Complete"
+        )
+        assert (record.course_code, record.campus, record.majors) == (
+            "766", "Wollongong", ["Software Engineering"],
+        )
+
+    @pytest.mark.parametrize("code", ["766A", "7661234", "766.5", "CSIT110"])
+    def test_joined_header_does_not_accept_invalid_course_numbers(self, code):
+        record = parse_enrolment(f"Course:{code} " + ROW + "6 HD Complete")
+        assert record.course_code is None
+
     def test_course_campus_and_major(self):
         record = parse_enrolment(FLAT_PASTE)
         assert record.course_code == "1807"

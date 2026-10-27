@@ -16,6 +16,7 @@ from app.agents.state import (
 )
 from app.prompts.builder import build_system_prompt
 from app.prompts.prompts import EVAL_PLAN, SYSTEM_PROMPT_V1
+from app.services.study_plan_output import normalize_study_plan_output
 
 
 class Stage2Nodes:
@@ -181,6 +182,22 @@ class Stage2Nodes:
         if not plan:
             return {"plan_feedback": "No plan was generated.", "stage2_retry_count": retries + 1}
 
+        try:
+            plan = normalize_study_plan_output(plan)
+        except ValueError:
+            # A prose answer cannot populate the panel or enable PDF export,
+            # even when a model-based evaluator considers its wording valid.
+            return {
+                "plan_feedback": (
+                    "Return the full study plan as a valid final ```json code block "
+                    "with a plan array of years, sessions and subjects. Each subject "
+                    "must have code, name, cp and notes. Include historical, current "
+                    "and future subjects, plus the visible study plan table. "
+                    "A prose list or an empty plan cannot be displayed or exported."
+                ),
+                "stage2_retry_count": retries + 1,
+            }
+
         eval_prompt = (
             EVAL_PLAN.replace("{{PLAN}}", plan)
             .replace("{{METADATA}}", json.dumps(state.get("meta", {}), indent=2))
@@ -202,13 +219,13 @@ class Stage2Nodes:
             if not isinstance(data, dict):
                 raise ValueError("Stage 2 evaluator returned invalid JSON.")
             if data.get("valid"):
-                return {"plan_feedback": None, "stage2_retry_count": 0}
+                return {"plan": plan, "plan_feedback": None, "stage2_retry_count": 0}
             feedback = data.get("feedback", "Invalid plan.")
         except Exception:
             # print("STAGE 2 EVAL ERROR:", repr(exc))
             feedback = "Failed to parse evaluation output."
 
-        return {"plan_feedback": feedback, "stage2_retry_count": retries + 1}
+        return {"plan": plan, "plan_feedback": feedback, "stage2_retry_count": retries + 1}
 
     @staticmethod
     def route_evaluation(state: AdvisorState) -> Literal["stage2_make_plan", "format_output"]:
@@ -225,10 +242,18 @@ class Stage2Nodes:
         """Emit final evaluation feedback before the plan's JSON Markdown."""
         # print("NODE: format_output")
 
-        plan = state.get("plan") or (
-            "Unable to complete plan generation. "
-            "Please provide or confirm the required degree information."
-        )
+        try:
+            plan = normalize_study_plan_output(state.get("plan") or "")
+        except ValueError:
+            return {
+                "messages": [AIMessage(content=(
+                    "I couldn't generate a usable study plan for the Study Plan panel "
+                    "and PDF download. Please ask me to generate the plan again."
+                ))],
+                "plan": None,
+                "planning_requested": False,
+                "conversation_mode": "collecting",
+            }
 
         feedback = state.get("plan_feedback")
 
@@ -263,6 +288,7 @@ class Stage2Nodes:
         # print("\n\nFinal plan:\n", plan, "\n\n")
 
         return {
+            "plan": plan,
             "messages": [AIMessage(content=plan)],
             "planning_requested": False,
             "conversation_mode": "post_plan",

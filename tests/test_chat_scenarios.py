@@ -19,6 +19,7 @@ from app.agents.nodes.conversation import MAX_TOOL_CALLS_PER_TURN
 from app.agents.state import MAX_STAGE2_RETRIES
 from app.services.enrolment import project
 from app.services.sols_parser import extract_sols_metadata
+from app.services.study_plan_output import read_study_plan
 from langchain_core.messages import AIMessage, HumanMessage
 from langgraph.checkpoint.memory import MemorySaver
 
@@ -181,13 +182,13 @@ PLAN_BAD = AIMessage(
 
 def full_planning_scripts(*, plan_verdicts=(PLAN_OK,), plans=(AIMessage(content=PLAN_TEXT),)):
     return {
-        "conversation": {"confirm": [confirm("766", YEAR_766, "Wollongong", MAJORS_766)]},
+        "conversation": {},
         "stage1": {"full": [CORE_REPLY], "parser": [MAJOR_OK, CORE_OK]},
         "stage2": {"full": list(plans), "parser": list(plan_verdicts)},
     }
 
 
-async def test_paste_confirm_plan_reaches_post_plan_and_fetches_the_handbook_once(
+async def test_pasted_record_plans_without_confirmation_and_fetches_the_handbook_once(
     monkeypatch,
 ) -> None:
     chat = Chat(monkeypatch)
@@ -197,7 +198,10 @@ async def test_paste_confirm_plan_reaches_post_plan_and_fetches_the_handbook_onc
     assert state["conversation_mode"] == "post_plan"
     assert state["meta_confirmed"] is True
     assert state["meta"]["degree_code"] == "766"
-    assert state["plan"] == PLAN_TEXT
+    assert read_study_plan(state["plan"])[0].model_dump() == PLAN_JSON
+    assert state["plan"] == last_reply(state)
+    assert "| Year | Session | Subject Code |" in state["plan"]
+    assert registries["conversation"].models == {}
     assert "passed the evaluation checks" in last_reply(state)
     assert chat.fetches == [("766", YEAR_766, "Wollongong")]
     assert all(not left for left in registries["stage1"].unused().values())
@@ -209,7 +213,6 @@ async def test_every_degree_in_the_chats_plans_end_to_end(monkeypatch, case_id) 
     degree, year, campus = case.record.course_code, case.commencement_year, case.campus
     chat = Chat(monkeypatch)
     scripts = full_planning_scripts()
-    scripts["conversation"] = {"confirm": [confirm(degree, year, campus, case.majors)]}
     chat.script(**scripts)
     state = await chat.start(case.text, record=True)
 
@@ -261,7 +264,8 @@ async def test_changing_major_after_a_plan_replans_and_keeps_the_handbook(monkey
     state = await chat.say("my major is Cyber Security")
 
     assert state["meta"]["majors"] == ["Cyber Security"]
-    assert state["plan"] == second.content
+    assert read_study_plan(state["plan"])[0] == read_study_plan(second.content)[0]
+    assert state["plan"] == last_reply(state)
     assert chat.fetches == [("766", YEAR_766, "Wollongong")]
 
 

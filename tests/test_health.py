@@ -1,7 +1,10 @@
 """CI-safe health checks — no DB or LLM required."""
 
+import pytest
 from app.core.config import Settings
 from app.main import app
+
+pytestmark = pytest.mark.smoke
 
 
 def test_health_route_registered() -> None:
@@ -19,9 +22,12 @@ def test_cors_origin_list_strips_whitespace_and_slashes() -> None:
     ]
 
 
-def test_cookie_defaults_suit_a_cross_site_frontend() -> None:
+def test_cookie_defaults_suit_a_cross_site_frontend(monkeypatch) -> None:
     """Two onrender.com services are cross-site, so the default is SameSite=None; Secure."""
-    settings = Settings()
+    # Test declared defaults independently of local .env / shell overrides.
+    monkeypatch.delenv("AUTH_COOKIE_SAMESITE", raising=False)
+    monkeypatch.delenv("AUTH_COOKIE_SECURE", raising=False)
+    settings = Settings(_env_file=None)
     assert settings.AUTH_COOKIE_SAMESITE == "none"
     assert settings.AUTH_COOKIE_SECURE is True
     assert settings.cookie_misconfigured() is None

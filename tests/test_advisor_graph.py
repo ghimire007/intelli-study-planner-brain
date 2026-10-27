@@ -8,12 +8,19 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from app.agents.graphAPI import AdvisorGraph
 from app.agents.llms import LLMRegistry
 from app.agents.nodes.stage1 import Stage1Nodes
-from langchain_core.messages import AIMessage
+from app.agents.nodes.stage2 import Stage2Nodes
+from app.llm.config import LLMConfig
+from app.llm.registry import Provider
+from app.services.enrolment import project
+from app.services.sols_parser import extract_sols_metadata
+from app.services.study_plan_output import read_study_plan
+from langchain_core.messages import AIMessage, HumanMessage
 from langgraph.graph import END
 
 pytestmark = pytest.mark.smoke
@@ -142,6 +149,105 @@ async def test_stage1_runs_core_then_evaluator_then_plan() -> None:
 
     assert out["conversation_mode"] == "post_plan"
     assert stage1.calls == ["core", "eval", "plan"]
+
+
+COMPACT_RECORD = (
+    "Course:766Bachelor of Computer Science Instance:766Campus: Wollongong "
+    "Delivery: On Campus Status: Transfer Major:SENGSoftware Engineering "
+    "Year Session Campus/ Delivery Subject Code NomCP Mark Grade Status "
+    "2025 Autumn Wollongong/ On Campus CSIT213 6 95 HD Complete "
+    "2024 Autumn Wollongong/ On Campus CSIT110 6 88 HD Complete"
+)
+
+
+@pytest.mark.parametrize(("provider", "model"), [
+    (Provider.OPENAI, "gpt-5.1"), (Provider.GEMINI, "gemini-3.5-flash"),
+])
+@pytest.mark.parametrize("record", [COMPACT_RECORD, (Path(__file__).resolve().parents[1]
+                                                  / "app/test_records/almost_graduated.md").read_text()])
+async def test_complete_record_fetches_handbook_and_plans_without_intake_model(
+    monkeypatch, provider, model, record,
+):
+    fetch = AsyncMock(return_value="AUTHORITATIVE HANDBOOK")
+    monkeypatch.setattr("app.agents.nodes.handbook.fetch_handbook", fetch)
+    graph = AdvisorGraph(db=None, checkpointer=None, llm_config=LLMConfig(
+        provider=provider, model=model, api_key="unused", credential_id=None,
+    ))
+    registry = MagicMock()
+    registry.get.side_effect = AssertionError("Complete records must not call an intake model")
+    graph.conversation._llms = registry
+    stage1 = ScriptedStage1()
+    stage1.start_planning = AsyncMock(return_value={
+        "major_validation_passed": True, "planning_requested": False,
+    })
+    graph.stage1 = stage1
+    graph.stage2 = FakeStage2(stage1.calls)
+    projected = project(record)
+    metadata = extract_sols_metadata(record).model_dump()
+    result = await graph.compile().ainvoke({
+        "messages": [HumanMessage(content=projected)],
+        "raw_sols": projected, "meta": metadata,
+        "meta_confirmed": False, "planning_requested": True,
+    })
+    assert result["plan"] == "PLAN"
+    assert stage1.calls == ["core", "eval", "plan"]
+    assert result["meta"]["degree_code"] == "766"
+    assert result["meta"]["year"] == 2024
+    assert result["meta"]["majors"] in (["Software Engineering"], ["AIBD"])
+    fetch.assert_awaited_once_with(None, "766", 2024, "Wollongong")
+    registry.get.assert_not_called()
+
+
+async def test_missing_handbook_stops_planning_and_explains_failure(monkeypatch):
+    fetch = AsyncMock(side_effect=ValueError("not seeded"))
+    monkeypatch.setattr("app.agents.nodes.handbook.fetch_handbook", fetch)
+    graph = AdvisorGraph(db=None, checkpointer=None)
+    projected = project(COMPACT_RECORD)
+    result = await graph.compile().ainvoke({
+        "messages": [HumanMessage(content=projected)],
+        "raw_sols": projected, "meta": extract_sols_metadata(COMPACT_RECORD).model_dump(),
+        "meta_confirmed": False, "planning_requested": True,
+    })
+    assert result["plan"] is None
+    assert "couldn't retrieve the handbook" in result["messages"][-1].content
+
+
+@pytest.mark.parametrize("student_request", [
+    "Can you generate the study plan for me?",
+    "You should put it in the Study Plan beside me ->",
+])
+async def test_direct_plan_request_retries_prose_and_returns_panel_data(monkeypatch, student_request):
+    monkeypatch.setattr("app.agents.nodes.handbook.fetch_handbook", AsyncMock(return_value="HANDBOOK"))
+    graph = AdvisorGraph(db=None, checkpointer=None)
+    # No intake model: this existing conversation already has its metadata.
+    graph.conversation._llms = None
+    stage1 = ScriptedStage1()
+    stage1.start_planning = AsyncMock(return_value={
+        "major_validation_passed": True, "planning_requested": False,
+    })
+    graph.stage1 = stage1
+    payload = {"plan": [{"year": "2026", "sessions": [{"session": "Autumn", "subjects": [
+        {"code": "CSIT314", "name": "Software Development Methodologies", "cp": 6, "notes": ""},
+    ]}]}]}
+    full = MagicMock()
+    full.ainvoke = AsyncMock(side_effect=[
+        AIMessage(content="Here is a prose list of subjects."),
+        AIMessage(content=json.dumps(payload)),
+    ])
+    parser = MagicMock()
+    parser.ainvoke = AsyncMock(return_value=AIMessage(content='{"valid": true, "feedback": ""}'))
+    registry = MagicMock()
+    registry.get.side_effect = lambda kind: parser if kind == "parser" else full
+    graph.stage2 = Stage2Nodes(registry, [], no_tools_llms=registry)
+    result = await graph.compile().ainvoke({
+        **HANDBOOK_OK, "planning_requested": False, "conversation_mode": "collecting",
+        "messages": [HumanMessage(content=student_request)], "raw_sols": project(COMPACT_RECORD),
+    })
+    assert result["conversation_mode"] == "post_plan"
+    assert full.ainvoke.await_count == 2
+    assert parser.ainvoke.await_count == 1
+    assert "| Year | Session | Subject Code |" in result["messages"][-1].content
+    assert read_study_plan(result["messages"][-1].content)[0].model_dump() == payload
 
 
 async def test_core_retry_reruns_only_core(monkeypatch) -> None:
