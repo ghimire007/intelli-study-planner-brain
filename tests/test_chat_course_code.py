@@ -117,6 +117,35 @@ async def test_unknown_code_ignores_account_and_request_profile(chat_client):
         assert (await db.get(ChatSession, uuid.UUID(session_id))).degree_code == "UNKNOWN"
 
 
+async def test_context_record_is_used_without_losing_the_request(chat_client):
+    client, _, _, _ = chat_client
+    context = {"profile": {}, "enrolment_record": RECORD}
+    session_id = await start(client, "Create a study plan for me.", context=context)
+    saved = await history(client, session_id)
+    student_messages = [m["content"] for m in saved["messages"] if m["role"] == "user"]
+    assert any("**Course:** 1807" in message and "CSIT110" in message for message in student_messages)
+    assert student_messages[-1] == "Create a study plan for me."
+    # Repeated context must not replace the record or regenerate a saved plan.
+    response = await client.post(f"/api/v1/chat/{session_id}", json={
+        "message": "Why did you choose those subjects?", "context": context,
+    })
+    assert response.status_code == 200
+    saved = await history(client, session_id)
+    assert sum("**Course:** 1807" in m["content"] for m in saved["messages"]) == 1
+
+
+async def test_context_record_reaches_an_existing_chat(chat_client):
+    client, _, _, _ = chat_client
+    session_id = await start(client)
+    response = await client.post(f"/api/v1/chat/{session_id}", json={
+        "message": "Create a study plan for me.",
+        "context": {"profile": {}, "enrolment_record": RECORD},
+    })
+    assert response.status_code == 200
+    saved = await history(client, session_id)
+    assert any("**Course:** 1807" in m["content"] for m in saved["messages"])
+
+
 async def test_confirmation_survives_later_turns_and_new_database_sessions(chat_client):
     client, sessions, turns, resolver = chat_client
     session_id = await start(client)
@@ -221,3 +250,11 @@ def test_assistant_suggestion_is_not_student_confirmation():
 ])
 def test_sols_parser_rejects_unrelated_or_partial_numbers(text):
     assert extract_sols_metadata(text).degree_code is None
+
+
+def test_record_year_comes_from_subject_rows_and_explicit_year_takes_precedence():
+    parsed = extract_sols_metadata("Effective Date: 01 January 2020\n" + RECORD)
+    assert parsed.year == 2024
+    assert parsed.campus == "Wollongong"
+    parsed = extract_sols_metadata("Commencement Year: 2023\n" + RECORD)
+    assert parsed.year == 2023

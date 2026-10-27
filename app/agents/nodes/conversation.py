@@ -19,10 +19,13 @@ from app.agents.state import (
     latest_tool_batch,
     latest_user_request,
     sanitize_confirmed_metadata,
+    validate_metadata,
 )
 from app.llm.text import is_evaluation_reply
 from app.prompts.builder import build_system_prompt
 from app.prompts.prompts import SYSTEM_PROMPT
+from app.services.enrolment import UnreadableRecord, parse_enrolment
+from app.services.sols_parser import extract_sols_metadata
 
 MAX_TOOL_CALLS_PER_TURN = 2
 
@@ -184,6 +187,17 @@ class ConversationNodes:
 
         return "recommend"
 
+    @staticmethod
+    def user_requested_plan(state: AdvisorState) -> bool:
+        """Recognize direct generation/panel requests without involving a model."""
+        text = latest_student_message(state).strip()
+        prefix = r"^(?:(?:can|could|would|will)\s+you\s+|please\s+|you\s+should\s+)?"
+        return bool(re.search(
+            prefix + r"(?:create|build|generate|make|regenerate|rebuild)\b[^\n?]*\bplan\b"
+            r"|" + prefix + r"(?:put|show|display|add|send)\b[^\n?]*\bstudy\s+plan\b",
+            text, re.IGNORECASE,
+        ))
+
     def __init__(self, llms: LLMRegistry, tools_by_kind: dict) -> None:
         self._llms = llms
         self._tool_nodes = {
@@ -195,6 +209,35 @@ class ConversationNodes:
         """Conversational LLM: confirmation-oriented model before metadata is
         confirmed, full planning/conversation model afterwards."""
         print("NODE: agent")
+        direct_plan_request = self.user_requested_plan(state)
+        wants_plan = bool(state.get("planning_requested")) or direct_plan_request
+        # A readable enrolment record is student-supplied evidence. Accept its
+        # metadata in code so provider-specific tool choices cannot stall intake.
+        if wants_plan and not state.get("meta_confirmed"):
+            raw_sols = state.get("raw_sols") or ""
+            try:
+                parse_enrolment(raw_sols)
+            except UnreadableRecord:
+                pass
+            else:
+                meta = extract_sols_metadata(raw_sols).model_dump()
+                meta.update({
+                    key: value for key, value in (state.get("meta") or {}).items()
+                    if value is not None
+                })
+                if not validate_metadata(meta):
+                    updates = apply_confirm_metadata(state.get("meta"), meta)
+                    action = None if direct_plan_request else self.requested_elective_action(state)
+                    updates["pending_elective_action"] = action
+                    return updates
+
+        if state.get("meta_confirmed") and wants_plan:
+            # The graph fetches the handbook and runs the planner next.
+            updates = {"planning_requested": True}
+            if direct_plan_request:
+                updates["pending_elective_action"] = None
+            return updates
+
         # print("current plan: ", state.get("plan"))
         used = int(state.get("tool_calls_this_turn", 0))
 
@@ -408,6 +451,20 @@ class ConversationNodes:
             "messages": [response],
             "active_tool_kind": kind,
         }
+
+        if not confirmed and not response.tool_calls and wants_plan:
+            # Never surface a model-written plan before the handbook workflow.
+            if state.get("raw_sols") in (None, "", "no enrolment yet"):
+                clarification = "Please paste your SOLS enrolment record so I can build your study plan."
+            else:
+                labels = {"degree_code": "course code", "year": "commencement year", "campus": "campus"}
+                missing = validate_metadata(state.get("meta"))
+                fields = ", ".join(labels[field] for field in missing)
+                clarification = (
+                    f"Your record is missing your {fields}. What should I use?"
+                    if fields else "Please confirm the course details shown in your enrolment record."
+                )
+            updates["messages"] = [response.model_copy(update={"content": clarification})]
 
         if clear_pending_elective_action:
             updates["pending_elective_action"] = None

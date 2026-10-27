@@ -10,7 +10,9 @@ from app.services.auth_service import AuthService
 
 
 def _token(secret: str, *, exp: int | None = None) -> str:
-    encode = lambda value: base64.urlsafe_b64encode(value).rstrip(b"=").decode()
+    def encode(value: bytes) -> str:
+        return base64.urlsafe_b64encode(value).rstrip(b"=").decode()
+
     header = encode(b'{"alg":"HS256","typ":"JWT"}')
     claims = encode(json.dumps({
         "iss": "courseo-api",

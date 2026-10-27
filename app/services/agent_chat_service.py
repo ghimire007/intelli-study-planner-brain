@@ -41,6 +41,29 @@ def _context_elective_preferences(
 logger = logging.getLogger(__name__)
 
 
+def _record_input(message: str, context: ChatContext | None) -> tuple[str, str] | None:
+    """Prefer a pasted record, then the record supplied with the chat request.
+
+    Parse before scrubbing: the projection removes PII, while the free-text
+    scrubber can erase a flattened record that starts with a Student label.
+    """
+    try:
+        return message, project(message)
+    except UnreadableRecord:
+        if context is not None and context.enrolment_record:
+            raw = context.enrolment_record.strip()
+            if raw:
+                return raw, project(raw)
+        # A malformed table must not travel to the model as free-form chat.
+        if re.search(
+            r"(?im)^\s*(?:\|\s*Year\s*\|\s*Session\b|Year\s+Session\b|Enrolment History\b)"
+            r"|\b(?:19|20)\d{2}(?:\s+|\s*\|\s*)(?:Annual|Autumn|Spring|Summer|Winter)\b",
+            message,
+        ):
+            raise
+    return None
+
+
 def _confirmed_course_code(values: dict) -> str | None:
     """Read only metadata accepted by the conversation's confirmation workflow."""
     if not values.get("meta_confirmed"):
@@ -105,89 +128,31 @@ class AgentChatService:
     ) -> tuple[ChatSession, MessageView]:
         session_id = uuid.uuid4()
 
-        # Project the paste onto its allowlisted fields before anything is
-        # persisted or sent to a provider. The paste itself stops here: only
-        # `projected` travels, and an unreadable one raises UnreadableRecord
-        # rather than falling back to the raw text. The state key stays
-        # `raw_sols` so existing checkpoints keep loading.
-        # projected = project(raw_sols)
-
         elective_mode, elective_interests = _context_elective_preferences(
             context, elective_mode, elective_interests
         )
 
         cleaned_sols = raw_sols.strip() if raw_sols else ""
-
-        print("start session beginning, cleaned_sols:", cleaned_sols, ".")
-
-        projected_sols: str | None = None
+        record_input = _record_input(cleaned_sols, context)
+        projected_sols = "no enrolment yet"
         initial_messages = []
         planning_requested = False
         meta_payload = None
 
-        if not cleaned_sols:
-            # No initial input.
-            print("NO SOLS")
-
-            projected_sols = "no enrolment yet"
-            initial_messages.append(HumanMessage(content="Hello"))
-
-        # Evaluate SOLS input if provided
+        if record_input is not None:
+            source, projected = record_input
+            meta_payload = extract_sols_metadata(source).model_dump()
+            initial_messages.append(HumanMessage(content=projected))
+            if source != cleaned_sols and cleaned_sols:
+                initial_messages.append(HumanMessage(content=scrub_pii(cleaned_sols)))
+            projected_sols = _with_wam(projected, source)
+            planning_requested = True
         else:
-            protected_sols = scrub_pii(raw_sols)
-
+            protected_sols = scrub_pii(cleaned_sols)
             parsed_meta = extract_sols_metadata(protected_sols)
-
-            has_metadata = bool(
-                parsed_meta.degree_code
-                or parsed_meta.year is not None
-                or parsed_meta.campus
-                or parsed_meta.majors
-            )
-
-            if has_metadata:
+            if any((parsed_meta.degree_code, parsed_meta.year, parsed_meta.campus, parsed_meta.majors)):
                 meta_payload = parsed_meta.model_dump()
-
-            looks_like_sols = bool(
-                # Course/Student labels and subject codes also occur in normal
-                # intake answers. Require an enrolment table, not just a number.
-                re.search(
-                    r"(?im)^\s*(?:"
-                    r"\|\s*Year\s*\|\s*Session\b|"
-                    r"Year\s+Session\b|"
-                    r"Enrolment History\b"
-                    r")",
-                    protected_sols,
-                )
-                # Recognise enrolment table rows.
-                or re.search(
-                    r"\b(?:19|20)\d{2}(?:\s+|\s*\|\s*)"
-                    r"(?:Annual|Autumn|Spring|Summer|Winter)\b",
-                    protected_sols,
-                    re.IGNORECASE,
-                )
-            )
-
-            if looks_like_sols:
-                print("SOLS detected")
-
-                try:
-                    projected_sols = project(protected_sols)
-
-                except UnreadableRecord as exc:
-                    # input looks like SOLS but was malformed/unreadable
-                    print(repr(exc))
-                    raise
-
-                initial_messages.append(HumanMessage(content=projected_sols))
-                projected_sols = _with_wam(projected_sols, raw_sols)
-                planning_requested = True
-
-            else:
-                # conversational text
-                projected_sols = "no enrolment yet"
-                initial_messages.append(HumanMessage(content=protected_sols))
-                planning_requested = False
+            initial_messages.append(HumanMessage(content=protected_sols or "Hello"))
 
         llm_config = await self._resolver.resolve(self._user, requested_model=model)
         graph = build_advisor_graph(self._db, get_checkpointer(), llm_config)
@@ -285,24 +250,26 @@ class AgentChatService:
         if elective_interests is not None:
             payload["elective_interests"] = elective_interests
 
-        # Only treat the message as a new SOLS/enrolment record if # project() successfully recognises it as one.
-        try:
-            parsed_meta = extract_sols_metadata(protected_message)
-            projected = project(protected_message)
+        record_input = _record_input(user_message, context)
+        if record_input is not None:
+            source, projected = record_input
+            projected_with_wam = _with_wam(projected, source)
+            if source != user_message:
+                current = await graph.aget_state(config)
+                # Frontends resend context with every turn. An unchanged record
+                # must not erase a plan or turn a question into regeneration.
+                if current.values.get("raw_sols") == projected_with_wam:
+                    record_input = None
 
-        except UnreadableRecord:
-            # Not a valid SOLS record. Keep it as a normal chat message.
-            projected = None
-
-        except Exception as e:
-            print( "continue_session: unexpected project() error:", repr(e), )
-            projected = None
-
-        if projected:
+        if record_input is not None:
             print("continue_session: SOLS record detected")
+            parsed_meta = extract_sols_metadata(source)
+            messages = [HumanMessage(content=projected)]
+            if source != user_message:
+                messages.append(HumanMessage(content=protected_message))
             payload = {
-                "messages": [ HumanMessage(content=projected) ],
-                "raw_sols": _with_wam(projected, user_message),
+                "messages": messages,
+                "raw_sols": projected_with_wam,
                 "planning_requested": True,
                 "plan": None,
                 "tool_calls_this_turn": 0,

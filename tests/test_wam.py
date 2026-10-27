@@ -5,7 +5,7 @@ import uuid
 from decimal import Decimal
 
 import pytest
-from app.agents.nodes.conversation import ConversationNodes
+from app.agents.nodes.stage1 import Stage1Nodes
 from app.services import agent_chat_service
 from app.services.agent_chat_service import AgentChatService, _with_wam
 from app.services.enrolment import UnreadableRecord, parse_enrolment, project
@@ -318,8 +318,14 @@ async def test_the_model_is_sent_the_wam_and_no_mark_for_every_repo_record(servi
         "meta": {"degree_code": "766", "year": 2024, "campus": "Wollongong", "majors": []},
         "meta_confirmed": True,
         "handbook": "HANDBOOK",
+        "handbook_degree_code": "766",
+        "handbook_year": 2024,
+        "handbook_campus": "Wollongong",
+        "handbook_valid": True,
     }
-    await ConversationNodes(registry, {}).agent(state)
+    # Complete records now skip the conversational model. Inspect the model
+    # that actually generates the required subjects instead.
+    await Stage1Nodes(registry).generate_core_subjects(state)
     prompt = "\n".join(str(m.content) for m in registry.model.sent)
 
     result = calculate_wam(raw)
