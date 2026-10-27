@@ -48,6 +48,36 @@ async def test_normal_reply_uses_one_call_and_changes_only_messages():
     assert model.ainvoke.await_count == 1
 
 
+async def test_plan_request_without_record_cannot_surface_an_invented_plan():
+    node, _model, state = setup_node([AIMessage(content="Year 1: Take invented subjects.")])
+    state["messages"] = [HumanMessage(content="Create a study plan for me.")]
+    result = await node.agent(state)
+    assert "paste your SOLS enrolment record" in result["messages"][0].content
+    assert "invented" not in result["messages"][0].content
+
+
+async def test_partial_record_asks_only_for_missing_details():
+    node, _model, state = setup_node([AIMessage(content="Which degree, campus, year and major?")])
+    state.update(
+        raw_sols="2024 Autumn Wollongong/On Campus CSIT110 6 88 HD Complete",
+        meta={"degree_code": None, "year": 2024, "campus": "Wollongong"},
+        planning_requested=True,
+    )
+    result = await node.agent(state)
+    answer = result["messages"][0].content
+    assert "course code" in answer
+    assert "campus" not in answer and "year" not in answer and "major" not in answer
+
+
+@pytest.mark.parametrize("text", [
+    "Explain my study plan.", "Why is this subject in the plan?",
+    "How do I generate a study plan?", "Do not generate a study plan.",
+    "Show me general electives.",
+])
+def test_plan_questions_and_elective_requests_do_not_trigger_plan_generation(text):
+    assert not ConversationNodes.user_requested_plan({"messages": [HumanMessage(content=text)]})
+
+
 async def test_legacy_verdict_removed_but_tool_exchange_retained():
     node, model, state = setup_node([AIMessage(content="Here is an explanation.")])
     call = AIMessage(content=VERDICT, tool_calls=[{"name": "lookup_subjects_tool", "args": {}, "id": "lookup"}])

@@ -5,7 +5,8 @@ import uuid
 from decimal import Decimal
 
 import pytest
-from app.agents.nodes.conversation import ConversationNodes
+from app.agents.nodes.stage1 import Stage1Nodes
+from app.schemas.chat import ChatContext, ChatProfile
 from app.services import agent_chat_service
 from app.services.agent_chat_service import AgentChatService, _with_wam
 from app.services.enrolment import UnreadableRecord, parse_enrolment, project
@@ -267,6 +268,21 @@ async def test_pasting_a_new_record_mid_chat_replaces_the_wam(service):
     assert "90.00" in graph.payload["raw_sols"]
 
 
+async def test_saved_record_context_is_used_and_resending_it_preserves_the_plan(service):
+    svc, graph = service
+    context = ChatContext(profile=ChatProfile(), enrolment_record=GOOD)
+    await svc.start_session("Create a study plan for me.", context=context)
+    assert graph.payload["planning_requested"] is True
+    assert "72.00" in graph.payload["raw_sols"]
+    assert graph.payload["messages"][-1].content == "Create a study plan for me."
+    graph.state.values.update(raw_sols=graph.payload["raw_sols"], plan="Existing plan")
+    await svc.continue_session(uuid.uuid4(), "Why is this subject in my plan?", context=context)
+    assert "raw_sols" not in graph.payload
+    assert "plan" not in graph.payload
+    assert "planning_requested" not in graph.payload
+    assert graph.payload["messages"][-1].content == "Why is this subject in my plan?"
+
+
 class _RecordingModel:
     def __init__(self):
         self.sent = []
@@ -300,8 +316,14 @@ async def test_the_model_is_sent_the_wam_and_no_mark_for_every_repo_record(servi
         "meta": {"degree_code": "766", "year": 2024, "campus": "Wollongong", "majors": []},
         "meta_confirmed": True,
         "handbook": "HANDBOOK",
+        "handbook_degree_code": "766",
+        "handbook_year": 2024,
+        "handbook_campus": "Wollongong",
+        "handbook_valid": True,
     }
-    await ConversationNodes(registry, {}).agent(state)
+    # Complete records now skip the conversational model. Inspect the model
+    # that actually generates the required subjects instead.
+    await Stage1Nodes(registry).generate_core_subjects(state)
     prompt = "\n".join(str(m.content) for m in registry.model.sent)
 
     result = calculate_wam(raw)

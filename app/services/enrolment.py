@@ -140,9 +140,12 @@ _FLAT_END = (
     rf"Major(?:\s+\d+)?|Second\s+Major)\s*:|"
     rf"Year\s+Session\b|(?:19|20)\d{{2}}\s)|\s*$)"
 )
-_FLAT_COURSE = re.compile(r"\bCourse\s*:\s*(\d{3,4})\b", re.IGNORECASE)
+_FLAT_COURSE = re.compile(
+    r"\bCourse\s*:\s*(\d{3,4})(?:(?=Bachelor\b|Master\b|Doctor\b)|(?!\w|\.[0-9]))",
+    re.IGNORECASE,
+)
 _FLAT_CAMPUS = re.compile(
-    rf"\bCampus\s*:\s*(?P<value>[A-Za-z][A-Za-z ]{{0,40}}?){_FLAT_END}", re.IGNORECASE
+    rf"(?<![A-Za-z])Campus\s*:\s*(?P<value>[A-Za-z][A-Za-z ]{{0,40}}?){_FLAT_END}", re.IGNORECASE
 )
 _FLAT_MAJOR = re.compile(
     rf"\b(?:Second\s+)?Major(?:\s+\d+)?\s*:\s*"
@@ -290,6 +293,11 @@ def _credit_row(cells: dict[str, str]) -> CreditRow:
 
 def _add_major(header: dict, value: str) -> None:
     """Record a major by its code when it has one, else by its plain title."""
+    # SOLS clipboard text can join the code and title: SENGSoftware Engineering.
+    joined_code = re.match(r"^([A-Z]{2,6})(?=[A-Z][a-z])", value)
+    if joined_code:
+        # Keep the explicit title, which is also usable by handbook lookups.
+        value = value[joined_code.end():].strip()
     if code := _MAJOR_CODE.match(value):
         header["majors"].append(code.group(1))
     elif _MAJOR_TITLE.match(value) and not _UNDECLARED.match(value):

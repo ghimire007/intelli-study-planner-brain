@@ -40,34 +40,34 @@ def build_system_prompt(*, prompt: str, meta: dict, meta_confirmed: bool, handbo
             f"- Degree Code: {meta.get('degree_code') or 'Not found'}",
             f"- Enrolment Year: {meta.get('year') or 'Not found'}",
             f"- Campus: {meta.get('campus') or 'Not found'}",
-            f"- Major: {meta.get('major') or 'None/Not stated'}",
+            f"- Major: {meta.get('majors') or meta.get('major') or 'None/Not stated'}",
         ]
         extracted_str = "\n".join(extracted_fields)
 
         metadata_note = (
             "\n\n--- UNCONFIRMED STUDENT METADATA ---\n"
-            "The student's record was parsed, but details are not yet confirmed:\n"
+            "Known student details (reuse these; ask only for missing values):\n"
             f"{extracted_str}\n\n"
             "INSTRUCTIONS:\n"
             "1. Do NOT ask the student to re-paste their SOLS record.\n"
             "2. If the student has already replied confirming or updating these details, call `confirm_metadata_tool` IMMEDIATELY.\n"
-            "3. If asking for confirmation, state the extracted details clearly and ask ONE concise question verifying if they are correct."
+            "3. Ask ONE concise question covering only the missing fields. Do not re-confirm values already present in the record."
         )
         handbook_placeholder = "(unavailable — student metadata must be confirmed first)"
 
     elif meta_confirmed:
-        major = meta.get("major")
+        major = meta.get("majors") or meta.get("major")
         major_bit = f", major={major}" if major else ", major=(not stated)"
         metadata_note = (
             f"\n\nStudent metadata: degree_code={meta['degree_code']}, year={meta['year']}, "
             f"campus={meta['campus']}{major_bit}. Advise only under this degree's handbook. "
             "If the student asks to switch degree, year, or campus, call confirm_metadata_tool "
-            "with the new values (this clears the cached handbook), then call fetch_handbook_tool "
-            "before advising under the new program. Never keep using a previous degree's rules "
+            "with the new values (this clears the cached handbook). The application fetches the matching handbook "
+            "before planning. Never keep using a previous degree's rules "
             "after a switch. If major is missing or \"not stated\" and the plan depends on a major "
             "(or no-major path), ask for the major before finalising."
         )
-        handbook_placeholder = "(not yet fetched — call fetch_handbook_tool)"
+        handbook_placeholder = "(not yet fetched — the application must fetch it before planning)"
     else:
         known_bits = ", ".join(
             f"{field}={meta[field]}" for field in ("degree_code", "year", "campus")
@@ -81,7 +81,7 @@ def build_system_prompt(*, prompt: str, meta: dict, meta_confirmed: bool, handbo
             "Do not assume 766 or any other degree. Do not audit, plan, or call "
             "fetch_handbook_tool yet. Do not ask follow-up questions as separate turns. "
             "After the student answers, call confirm_metadata_tool with degree_code, year, "
-            "campus, and major (or major=null / \"none\" if they have no major)."
+            "campus, and majors (an empty list if they have no major)."
         )
         handbook_placeholder = "(unavailable — missing student details must be confirmed first)"
 

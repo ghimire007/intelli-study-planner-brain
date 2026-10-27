@@ -1,6 +1,7 @@
 """Handbook gate nodes: fetch exactly the handbook the confirmed metadata identifies."""
 from typing import Literal
 
+from langchain_core.messages import AIMessage
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.agents.state import (
@@ -76,4 +77,8 @@ class HandbookNodes:
             "plan": None,
             "remaining_feedback": None,
             "plan_feedback": None,
+            "messages": [AIMessage(content=(
+                "I couldn't retrieve the handbook for your course. "
+                "Please try again once the handbook is available."
+            ))],
         }

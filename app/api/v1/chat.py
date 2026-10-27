@@ -20,6 +20,7 @@ from app.schemas.chat import (
 )
 from app.services.agent_chat_service import AgentChatService, CredentialRejected
 from app.services.credential_resolver import CredentialUnreadable, NoCredentialError
+from app.services.enrolment import UnreadableRecord
 from app.services.handbook_service import HandbookUnavailable
 
 logger = logging.getLogger(__name__)
@@ -152,6 +153,7 @@ async def start_session(
         session, reply = await service.start_session(
             body.message,
             model=body.model,
+            context=body.context,
             elective_mode=elective_mode,
             elective_interests=elective_interests,
         )
@@ -218,6 +220,7 @@ async def continue_session(
             session_id,
             body.message,
             model=body.model,
+            context=body.context,
             elective_mode=elective_mode,
             elective_interests=elective_interests,
         )
@@ -250,6 +253,9 @@ async def continue_session(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail=str(exc),
         ) from exc
+
+    except UnreadableRecord as exc:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
 
     except ValueError as exc:
         # Keep this mapping only if ValueError from this service
